@@ -34,7 +34,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('Welcome to ivy')
+            const Text('Welcome to Iiiiivvvvyyyyy')
 
           ],
         )
