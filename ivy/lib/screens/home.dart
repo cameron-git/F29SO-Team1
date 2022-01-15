@@ -47,6 +47,13 @@ class MainPage extends StatelessWidget {
                 child: Image.asset('assets/ivy-logo.png'),
               ),
             ),
+            sideBuilder: (context, constraints) => Padding(
+              padding: EdgeInsets.all(20),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Image.asset('assets/ivy-logo.png'),
+              ),
+            ),
             footerBuilder: (context, action) => Padding(
               padding: EdgeInsets.all(12),
               child: Text('ToS applies!!!'),
