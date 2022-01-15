@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutterfire_ui/auth.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'firebase_options.dart';
 
@@ -29,19 +31,18 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatelessWidget {
+  const MainPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return HomePage();
+          return const HomePage();
         } else {
-          return SignInScreen(
+          return const SignInScreen(
             providerConfigs: [
-              GoogleProviderConfiguration(
-                  clientId:
-                      '356230225441-ipli6qm1uhulkdm4fq2e0b59kf609nek.apps.googleusercontent.com'),
               EmailProviderConfiguration(),
             ],
           );
