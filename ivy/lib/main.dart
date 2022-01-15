@@ -39,7 +39,9 @@ class MainPage extends StatelessWidget {
         } else {
           return SignInScreen(
             providerConfigs: [
-              GoogleProviderConfiguration(clientId: ''),
+              GoogleProviderConfiguration(
+                  clientId:
+                      '356230225441-ipli6qm1uhulkdm4fq2e0b59kf609nek.apps.googleusercontent.com'),
               EmailProviderConfiguration(),
             ],
           );
