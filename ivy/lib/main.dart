@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutterfire_ui/auth.dart';
@@ -22,20 +23,28 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: LogInPage(),
+      home: MainPage(),
     );
   }
 }
 
-class LogInPage extends StatelessWidget {
+class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SignInScreen(
-      providerConfigs: [
-        GoogleProviderConfiguration(clientId: ''),
-        EmailProviderConfiguration(),
-      ],
-    );
+    return StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return HomePage();
+          } else {
+            return SignInScreen(
+              providerConfigs: [
+                GoogleProviderConfiguration(clientId: ''),
+                EmailProviderConfiguration(),
+              ],
+            );
+          }
+        });
   }
 }
 
