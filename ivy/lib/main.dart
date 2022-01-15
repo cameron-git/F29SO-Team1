@@ -32,19 +32,20 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return HomePage();
-          } else {
-            return SignInScreen(
-              providerConfigs: [
-                GoogleProviderConfiguration(clientId: ''),
-                EmailProviderConfiguration(),
-              ],
-            );
-          }
-        });
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return HomePage();
+        } else {
+          return SignInScreen(
+            providerConfigs: [
+              GoogleProviderConfiguration(clientId: ''),
+              EmailProviderConfiguration(),
+            ],
+          );
+        }
+      },
+    );
   }
 }
 
@@ -54,13 +55,24 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Ivy'),
-        ),
-        body: Center(
-            child: Column(
+      appBar: AppBar(
+        title: const Text('Ivy'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sign Out',
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
+          ),
+        ],
+      ),
+      body: Center(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[const Text('Welcome to Iiiiivvvvyyyyy')],
-        )));
+          children: const <Widget>[Text('Welcome to Iiiiivvvvyyyyy')],
+        ),
+      ),
+    );
   }
 }
