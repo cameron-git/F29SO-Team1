@@ -5,6 +5,9 @@ import 'package:flutterfire_ui/auth.dart';
 
 import 'firebase_options.dart';
 
+// importing other source code files
+import 'package:ivy/home_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -69,12 +72,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[Text('Welcome to Iiiiivvvvyyyyy')],
-        ),
-      ),
+      body: HomeScreen(),
     );
   }
 }
