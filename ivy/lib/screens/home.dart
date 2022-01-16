@@ -109,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ],
+      physics: NeverScrollableScrollPhysics(),
     );
   }
 
@@ -132,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: "Search",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.photo_camera),
             label: "Upload",
           ),
           BottomNavigationBarItem(
