@@ -107,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onPageChanged: (index) {
         onPageChanged(index);
       },
+      // the pages to navigate between
       children: [
         Feed(),
         Search(),
