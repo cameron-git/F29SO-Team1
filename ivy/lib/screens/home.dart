@@ -17,15 +17,6 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ivy'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign Out',
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-            },
-          ),
-        ],
       ),
       body: HomeScreen(),
     );
@@ -112,7 +103,11 @@ class _HomeScreenState extends State<HomeScreen> {
         Feed(),
         Search(),
         Upload(),
-        Profile(),
+        ProfileScreen(
+          providerConfigs: [
+            EmailProviderConfiguration(),
+          ],
+        ),
       ],
     );
   }
