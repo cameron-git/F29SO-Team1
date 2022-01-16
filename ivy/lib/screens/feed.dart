@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ivy/widgets/progress.dart';
 
 class Feed extends StatefulWidget {
   const Feed({Key? key}) : super(key: key);
@@ -10,7 +11,9 @@ class Feed extends StatefulWidget {
 class _FeedState extends State<Feed> {
   @override
   Widget build(BuildContext context) {
-    return Text('This is the Feed.');
+    return Scaffold(
+      body: Text('This is Feed.'),
+    );
   }
 }
 

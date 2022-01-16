@@ -109,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ],
-      physics: NeverScrollableScrollPhysics(),
+      // remove ability to scroll vertically between pages
+      physics: const NeverScrollableScrollPhysics(),
     );
   }
 
