@@ -1,30 +1,34 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+/*
+Ivy Collaberative Social Media App
 
+App structure:
+  /screens: Widgets for each screen is stored here
+    feed: The feed page
+    home: Home page
+    new_post:
+    profile:
+    search:
+  /widgets:
+  app: The app main file
+  firebase_options: firebase generated configs
+  generated_plugin_registrant: generated file, do not edit
+  main: main function
+
+*/
+
+import 'package:flutter/material.dart';
+
+// importing firebase
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-// importing other source code files
-import 'screens/home.dart';
+import 'app.dart';
 
+// Starting the app and firebase config
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ivy',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: const MainPage(),
-    );
-  }
+  runApp(const IvyApp());
 }
