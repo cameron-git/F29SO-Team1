@@ -16,13 +16,15 @@ App structure:
 
 */
 
+// imports core flutter libraries
 import 'package:flutter/material.dart';
 
 // importing firebase
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:ivy/firebase_options.dart';
 
-import 'app.dart';
+// imports the app
+import 'package:ivy/app.dart';
 
 // Starting the app and firebase config
 void main() async {

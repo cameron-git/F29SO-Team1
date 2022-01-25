@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfire_ui/auth.dart';
 
-class Profile extends StatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({Key? key}) : super(key: key);
 
-  @override
-  _ProfileState createState() => _ProfileState();
-}
-
-class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
-    return Text('This is the profile');
+    return ProfileScreen(
+      providerConfigs: [
+        EmailProviderConfiguration(),
+      ],
+      actions: [
+        SignedOutAction(
+          (context) {
+            Navigator.pushReplacementNamed(context, '/');
+          },
+        ),
+      ],
+    );
   }
 }
