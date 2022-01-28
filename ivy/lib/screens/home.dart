@@ -13,6 +13,27 @@ class HomePage extends StatelessWidget {
         ),
         title: const Text('Ivy'),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            label: 'Home',
+            icon: Icon(
+              Icons.home,
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: 'Messaging',
+            icon: Icon(
+              Icons.message,
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {},
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       body: GridView.count(
         crossAxisCount: 3,
         children: [
