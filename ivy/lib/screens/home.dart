@@ -17,31 +17,53 @@ class HomePage extends StatelessWidget {
       bottomNavigationBar: BottomAppBar(
         notchMargin: 5,
         shape: CircularNotchedRectangle(),
-        color: Colors.lightGreen,
+        color: Colors.green,
         child: BottomNavigationBar(
+          currentIndex: 0,
           elevation: 0,
           backgroundColor: Colors.transparent,
-          items: const [
+          selectedItemColor: Colors.white,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: [
             BottomNavigationBarItem(
               label: 'Home',
-              icon: Icon(
-                Icons.home,
+              icon: IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.home,
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              label: 'Search',
+              icon: IconButton(
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/search'),
+                icon: const Icon(
+                  Icons.search,
+                ),
               ),
             ),
             BottomNavigationBarItem(
               label: 'Message',
-              icon: Icon(
-                Icons.message,
+              icon: IconButton(
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/message'),
+                icon: const Icon(
+                  Icons.message,
+                ),
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        elevation: 0,
         child: const Icon(Icons.add),
-        onPressed: () {},
-        backgroundColor: Colors.lightGreenAccent,
-        foregroundColor: Colors.brown,
+        onPressed: () => Navigator.pushNamed(context, '/newpost'),
+        backgroundColor: Colors.lightGreen,
+        foregroundColor: Colors.white,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       body: GridView.count(

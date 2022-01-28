@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ivy/screens/login.dart';
 import 'package:ivy/screens/profile.dart';
 import 'package:ivy/screens/home.dart';
+import 'package:ivy/screens/post.dart';
 
 // The main app class
 class IvyApp extends StatelessWidget {
@@ -15,7 +16,7 @@ class IvyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Remove later
       title: 'Ivy',
       theme: ThemeData(
-        primarySwatch: Colors.lightGreen,
+        primarySwatch: Colors.green,
       ),
       // Creates NamesRoutes for the pages of the app
       // Makes switching pages easier
@@ -24,6 +25,7 @@ class IvyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/login': (context) => LoginPage(),
         '/profile': (context) => ProfilePage(),
+        '/newpost': (context) => NewPost(),
       },
     );
   }
