@@ -13,75 +13,39 @@ class HomePage extends StatelessWidget {
         ),
         title: const Text('Ivy'),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            label: 'Home',
-            icon: Icon(
-              Icons.home,
+      bottomNavigationBar: BottomAppBar(
+        notchMargin: 5,
+        shape: CircularNotchedRectangle(),
+        color: Colors.lightGreen,
+        child: BottomNavigationBar(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          items: const [
+            BottomNavigationBarItem(
+              label: 'Home',
+              icon: Icon(
+                Icons.home,
+              ),
             ),
-          ),
-          BottomNavigationBarItem(
-            label: 'Messaging',
-            icon: Icon(
-              Icons.message,
+            BottomNavigationBarItem(
+              label: 'Message',
+              icon: Icon(
+                Icons.message,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {},
+        backgroundColor: Colors.lightGreenAccent,
+        foregroundColor: Colors.brown,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       body: GridView.count(
         crossAxisCount: 3,
-        children: [
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-          Card(
-            child: Text('Post 1'),
-            elevation: 10,
-          ),
-        ],
+        children: [],
       ),
     );
   }

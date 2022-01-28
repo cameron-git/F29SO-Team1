@@ -14,7 +14,7 @@ class IvyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ivy',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.lightGreen,
       ),
       // Creates NamesRoutes for the pages of the app
       // Makes switching pages easier
