@@ -7,6 +7,11 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SignInScreen(
+      actions: [
+        AuthStateChangeAction<SignedIn>((context, _) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }),
+      ],
       providerConfigs: [
         EmailProviderConfiguration(),
       ],

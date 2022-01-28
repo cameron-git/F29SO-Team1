@@ -7,22 +7,58 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.account_circle),
+          onPressed: () => Navigator.pushNamed(context, '/profile'),
+        ),
         title: const Text('Ivy'),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-              label: 'Home',
-              icon: IconButton(
-                icon: Icon(Icons.home),
-                onPressed: () => Navigator.pushNamed(context, '/'),
-              )),
-          BottomNavigationBarItem(
-            label: 'Profile',
-            icon: IconButton(
-              icon: Icon(Icons.account_circle),
-              onPressed: () => Navigator.pushNamed(context, '/profile'),
-            ),
+      body: GridView.count(
+        crossAxisCount: 3,
+        children: [
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
+          ),
+          Card(
+            child: Text('Post 1'),
+            elevation: 10,
           ),
         ],
       ),

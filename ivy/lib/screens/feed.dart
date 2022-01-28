@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterfire_ui/firestore.dart';
-import 'package:ivy/widgets/progress.dart';
 
 // referencing the Firestore instance
 CollectionReference _usersRef = FirebaseFirestore.instance.collection('users');

@@ -13,7 +13,7 @@ class ProfilePage extends StatelessWidget {
       actions: [
         SignedOutAction(
           (context) {
-            Navigator.pushReplacementNamed(context, '/');
+            Navigator.pushReplacementNamed(context, '/login');
           },
         ),
       ],
