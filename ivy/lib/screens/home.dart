@@ -81,12 +81,21 @@ class HomePage extends StatelessWidget {
               return ListView(
                 children: snapshot.data!.docs.map(
                   (e) {
-                    return ListTile(
-                      title: Text(e['name'].toString() + ' ' + e['userId']),
-                      subtitle: Text(
-                        DateTime.fromMillisecondsSinceEpoch(
-                          e['timestamp'],
-                        ).toString().substring(0, 16),
+                    return SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Card(
+                        child: Column(
+                          children: [
+                            Text(e['name'].toString()),
+                            Text(e['userId']),
+                            Text(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                      e['timestamp'])
+                                  .toString()
+                                  .substring(0, 16),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
