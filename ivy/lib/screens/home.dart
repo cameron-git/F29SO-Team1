@@ -72,7 +72,10 @@ class HomePage extends StatelessWidget {
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
         body: Center(
           child: StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('posts').snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('posts')
+                .orderBy('timestamp', descending: true)
+                .snapshots(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
               return ListView(
@@ -80,7 +83,11 @@ class HomePage extends StatelessWidget {
                   (e) {
                     return ListTile(
                       title: Text(e['name'].toString() + ' ' + e['userId']),
-                      subtitle: Text(e['timestamp'].toString()),
+                      subtitle: Text(
+                        DateTime.fromMillisecondsSinceEpoch(
+                          e['timestamp'],
+                        ).toString().substring(0, 16),
+                      ),
                     );
                   },
                 ).toList(),
