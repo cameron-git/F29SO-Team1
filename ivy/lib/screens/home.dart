@@ -10,6 +10,7 @@ class HomePage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.account_circle),
           onPressed: () => Navigator.pushNamed(context, '/profile'),
+          tooltip: 'Profile',
         ),
         title: const Text('Ivy'),
       ),

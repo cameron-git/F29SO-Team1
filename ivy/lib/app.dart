@@ -12,6 +12,7 @@ class IvyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // Remove later
       title: 'Ivy',
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
