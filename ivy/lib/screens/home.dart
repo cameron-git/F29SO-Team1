@@ -72,6 +72,7 @@ class HomePage extends StatelessWidget {
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
         body: Center(
           child: StreamBuilder(
+            // need to handle loading
             stream: FirebaseFirestore.instance
                 .collection('posts')
                 .orderBy('timestamp', descending: true)
