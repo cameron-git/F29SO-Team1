@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:ivy/screens/login.dart';
+import 'package:ivy/screens/message.dart';
 import 'package:ivy/screens/profile.dart';
 import 'package:ivy/screens/home.dart';
 import 'package:ivy/screens/post.dart';
