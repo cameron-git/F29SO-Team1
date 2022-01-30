@@ -26,6 +26,7 @@ class IvyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/login': (context) => LoginPage(),
         '/profile': (context) => ProfilePage(),
+        '/post': (context) => Post(),
         '/newpost': (context) => NewPost(),
       },
     );

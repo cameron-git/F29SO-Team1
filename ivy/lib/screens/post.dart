@@ -1,7 +1,7 @@
 // Should contain all post stuff and create new post widget
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class Post extends StatefulWidget {
   const Post({Key? key}) : super(key: key);
@@ -13,7 +13,27 @@ class Post extends StatefulWidget {
 class _PostState extends State<Post> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    String? postId = ModalRoute.of(context)!.settings.arguments.toString();
+    final Stream<DocumentSnapshot> _postStream =
+        FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _postStream,
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container();
+        }
+        Map<String, dynamic> data =
+            snapshot.data!.data() as Map<String, dynamic>;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              data['title'],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

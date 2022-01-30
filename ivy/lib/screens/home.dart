@@ -101,17 +101,21 @@ class Feed extends StatelessWidget {
               (e) {
                 return SizedBox(
                   width: MediaQuery.of(context).size.width * 0.9,
-                  child: Card(
-                    child: Column(
-                      children: [
-                        Text(e['name'].toString()),
-                        Text(e['title']),
-                        Text(
-                          DateTime.fromMillisecondsSinceEpoch(e['timestamp'])
-                              .toString()
-                              .substring(0, 16),
-                        ),
-                      ],
+                  child: InkWell(
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/post', arguments: e.id),
+                    child: Card(
+                      child: Column(
+                        children: [
+                          Text(e['name'].toString()),
+                          Text(e['title']),
+                          Text(
+                            DateTime.fromMillisecondsSinceEpoch(e['timestamp'])
+                                .toString()
+                                .substring(0, 16),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
