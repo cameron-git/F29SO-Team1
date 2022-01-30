@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
           });
           pageController.animateToPage(
             index,
-            duration: const Duration(milliseconds: 100),
+            duration: const Duration(milliseconds: 150),
             curve: Curves.ease,
           );
         },
