@@ -159,11 +159,11 @@ class _NewPostState extends State<NewPost> {
                 ),
               ),
               const SizedBox(height: 8),
-              TextButton(
+              ElevatedButton(
                 style: TextButton.styleFrom(
-                    primary: Colors.white,
-                    backgroundColor: Colors.green,
-                    minimumSize: const Size(5, 60)),
+                  primary: Colors.white,
+                  minimumSize: const Size(5, 60),
+                ),
                 onPressed: () {
                   FirebaseFirestore.instance.collection('posts').add(
                     <String, dynamic>{
