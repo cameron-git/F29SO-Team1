@@ -102,22 +102,36 @@ class Feed extends StatelessWidget {
           return ListView(
             children: snapshot.data!.docs.map(
               (e) {
-                return SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
+                return Padding(
+                  padding: (MediaQuery.of(context).size.width /
+                              MediaQuery.of(context).size.height <
+                          15 / 9)
+                      ? EdgeInsets.all(8)
+                      : EdgeInsets.fromLTRB(
+                          MediaQuery.of(context).size.width / 3,
+                          8,
+                          MediaQuery.of(context).size.width / 3,
+                          8),
                   child: InkWell(
+                    borderRadius:
+                        const BorderRadius.all(const Radius.circular(4)),
                     onTap: () =>
                         Navigator.pushNamed(context, '/post', arguments: e.id),
                     child: Card(
-                      child: Column(
-                        children: [
-                          Text(e['name'].toString()),
-                          Text(e['title']),
-                          Text(
-                            DateTime.fromMillisecondsSinceEpoch(e['timestamp'])
-                                .toString()
-                                .substring(0, 16),
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(30),
+                        child: Column(
+                          children: [
+                            Text(e['name'].toString()),
+                            Text(e['title']),
+                            Text(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                      e['timestamp'])
+                                  .toString()
+                                  .substring(0, 16),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
