@@ -1,4 +1,6 @@
 // Should contain all post stuff and create new post widget
+import 'dart:html';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,9 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     String? postId = ModalRoute.of(context)!.settings.arguments.toString();
@@ -27,9 +32,77 @@ class _PostState extends State<Post> {
             snapshot.data!.data() as Map<String, dynamic>;
         return Scaffold(
           appBar: AppBar(
-            title: Text(
-              data['title'],
+            title: Row(
+              children: [
+                Text(
+                  data['title'],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            scrollable: true,
+                            title: const Text('Edit Post Info'),
+                            content: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Form(
+                                child: Column(
+                                  children: <Widget>[
+                                    TextFormField(
+                                      controller: _titleController,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Title',
+                                      ),
+                                    ),
+                                    TextFormField(
+                                      controller: _descController,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Description',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                child: const Text("Submit"),
+                                onPressed: () {
+                                  FirebaseFirestore.instance
+                                      .collection('posts')
+                                      .doc(postId)
+                                      .set(
+                                    <String, dynamic>{
+                                      'title': _titleController.text,
+                                      'description': _descController.text,
+                                    },
+                                    SetOptions(merge: true),
+                                  );
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          );
+                        });
+                  },
+                ),
+              ],
             ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  FirebaseFirestore.instance
+                      .collection('posts')
+                      .doc(postId)
+                      .delete();
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.delete),
+              )
+            ],
           ),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,6 +113,7 @@ class _PostState extends State<Post> {
                   DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
                       .toString()
                       .substring(0, 16)),
+              Text('Description : ' + data['description']),
             ],
           ),
         );
@@ -57,6 +131,7 @@ class NewPost extends StatefulWidget {
 
 class _NewPostState extends State<NewPost> {
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -67,18 +142,24 @@ class _NewPostState extends State<NewPost> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(),
-                  ),
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _descController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
               TextButton(
                 style: TextButton.styleFrom(
                     primary: Colors.white,
@@ -91,6 +172,7 @@ class _NewPostState extends State<NewPost> {
                       'name': FirebaseAuth.instance.currentUser!.displayName,
                       'userId': FirebaseAuth.instance.currentUser!.uid,
                       'title': _titleController.text,
+                      'description': _descController.text,
                     },
                   );
                   Navigator.pop(context);
