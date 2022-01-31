@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
             curve: Curves.ease,
           );
         },
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF73C597),
         selectedItemColor: Colors.white,
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -65,7 +65,6 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () => Navigator.pushNamed(context, '/newpost'),
-        backgroundColor: Colors.lightGreen,
         foregroundColor: Colors.white,
       ),
       body: PageView(

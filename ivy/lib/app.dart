@@ -15,7 +15,25 @@ class IvyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Remove later
       title: 'Ivy',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF73C597),
+          foregroundColor: Colors.white,
+        ),
+        primarySwatch: const MaterialColor(
+          0xFF73C597,
+          <int, Color>{
+            50: Color(0xFF73C597),
+            100: Color(0xFF73C597),
+            200: Color(0xFF73C597),
+            300: Color(0xFF73C597),
+            400: Color(0xFF73C597),
+            500: Color(0xFF73C597),
+            600: Color(0xFF73C597),
+            700: Color(0xFF73C597),
+            800: Color(0xFF73C597),
+            900: Color(0xFF73C597),
+          },
+        ),
       ),
       // Creates NamesRoutes for the pages of the app
       // Makes switching pages easier
