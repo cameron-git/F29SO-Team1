@@ -69,6 +69,9 @@ class _HomePageState extends State<HomePage> {
         foregroundColor: Colors.white,
       ),
       body: PageView(
+        onPageChanged: (index) => setState(() {
+          pageIndex = index;
+        }),
         controller: pageController,
         children: const [
           Feed(),

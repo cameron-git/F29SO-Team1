@@ -31,6 +31,17 @@ class _PostState extends State<Post> {
               data['title'],
             ),
           ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('User ID : ' + data['userId']),
+              Text('Name : ' + data['name'].toString()),
+              Text('Time Posted : ' +
+                  DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
+                      .toString()
+                      .substring(0, 16)),
+            ],
+          ),
         );
       },
     );
