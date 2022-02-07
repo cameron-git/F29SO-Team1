@@ -105,15 +105,14 @@ class Feed extends StatelessWidget {
                   padding: (MediaQuery.of(context).size.width /
                               MediaQuery.of(context).size.height <
                           15 / 9)
-                      ? EdgeInsets.all(8)
+                      ? const EdgeInsets.all(8)
                       : EdgeInsets.fromLTRB(
                           MediaQuery.of(context).size.width / 3,
                           8,
                           MediaQuery.of(context).size.width / 3,
                           8),
                   child: InkWell(
-                    borderRadius:
-                        const BorderRadius.all(const Radius.circular(4)),
+                    borderRadius: const BorderRadius.all(Radius.circular(4)),
                     onTap: () =>
                         Navigator.pushNamed(context, '/post', arguments: e.id),
                     child: Card(
