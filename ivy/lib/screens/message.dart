@@ -60,7 +60,7 @@ class _MessagePageState extends State<MessagePage> {
         ),
         ElevatedButton(
           onPressed: () async {
-            roomId = await signaling.createRoom(_remoteRenderer);
+            roomId = await signaling.createRoom();
             textEditingController.text = roomId!;
             setState(() {});
           },
