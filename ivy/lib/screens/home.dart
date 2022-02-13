@@ -1,7 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:ivy/auth.dart';
 import 'package:ivy/screens/message.dart';
+import 'package:ivy/screens/profile.dart';
 import 'package:ivy/screens/search.dart';
+import 'package:provider/provider.dart';
+
+import 'post.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -20,7 +25,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.account_circle),
-          onPressed: () => Navigator.pushNamed(context, '/profile'),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfilePage(),
+            ),
+          ),
           tooltip: 'Profile',
         ),
         title: const Text('Ivy'),
@@ -64,7 +74,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () => Navigator.pushNamed(context, '/newpost'),
+        onPressed: () => context.read<AuthService>().signOut(),
         foregroundColor: Colors.white,
       ),
       body: PageView(
@@ -113,8 +123,12 @@ class Feed extends StatelessWidget {
                           8),
                   child: InkWell(
                     borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/post', arguments: e.id),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Post(e.id),
+                      ),
+                    ),
                     child: Card(
                       child: Padding(
                         padding: const EdgeInsets.all(30),

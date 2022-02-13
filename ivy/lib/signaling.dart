@@ -21,12 +21,11 @@ class Signaling {
   MediaStream? localStream;
   MediaStream? remoteStream;
   String? roomId;
-  String? currentRoomText;
   StreamStateCallback? onAddRemoteStream;
 
-  Future<String> createRoom() async {
+  Future<String> createRoom(String roomId) async {
     FirebaseFirestore db = FirebaseFirestore.instance;
-    DocumentReference roomRef = db.collection('rooms').doc();
+    DocumentReference roomRef = db.collection('posts').doc(roomId);
 
     print('Create PeerConnection with configuration: $configuration');
 
@@ -54,10 +53,9 @@ class Signaling {
 
     Map<String, dynamic> roomWithOffer = {'offer': offer.toMap()};
 
-    await roomRef.set(roomWithOffer);
-    var roomId = roomRef.id;
+    await roomRef.update(roomWithOffer);
+    //var roomId = roomRef.id;
     print('New room created with SDK offer. Room ID: $roomId');
-    currentRoomText = 'Current room is $roomId - You are the caller!';
     // Created a Room
 
     peerConnection?.onTrack = (RTCTrackEvent event) {
@@ -110,7 +108,7 @@ class Signaling {
 
   Future<void> joinRoom(String roomId, RTCVideoRenderer remoteVideo) async {
     FirebaseFirestore db = FirebaseFirestore.instance;
-    DocumentReference roomRef = db.collection('rooms').doc('$roomId');
+    DocumentReference roomRef = db.collection('rooms').doc(roomId);
     var roomSnapshot = await roomRef.get();
     print('Got room ${roomSnapshot.exists}');
 
@@ -195,16 +193,14 @@ class Signaling {
   }
 
   Future<void> hangUp(RTCVideoRenderer localVideo) async {
-    List<MediaStreamTrack> tracks = localVideo.srcObject!.getTracks();
-    tracks.forEach((track) {
-      track.stop();
-    });
+    localVideo.srcObject!.getTracks().forEach((track) => track.stop());
 
     if (remoteStream != null) {
       remoteStream!.getTracks().forEach((track) => track.stop());
     }
     if (peerConnection != null) peerConnection!.close();
 
+    /* Add agian later, deletes old data from db
     if (roomId != null) {
       var db = FirebaseFirestore.instance;
       var roomRef = db.collection('rooms').doc(roomId);
@@ -216,6 +212,7 @@ class Signaling {
 
       await roomRef.delete();
     }
+    */
 
     localStream!.dispose();
     remoteStream?.dispose();

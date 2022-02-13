@@ -60,7 +60,7 @@ class _MessagePageState extends State<MessagePage> {
         ),
         ElevatedButton(
           onPressed: () async {
-            roomId = await signaling.createRoom();
+            roomId = await signaling.createRoom('HN9Me6JErEYEI5A0QFgc');
             textEditingController.text = roomId!;
             setState(() {});
           },
@@ -73,7 +73,7 @@ class _MessagePageState extends State<MessagePage> {
           onPressed: () {
             // Add roomId
             signaling.joinRoom(
-              textEditingController.text,
+              'HN9Me6JErEYEI5A0QFgc',
               _remoteRenderer,
             );
           },
@@ -88,22 +88,6 @@ class _MessagePageState extends State<MessagePage> {
           },
           child: Text("Hangup"),
         ),
-        SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Join the following Room: "),
-              Flexible(
-                child: TextFormField(
-                  controller: textEditingController,
-                ),
-              )
-            ],
-          ),
-        ),
-        SizedBox(height: 8)
       ],
     );
   }

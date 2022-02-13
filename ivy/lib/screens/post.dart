@@ -5,7 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Post extends StatefulWidget {
-  const Post({Key? key}) : super(key: key);
+  const Post(this.postId, {Key? key}) : super(key: key);
+  final String postId;
 
   @override
   _PostState createState() => _PostState();
@@ -17,7 +18,7 @@ class _PostState extends State<Post> {
 
   @override
   Widget build(BuildContext context) {
-    String? postId = ModalRoute.of(context)!.settings.arguments.toString();
+    final postId = widget.postId;
     final Stream<DocumentSnapshot> _postStream =
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
     return StreamBuilder<DocumentSnapshot>(
