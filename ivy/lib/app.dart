@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/screens/login.dart';
 
-import 'package:ivy/screens/profile.dart';
 import 'package:ivy/screens/home.dart';
-import 'package:ivy/screens/post.dart';
 import 'package:provider/provider.dart';
 
 // The main app class
