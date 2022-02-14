@@ -43,7 +43,8 @@ class _SearchState extends State<Search> {
                 // need to handle loading
                 stream: FirebaseFirestore.instance
                     .collection('posts')
-                    .where('title', isEqualTo: _searchBoxController.text)
+                    .where('title',
+                        isGreaterThanOrEqualTo: _searchBoxController.text)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
