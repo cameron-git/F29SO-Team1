@@ -16,7 +16,9 @@ class ProfilePage extends StatelessWidget {
         SignedOutAction(
           (context) {
             context.read<AuthService>().signOut();
-            Navigator.pop(context);
+            while (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
           },
         ),
       ],
