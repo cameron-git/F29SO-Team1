@@ -17,19 +17,24 @@ class Signaling {
     ]
   };
 
+  RTCVideoRenderer localVideo = RTCVideoRenderer();
+  RTCVideoRenderer remoteVideo = RTCVideoRenderer();
+
   RTCPeerConnection? peerConnection;
   MediaStream? localStream;
   MediaStream? remoteStream;
   String? connectionId;
   StreamStateCallback? onAddRemoteStream;
 
-  Future<void> createOffer(String postId) async {
+  Future<void> createOffer(String postId, String offerTo) async {
     FirebaseFirestore db = FirebaseFirestore.instance;
     DocumentReference connectionRef = db
         .collection('posts')
         .doc(postId)
         .collection('voiceRoomSignaling')
-        .doc('123');
+        .doc();
+
+    connectionRef.set({'offerTo': offerTo}, SetOptions(merge: true));
 
     print('Create PeerConnection with configuration: $configuration');
 
@@ -110,7 +115,7 @@ class Signaling {
     // Listen for remote ICE candidates above
   }
 
-  Future<void> answerOffer(String postId, RTCVideoRenderer remoteVideo) async {
+  Future<void> answerOffer(String postId) async {
     FirebaseFirestore db = FirebaseFirestore.instance;
     DocumentReference connectionRef = db
         .collection('posts')
@@ -192,10 +197,7 @@ class Signaling {
     }
   }
 
-  Future<void> openUserMedia(
-    RTCVideoRenderer localVideo,
-    RTCVideoRenderer remoteVideo,
-  ) async {
+  Future<void> openUserMedia() async {
     var stream = await navigator.mediaDevices
         .getUserMedia({'video': false, 'audio': true});
 
@@ -205,7 +207,7 @@ class Signaling {
     remoteVideo.srcObject = await createLocalMediaStream('key');
   }
 
-  Future<void> hangUp(String postId, RTCVideoRenderer localVideo) async {
+  Future<void> hangUp(String postId) async {
     localVideo.srcObject!.getTracks().forEach((track) => track.stop());
 
     if (remoteStream != null) {

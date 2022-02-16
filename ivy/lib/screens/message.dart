@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:ivy/signaling.dart';
@@ -19,50 +21,57 @@ class MessagePage extends StatefulWidget {
 
 class _MessagePageState extends State<MessagePage> {
   Signaling signaling = Signaling();
-  final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
-  final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   final String postId = 'abc';
   bool inCall = false;
-  List<String> callUsers = [];
-
-  @override
-  void initState() {
-    _localRenderer.initialize();
-    _remoteRenderer.initialize();
-
-    signaling.onAddRemoteStream = ((stream) {
-      _remoteRenderer.srcObject = stream;
-      setState(() {});
-    });
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _localRenderer.dispose();
-    _remoteRenderer.dispose();
-    super.dispose();
-  }
+  List<dynamic> callUsers = [];
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () async {
-        if (inCall) {
-          signaling.hangUp(postId, _localRenderer);
-          setState(() {
-            inCall = false;
-          });
-        } else {
-          await signaling.openUserMedia(_localRenderer, _remoteRenderer);
-          // for each person in call make a connection
-          setState(() {
-            inCall = true;
-          });
-        }
-      },
-      child: Text(inCall.toString()),
-    );
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance
+            .collection('posts')
+            .doc(postId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return Container();
+
+          callUsers = snapshot.data?.get('callUsers');
+          return TextButton(
+            onPressed: () async {
+              if (inCall) {
+                signaling.hangUp(postId);
+                callUsers.remove(FirebaseAuth.instance.currentUser!.uid);
+                FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(postId)
+                    .set({'callUsers': callUsers}, SetOptions(merge: true));
+                setState(() {
+                  inCall = false;
+                });
+              } else if (!inCall && callUsers.length < 5) {
+                await signaling.openUserMedia();
+                switch (callUsers.length) {
+                  case 0:
+                    await signaling.createOffer(postId, 'me');
+                    break;
+                  case 1:
+                    await signaling.answerOffer(postId);
+                    break;
+                  default:
+                }
+                // for each person in call make a connection
+                callUsers.add(FirebaseAuth.instance.currentUser!.uid);
+                FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(postId)
+                    .set({'callUsers': callUsers}, SetOptions(merge: true));
+                setState(() {
+                  inCall = true;
+                });
+              }
+            },
+            child: Text(inCall.toString() + callUsers.length.toString()),
+          );
+        });
   }
 }
