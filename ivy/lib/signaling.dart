@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -93,7 +93,7 @@ class Signaling {
 
     // Listen for remote Ice candidates below
     connectionRef.collection('calleeCandidates').snapshots().listen((snapshot) {
-      snapshot.docChanges.forEach((change) {
+      for (var change in snapshot.docChanges) {
         if (change.type == DocumentChangeType.added) {
           Map<String, dynamic> data = change.doc.data() as Map<String, dynamic>;
           print('Got new remote ICE candidate: ${jsonEncode(data)}');
@@ -105,7 +105,7 @@ class Signaling {
             ),
           );
         }
-      });
+      }
     });
     // Listen for remote ICE candidates above
   }
@@ -176,7 +176,7 @@ class Signaling {
           .collection('callerCandidates')
           .snapshots()
           .listen((snapshot) {
-        snapshot.docChanges.forEach((document) {
+        for (var document in snapshot.docChanges) {
           var data = document.doc.data() as Map<String, dynamic>;
           print(data);
           print('Got new remote ICE candidate: $data');
@@ -187,7 +187,7 @@ class Signaling {
               data['sdpMLineIndex'],
             ),
           );
-        });
+        }
       });
     }
   }
@@ -205,7 +205,7 @@ class Signaling {
     remoteVideo.srcObject = await createLocalMediaStream('key');
   }
 
-  Future<void> hangUp(RTCVideoRenderer localVideo) async {
+  Future<void> hangUp(String postId, RTCVideoRenderer localVideo) async {
     localVideo.srcObject!.getTracks().forEach((track) => track.stop());
 
     if (remoteStream != null) {
@@ -213,19 +213,27 @@ class Signaling {
     }
     if (peerConnection != null) peerConnection!.close();
 
-    /* Add agian later, deletes old data from db
-    if (roomId != null) {
+    if (connectionId != null) {
       var db = FirebaseFirestore.instance;
-      var roomRef = db.collection('rooms').doc(roomId);
-      var calleeCandidates = await roomRef.collection('calleeCandidates').get();
-      calleeCandidates.docs.forEach((document) => document.reference.delete());
+      var connectionRef = db
+          .collection('posts')
+          .doc(postId)
+          .collection('voiceRoomSignaling')
+          .doc('123');
+      var calleeCandidates =
+          await connectionRef.collection('calleeCandidates').get();
+      for (var document in calleeCandidates.docs) {
+        await document.reference.delete();
+      }
 
-      var callerCandidates = await roomRef.collection('callerCandidates').get();
-      callerCandidates.docs.forEach((document) => document.reference.delete());
+      var callerCandidates =
+          await connectionRef.collection('callerCandidates').get();
+      for (var document in callerCandidates.docs) {
+        await document.reference.delete();
+      }
 
-      await roomRef.delete();
+      await connectionRef.delete();
     }
-    */
 
     localStream!.dispose();
     remoteStream?.dispose();

@@ -21,8 +21,8 @@ class _MessagePageState extends State<MessagePage> {
   Signaling signaling = Signaling();
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
-  String? roomId;
-  TextEditingController textEditingController = TextEditingController(text: '');
+  final String postId = 'abc';
+  bool inCall = false;
 
   @override
   void initState() {
@@ -46,47 +46,22 @@ class _MessagePageState extends State<MessagePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: () {
-            signaling.openUserMedia(_localRenderer, _remoteRenderer);
-          },
-          child: Text("Open camera & microphone"),
-        ),
-        SizedBox(
-          width: 8,
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            signaling.createOffer('abc');
-          },
-          child: Text("Create room"),
-        ),
-        SizedBox(
-          width: 8,
-        ),
-        ElevatedButton(
-          onPressed: () {
-            // Add roomId
-            signaling.answerOffer(
-              'abc',
-              _remoteRenderer,
-            );
-          },
-          child: Text("Join room"),
-        ),
-        SizedBox(
-          width: 8,
-        ),
-        ElevatedButton(
-          onPressed: () {
-            signaling.hangUp(_localRenderer);
-          },
-          child: Text("Hangup"),
-        ),
-      ],
+    return TextButton(
+      onPressed: () async {
+        if (inCall) {
+          signaling.hangUp(postId, _localRenderer);
+          setState(() {
+            inCall = false;
+          });
+        } else {
+          await signaling.openUserMedia(_localRenderer, _remoteRenderer);
+          // for each person in call make a connection
+          setState(() {
+            inCall = true;
+          });
+        }
+      },
+      child: Text(inCall.toString()),
     );
   }
 }
