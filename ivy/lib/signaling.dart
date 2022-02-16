@@ -56,9 +56,10 @@ class Signaling {
     await peerConnection!.setLocalDescription(offer);
     print('Created offer: $offer');
 
-    Map<String, dynamic> roomWithOffer = {'offer': offer.toMap()};
+    await connectionRef.set({
+      'offer': offer.toMap(),
+    }, SetOptions(merge: true));
 
-    await connectionRef.update(roomWithOffer);
     connectionId = connectionRef.id;
     print('New room created with SDK offer. Connection ID: $connectionId');
     // Created a Room
@@ -162,11 +163,12 @@ class Signaling {
 
       await peerConnection!.setLocalDescription(answer);
 
-      Map<String, dynamic> roomWithAnswer = {
-        'answer': {'type': answer.type, 'sdp': answer.sdp}
-      };
-
-      await connectionRef.update(roomWithAnswer);
+      await connectionRef.set({
+        'answer': {
+          'type': answer.type,
+          'sdp': answer.sdp,
+        },
+      }, SetOptions(merge: true));
       // Finished creating SDP answer
 
       // Listening for remote ICE candidates below
