@@ -60,9 +60,7 @@ class _MessagePageState extends State<MessagePage> {
         ),
         ElevatedButton(
           onPressed: () async {
-            roomId = await signaling.createRoom('HN9Me6JErEYEI5A0QFgc');
-            textEditingController.text = roomId!;
-            setState(() {});
+            signaling.createOffer('abc');
           },
           child: Text("Create room"),
         ),
@@ -72,8 +70,8 @@ class _MessagePageState extends State<MessagePage> {
         ElevatedButton(
           onPressed: () {
             // Add roomId
-            signaling.joinRoom(
-              'HN9Me6JErEYEI5A0QFgc',
+            signaling.answerOffer(
+              'abc',
               _remoteRenderer,
             );
           },
