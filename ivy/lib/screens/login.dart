@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfire_ui/auth.dart';
 
@@ -9,7 +11,14 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: SignInScreen(
         actions: [
-          AuthStateChangeAction<SignedIn>((context, _) {}),
+          AuthStateChangeAction<SignedIn>((context, _) {
+            final User? user = FirebaseAuth.instance.currentUser;
+            FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
+              'name': user?.displayName,
+              'email': user?.email,
+              'photoURL': user?.photoURL,
+            });
+          }),
         ],
         providerConfigs: const [
           EmailProviderConfiguration(),

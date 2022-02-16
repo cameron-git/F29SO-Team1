@@ -23,6 +23,7 @@ class _MessagePageState extends State<MessagePage> {
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   final String postId = 'abc';
   bool inCall = false;
+  List<String> callUsers = [];
 
   @override
   void initState() {

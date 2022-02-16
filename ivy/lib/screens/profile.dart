@@ -1,7 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfire_ui/auth.dart';
-import 'package:ivy/auth.dart';
-import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -15,7 +14,6 @@ class ProfilePage extends StatelessWidget {
       actions: [
         SignedOutAction(
           (context) {
-            context.read<AuthService>().signOut();
             while (Navigator.canPop(context)) {
               Navigator.pop(context);
             }
