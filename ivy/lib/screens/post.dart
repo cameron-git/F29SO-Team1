@@ -134,7 +134,7 @@ class _NewPostState extends State<NewPost> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
 
-  List<String> Parse(String text) {
+  List<String> parse(String text) {
     List<String> list = ["test", "test2"];
     return list;
   }
@@ -189,7 +189,7 @@ class _NewPostState extends State<NewPost> {
                       ],
                       'title': _titleController.text,
                       'description': _descController.text,
-                      'tags': Parse(_tagController.text),
+                      'tags': parse(_tagController.text),
                     },
                   );
                   Navigator.pop(context);

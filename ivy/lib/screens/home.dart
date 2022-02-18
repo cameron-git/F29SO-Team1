@@ -135,7 +135,6 @@ class Feed extends StatelessWidget {
                         padding: const EdgeInsets.all(30),
                         child: Column(
                           children: [
-                            Text(e['name'].toString()),
                             Text(e['title']),
                             Text(
                               DateTime.fromMillisecondsSinceEpoch(
