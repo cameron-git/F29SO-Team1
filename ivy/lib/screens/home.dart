@@ -74,7 +74,8 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () => context.read<AuthService>().signOut(),
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => const NewPost())),
         foregroundColor: Colors.white,
       ),
       body: PageView(

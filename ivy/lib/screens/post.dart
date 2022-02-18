@@ -132,6 +132,12 @@ class NewPost extends StatefulWidget {
 class _NewPostState extends State<NewPost> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
+  final TextEditingController _tagController = TextEditingController();
+
+  List<String> Parse(String text) {
+    List<String> list = ["test", "test2"];
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +166,14 @@ class _NewPostState extends State<NewPost> {
                 ),
               ),
               const SizedBox(height: 8),
+              TextField(
+                controller: _tagController,
+                decoration: const InputDecoration(
+                  labelText: 'Tags (separated with comma)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
               ElevatedButton(
                 style: TextButton.styleFrom(
                   primary: Colors.white,
@@ -169,10 +183,13 @@ class _NewPostState extends State<NewPost> {
                   FirebaseFirestore.instance.collection('posts').add(
                     <String, dynamic>{
                       'timestamp': DateTime.now().millisecondsSinceEpoch,
-                      'name': FirebaseAuth.instance.currentUser!.displayName,
-                      'userId': FirebaseAuth.instance.currentUser!.uid,
+                      'ownerId': FirebaseAuth.instance.currentUser!.uid,
+                      'userPermissions': [
+                        FirebaseAuth.instance.currentUser!.uid
+                      ],
                       'title': _titleController.text,
                       'description': _descController.text,
+                      'tags': Parse(_tagController.text),
                     },
                   );
                   Navigator.pop(context);
