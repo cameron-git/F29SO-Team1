@@ -31,7 +31,13 @@ class _PostState extends State<Post> {
         }
         Map<String, dynamic> data =
             snapshot.data!.data() as Map<String, dynamic>;
+<<<<<<< HEAD
         List<dynamic> tags = data['tags'];
+=======
+        if(data['tags'] == Null){
+          data['tags'] = "NA";
+        }
+>>>>>>> 22581d5f4336a842b43072ace77238dd2701f625
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -186,7 +192,11 @@ class _NewPostState extends State<NewPost> {
               TextField(
                 controller: _tagController,
                 decoration: const InputDecoration(
+<<<<<<< HEAD
                   labelText: 'Tags (space separated)',
+=======
+                  labelText: 'Tags (separated by commas)',
+>>>>>>> 22581d5f4336a842b43072ace77238dd2701f625
                   border: OutlineInputBorder(),
                 ),
               ),
