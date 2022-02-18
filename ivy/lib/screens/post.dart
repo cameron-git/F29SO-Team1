@@ -15,6 +15,7 @@ class Post extends StatefulWidget {
 class _PostState extends State<Post> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +64,12 @@ class _PostState extends State<Post> {
                                         labelText: 'Description',
                                       ),
                                     ),
+                                    TextFormField(
+                                      controller: _tagsController,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Tags',
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),
@@ -78,6 +85,7 @@ class _PostState extends State<Post> {
                                     <String, dynamic>{
                                       'title': _titleController.text,
                                       'description': _descController.text,
+                                      'tags': _tagsController.text,
                                     },
                                     SetOptions(merge: true),
                                   );
@@ -114,6 +122,7 @@ class _PostState extends State<Post> {
                       .toString()
                       .substring(0, 16)),
               Text('Description : ' + data['description']),
+              //Text('Tags : ' + data['tags']),
             ],
           ),
         );
@@ -135,7 +144,7 @@ class _NewPostState extends State<NewPost> {
   final TextEditingController _tagController = TextEditingController();
 
   List<String> parse(String text) {
-    List<String> list = ["test", "test2"];
+    List<String> list = text.split(',');
     return list;
   }
 
