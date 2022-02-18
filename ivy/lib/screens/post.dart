@@ -31,9 +31,7 @@ class _PostState extends State<Post> {
         }
         Map<String, dynamic> data =
             snapshot.data!.data() as Map<String, dynamic>;
-        if (data['tags'] == Null) {
-          data['tags'] = "NA";
-        }
+        List<dynamic> tags = data['tags'];
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -124,15 +122,12 @@ class _PostState extends State<Post> {
                       .toString()
                       .substring(0, 16)),
               Text('Description : ' + data['description']),
-              SizedBox(
-                height: 50,
-                child: ListView(
-                  children: data['tags'].map((tag) {
-                    return Text(tag);
-                  }).toList(),
-                  scrollDirection: Axis.horizontal,
-                ),
-              ),
+              Row(
+                children: <Widget>[
+                  const Text('tags: '),
+                  for (var item in tags) Text(item + ' '),
+                ],
+              )
             ],
           ),
         );
