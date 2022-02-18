@@ -31,6 +31,9 @@ class _PostState extends State<Post> {
         }
         Map<String, dynamic> data =
             snapshot.data!.data() as Map<String, dynamic>;
+        if(data['tags'] == Null){
+          data['tags'] = "NA";
+        }
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -122,7 +125,7 @@ class _PostState extends State<Post> {
                       .toString()
                       .substring(0, 16)),
               Text('Description : ' + data['description']),
-              //Text('Tags : ' + data['tags']),
+              Text('Tags : ' + data['tags']),
             ],
           ),
         );
@@ -178,7 +181,7 @@ class _NewPostState extends State<NewPost> {
               TextField(
                 controller: _tagController,
                 decoration: const InputDecoration(
-                  labelText: 'Tags (separated with comma)',
+                  labelText: 'Tags (separated by commas)',
                   border: OutlineInputBorder(),
                 ),
               ),
