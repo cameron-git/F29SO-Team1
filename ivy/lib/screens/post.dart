@@ -31,6 +31,7 @@ class _PostState extends State<Post> {
         }
         Map<String, dynamic> data =
             snapshot.data!.data() as Map<String, dynamic>;
+        List<dynamic> tags = data['tags'];
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -115,14 +116,26 @@ class _PostState extends State<Post> {
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('User ID : ' + data['userId']),
-              Text('Name : ' + data['name'].toString()),
+              Text('Post Owner ID : ' + data['ownerId']),
               Text('Time Posted : ' +
                   DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
                       .toString()
                       .substring(0, 16)),
               Text('Description : ' + data['description']),
-              //Text('Tags : ' + data['tags']),
+              SizedBox(
+                height: 50,
+                child: ListView(
+                  children: tags.map((tag) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Chip(
+                        label: Text(tag),
+                      ),
+                    );
+                  }).toList(),
+                  scrollDirection: Axis.horizontal,
+                ),
+              ),
             ],
           ),
         );
@@ -142,11 +155,6 @@ class _NewPostState extends State<NewPost> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
-
-  List<String> parse(String text) {
-    List<String> list = text.split(',');
-    return list;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +186,7 @@ class _NewPostState extends State<NewPost> {
               TextField(
                 controller: _tagController,
                 decoration: const InputDecoration(
-                  labelText: 'Tags (separated with comma)',
+                  labelText: 'Tags (space separated)',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -198,7 +206,7 @@ class _NewPostState extends State<NewPost> {
                       ],
                       'title': _titleController.text,
                       'description': _descController.text,
-                      'tags': parse(_tagController.text),
+                      'tags': _tagController.text.split(' '),
                     },
                   );
                   Navigator.pop(context);
