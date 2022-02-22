@@ -14,8 +14,7 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
-  final TextEditingController _titleController =
-      TextEditingController(text: "I am a default text");
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
 
@@ -38,6 +37,12 @@ class _PostState extends State<Post> {
         Map<String, dynamic> data =
             snapshot.data!.data() as Map<String, dynamic>;
         List<dynamic> tags = data['tags'];
+        _tagsController.text = "";
+        for (var tag in tags) {
+          _tagsController.text += tag + " ";
+        }
+        _titleController.text = data['title'];
+        _descController.text = data['description'];
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -92,7 +97,7 @@ class _PostState extends State<Post> {
                                     <String, dynamic>{
                                       'title': _titleController.text,
                                       'description': _descController.text,
-                                      'tags': _tagsController.text,
+                                      'tags': _tagsController.text.split(" "),
                                     },
                                     SetOptions(merge: true),
                                   );
