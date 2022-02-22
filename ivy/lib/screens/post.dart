@@ -13,7 +13,8 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
-  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _titleController =
+      TextEditingController(text: "I am a default text");
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
 
