@@ -3,7 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebaseStorage;
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -19,8 +19,8 @@ class _PostState extends State<Post> {
   final TextEditingController _tagsController = TextEditingController();
 
   // Storage instance
-  firebaseStorage.FirebaseStorage storage =
-      firebaseStorage.FirebaseStorage.instance;
+  firebase_storage.FirebaseStorage storage =
+      firebase_storage.FirebaseStorage.instance;
 
   @override
   Widget build(BuildContext context) {
