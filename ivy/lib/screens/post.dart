@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebaseStorage;
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -17,6 +18,10 @@ class _PostState extends State<Post> {
       TextEditingController(text: "I am a default text");
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
+
+  // Storage instance
+  firebaseStorage.FirebaseStorage storage =
+      firebaseStorage.FirebaseStorage.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +135,13 @@ class _PostState extends State<Post> {
                 ],
               )
             ],
+          ),
+          // adding new media to the post
+          floatingActionButton: FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => const NewPost())),
+            foregroundColor: Colors.white,
           ),
         );
       },
