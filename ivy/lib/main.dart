@@ -33,6 +33,7 @@ var auth = FirebaseAuth.instance;
 // Starting the app and firebase config
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // initialising FlutterFire
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
