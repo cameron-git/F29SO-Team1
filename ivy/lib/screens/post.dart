@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ivy/storage_service.dart';
+import 'package:ivy/constants.dart' as Const;
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -28,6 +29,9 @@ class _PostState extends State<Post> {
     // Storage instance from storage_service.dart
     final Storage storage = Storage();
 
+    // variable for the total height of the screen
+    Size size = MediaQuery.of(context).size;
+
     return StreamBuilder<DocumentSnapshot>(
       stream: _postStream,
       builder:
@@ -44,75 +48,81 @@ class _PostState extends State<Post> {
         }
         _titleController.text = data['title'];
         _descController.text = data['description'];
+
         return Scaffold(
           appBar: AppBar(
             title: Row(
               children: [
                 Text(
                   data['title'],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            scrollable: true,
-                            title: const Text('Edit Post Info'),
-                            content: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Form(
-                                child: Column(
-                                  children: <Widget>[
-                                    TextFormField(
-                                      controller: _titleController,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Title',
-                                      ),
-                                    ),
-                                    TextFormField(
-                                      controller: _descController,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Description',
-                                      ),
-                                    ),
-                                    TextFormField(
-                                      controller: _tagsController,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Tags',
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              ElevatedButton(
-                                child: const Text("Submit"),
-                                onPressed: () {
-                                  FirebaseFirestore.instance
-                                      .collection('posts')
-                                      .doc(postId)
-                                      .set(
-                                    <String, dynamic>{
-                                      'title': _titleController.text,
-                                      'description': _descController.text,
-                                      'tags': _tagsController.text.split(" "),
-                                    },
-                                    SetOptions(merge: true),
-                                  );
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ],
-                          );
-                        });
-                  },
+                  style: TextStyle(fontSize: Const.heading),
                 ),
               ],
             ),
+            bottomOpacity: 0.0,
+            elevation: 0.0,
             actions: [
+              // edit button
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          scrollable: true,
+                          title: const Text('Edit Post Info'),
+                          content: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Form(
+                              child: Column(
+                                children: <Widget>[
+                                  TextFormField(
+                                    controller: _titleController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Title',
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: _descController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Description',
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: _tagsController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Tags',
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              child: const Text("Submit"),
+                              onPressed: () {
+                                FirebaseFirestore.instance
+                                    .collection('posts')
+                                    .doc(postId)
+                                    .set(
+                                  <String, dynamic>{
+                                    'title': _titleController.text,
+                                    'description': _descController.text,
+                                    'tags': _tagsController.text.split(" "),
+                                  },
+                                  SetOptions(merge: true),
+                                );
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        );
+                      });
+                },
+              ),
+              // delete button
               IconButton(
                 onPressed: () {
                   FirebaseFirestore.instance
@@ -122,9 +132,40 @@ class _PostState extends State<Post> {
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.delete),
-              )
+              ),
             ],
           ),
+
+          // top part of the post page containing the author and description
+          body: Column(
+            children: <Widget>[
+              Container(
+                height: size.height * 0.1, // cover 10% of the total height
+                width: size.width, // cover 100% of the total width
+                decoration: BoxDecoration(
+                    color: Const.primaryColour,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(36),
+                      bottomRight: Radius.circular(36),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        offset: Offset(0, 10),
+                        blurRadius: 30,
+                        color: Const.textColour.withOpacity(0.35),
+                      ),
+                    ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('by: ' + data['ownerId']),
+                    Text('description: ' + data['description']),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          /*
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -162,7 +203,7 @@ class _PostState extends State<Post> {
                     return Container();
                   }),
             ],
-          ),
+          ), */
 
           // floating button to add new media to the post
           floatingActionButton: FloatingActionButton(
