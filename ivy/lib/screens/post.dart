@@ -1,10 +1,10 @@
 // Should contain all post stuff and create new post widget
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:file_picker/file_picker.dart';
+import 'package:ivy/storage_service.dart';
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -19,15 +19,15 @@ class _PostState extends State<Post> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
 
-  // Storage instance
-  firebase_storage.FirebaseStorage storage =
-      firebase_storage.FirebaseStorage.instance;
-
   @override
   Widget build(BuildContext context) {
     final postId = widget.postId;
     final Stream<DocumentSnapshot> _postStream =
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
+
+    // Storage instance from storage_service.dart
+    final Storage storage = Storage();
+
     return StreamBuilder<DocumentSnapshot>(
       stream: _postStream,
       builder:
@@ -139,14 +139,34 @@ class _PostState extends State<Post> {
                   const Text('tags: '),
                   for (var item in tags) Text(item + ' '),
                 ],
-              )
+              ),
             ],
           ),
-          // adding new media to the post
+
+          // floating button to add new media to the post
           floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const NewPost())),
+            child: Icon(Icons.add),
+            onPressed: () async {
+              final results = await FilePicker.platform.pickFiles(
+                allowMultiple: false,
+                type: FileType.custom,
+                allowedExtensions: ['png', 'jpg'],
+              );
+
+              if (results == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No file selected.'),
+                  ),
+                );
+              }
+              final path = results!.files.single.path!;
+              final fileName = results.files.single.name;
+
+              storage
+                  .uploadFile(path, fileName)
+                  .then((value) => print('Done.'));
+            },
             foregroundColor: Colors.white,
           ),
         );
