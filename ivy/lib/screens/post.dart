@@ -140,6 +140,27 @@ class _PostState extends State<Post> {
                   for (var item in tags) Text(item + ' '),
                 ],
               ),
+              FutureBuilder(
+                  // specify the image to be displayed here
+                  future: storage.downloadURL('test_image.jpg'),
+                  builder:
+                      (BuildContext context, AsyncSnapshot<String> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        snapshot.hasData) {
+                      return Container(
+                          width: 300,
+                          height: 250,
+                          child: Image.network(
+                            snapshot.data!,
+                            fit: BoxFit.cover,
+                          ));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting ||
+                        !snapshot.hasData) {
+                      return const CircularProgressIndicator();
+                    }
+                    return Container();
+                  }),
             ],
           ),
 
