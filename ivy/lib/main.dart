@@ -22,7 +22,6 @@ import 'package:flutter/material.dart';
 
 // importing firebase
 import 'package:firebase_core/firebase_core.dart';
-import 'package:ivy/auth.dart';
 import 'package:ivy/firebase_options.dart';
 
 // imports the app
