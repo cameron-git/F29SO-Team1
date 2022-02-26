@@ -1,11 +1,12 @@
 // Should contain all post stuff and create new post widget
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ivy/storage_service.dart';
-import 'package:ivy/constants.dart' as Const;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -29,9 +30,6 @@ class _PostState extends State<Post> {
     // Storage instance from storage_service.dart
     final Storage storage = Storage();
 
-    // variable for the total height of the screen
-    Size size = MediaQuery.of(context).size;
-
     return StreamBuilder<DocumentSnapshot>(
       stream: _postStream,
       builder:
@@ -42,6 +40,7 @@ class _PostState extends State<Post> {
         Map<String, dynamic> data =
             snapshot.data!.data() as Map<String, dynamic>;
         List<dynamic> tags = data['tags'];
+        List<dynamic> userPermissions = data['userPermissions'];
         _tagsController.text = "";
         for (var tag in tags) {
           _tagsController.text += tag + " ";
@@ -49,127 +48,121 @@ class _PostState extends State<Post> {
         _titleController.text = data['title'];
         _descController.text = data['description'];
 
+        bool perms =
+            userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
+
         return Scaffold(
           appBar: AppBar(
-            title: Row(
-              children: [
-                Text(
-                  data['title'],
-                  style: TextStyle(fontSize: Const.heading),
-                ),
-              ],
+            title: Text(
+              data['title'],
             ),
             bottomOpacity: 0.0,
             elevation: 0.0,
             actions: [
               // edit button
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          scrollable: true,
-                          title: const Text('Edit Post Info'),
-                          content: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Form(
-                              child: Column(
-                                children: <Widget>[
-                                  TextFormField(
-                                    controller: _titleController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Title',
+              (perms)
+                  ? IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                scrollable: true,
+                                title: const Text('Edit Post Info'),
+                                content: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Form(
+                                    child: Column(
+                                      children: <Widget>[
+                                        TextFormField(
+                                          controller: _titleController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Title',
+                                          ),
+                                        ),
+                                        TextFormField(
+                                          controller: _descController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Description',
+                                          ),
+                                        ),
+                                        TextFormField(
+                                          controller: _tagsController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Tags',
+                                          ),
+                                        )
+                                      ],
                                     ),
                                   ),
-                                  TextFormField(
-                                    controller: _descController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Description',
-                                    ),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    child: const Text("Submit"),
+                                    onPressed: () {
+                                      FirebaseFirestore.instance
+                                          .collection('posts')
+                                          .doc(postId)
+                                          .set(
+                                        <String, dynamic>{
+                                          'title': _titleController.text,
+                                          'description': _descController.text,
+                                          'tags':
+                                              _tagsController.text.split(" "),
+                                        },
+                                        SetOptions(merge: true),
+                                      );
+                                      Navigator.pop(context);
+                                    },
                                   ),
-                                  TextFormField(
-                                    controller: _tagsController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Tags',
-                                    ),
-                                  )
                                 ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            ElevatedButton(
-                              child: const Text("Submit"),
-                              onPressed: () {
-                                FirebaseFirestore.instance
-                                    .collection('posts')
-                                    .doc(postId)
-                                    .set(
-                                  <String, dynamic>{
-                                    'title': _titleController.text,
-                                    'description': _descController.text,
-                                    'tags': _tagsController.text.split(" "),
-                                  },
-                                  SetOptions(merge: true),
-                                );
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        );
-                      });
-                },
-              ),
+                              );
+                            });
+                      },
+                    )
+                  : const SizedBox(),
               // delete button
-              IconButton(
-                onPressed: () {
-                  FirebaseFirestore.instance
-                      .collection('posts')
-                      .doc(postId)
-                      .delete();
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.delete),
-              ),
+              (data['ownerId'] == FirebaseAuth.instance.currentUser?.uid)
+                  ? IconButton(
+                      onPressed: () {
+                        FirebaseFirestore.instance
+                            .collection('posts')
+                            .doc(postId)
+                            .delete();
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.delete),
+                    )
+                  : const SizedBox(),
             ],
           ),
 
           // top part of the post page containing the author and description
-          body: Column(
-            children: <Widget>[
-              Container(
-                height: size.height * 0.1, // cover 10% of the total height
-                width: size.width, // cover 100% of the total width
-                decoration: BoxDecoration(
-                    color: Const.primaryColour,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(36),
-                      bottomRight: Radius.circular(36),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        offset: Offset(0, 10),
-                        blurRadius: 30,
-                        color: Const.textColour.withOpacity(0.35),
-                      ),
-                    ]),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('by: ' + data['ownerId']),
-                    Text('description: ' + data['description']),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          /*
+
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Post Owner ID : ' + data['ownerId']),
+              FutureBuilder(
+                future: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(data['ownerId'])
+                    .get(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<DocumentSnapshot> snapshot) {
+                  if (snapshot.hasError ||
+                      (snapshot.hasData && !snapshot.data!.exists)) {
+                    return const Text('Post Owner Error!!!');
+                  }
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    Map<String, dynamic> data =
+                        snapshot.data!.data() as Map<String, dynamic>;
+                    return Text('Post Owner: ${data['name']}');
+                  }
+
+                  return const Text('Post Owner:');
+                },
+              ),
               Text('Time Posted : ' +
                   DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
                       .toString()
@@ -183,18 +176,28 @@ class _PostState extends State<Post> {
               ),
               FutureBuilder(
                   // specify the image to be displayed here
-                  future: storage.downloadURL('test_image.jpg'),
+                  future: FirebaseStorage.instance
+                      .ref('images/top.png')
+                      .getDownloadURL(),
                   builder:
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     if (snapshot.connectionState == ConnectionState.done &&
                         snapshot.hasData) {
-                      return Container(
-                          width: 300,
-                          height: 250,
-                          child: Image.network(
-                            snapshot.data!,
-                            fit: BoxFit.cover,
-                          ));
+                      return SizedBox(
+                        width: 300,
+                        height: 250,
+                        child: Image.network(
+                          snapshot.data!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        ),
+                      );
                     }
                     if (snapshot.connectionState == ConnectionState.waiting ||
                         !snapshot.hasData) {
@@ -203,11 +206,11 @@ class _PostState extends State<Post> {
                     return Container();
                   }),
             ],
-          ), */
+          ),
 
           // floating button to add new media to the post
           floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
             onPressed: () async {
               final results = await FilePicker.platform.pickFiles(
                 allowMultiple: false,
@@ -222,12 +225,19 @@ class _PostState extends State<Post> {
                   ),
                 );
               }
-              final path = results!.files.single.path!;
-              final fileName = results.files.single.name;
-
-              storage
-                  .uploadFile(path, fileName)
-                  .then((value) => print('Done.'));
+              if (kIsWeb) {
+                final bytes = results!.files.single.bytes!;
+                final fileName = results.files.single.name;
+                await FirebaseStorage.instance
+                    .ref('images/$fileName')
+                    .putData(bytes);
+              } else {
+                final path = results!.files.single.path!;
+                final fileName = results.files.single.name;
+                await FirebaseStorage.instance
+                    .ref('images/$fileName')
+                    .putFile(File(path));
+              }
             },
             foregroundColor: Colors.white,
           ),

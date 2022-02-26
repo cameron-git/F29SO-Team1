@@ -73,7 +73,7 @@ class _SearchState extends State<Search> {
                                 padding: const EdgeInsets.all(30),
                                 child: Column(
                                   children: [
-                                    Text(e['name'].toString()),
+                                    // Text(e['name'].toString()),
                                     Text(e['title']),
                                     Text(
                                       DateTime.fromMillisecondsSinceEpoch(
