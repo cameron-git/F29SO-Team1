@@ -4,7 +4,6 @@ import 'package:ivy/auth.dart';
 import 'package:ivy/screens/message.dart';
 import 'package:ivy/screens/profile.dart';
 import 'package:ivy/screens/search.dart';
-import 'package:provider/provider.dart';
 
 import 'post.dart';
 

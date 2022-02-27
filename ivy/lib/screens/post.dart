@@ -174,37 +174,44 @@ class _PostState extends State<Post> {
                   for (var item in tags) Text(item + ' '),
                 ],
               ),
-              FutureBuilder(
-                  // specify the image to be displayed here
-                  future: FirebaseStorage.instance
-                      .ref('images/top.png')
-                      .getDownloadURL(),
-                  builder:
-                      (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done &&
-                        snapshot.hasData) {
-                      return SizedBox(
-                        width: 300,
-                        height: 250,
-                        child: Image.network(
-                          snapshot.data!,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting ||
-                        !snapshot.hasData) {
-                      return const CircularProgressIndicator();
-                    }
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(postId)
+                    .collection('media')
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
                     return Container();
-                  }),
+                  }
+                  return Expanded(
+                    child: ListView(
+                        children: snapshot.data!.docs.map(
+                      (e) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SizedBox(
+                            width: 300,
+                            height: 250,
+                            child: Image.network(
+                              e['url'],
+                              fit: BoxFit.cover,
+                              loadingBuilder: (BuildContext context,
+                                  Widget child,
+                                  ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ).toList()),
+                  );
+                },
+              ),
             ],
           ),
 
@@ -229,14 +236,30 @@ class _PostState extends State<Post> {
                 final bytes = results!.files.single.bytes!;
                 final fileName = results.files.single.name;
                 await FirebaseStorage.instance
-                    .ref('images/$fileName')
+                    .ref('images/$postId/$fileName')
                     .putData(bytes);
+                final url = await FirebaseStorage.instance
+                    .ref('images/$postId/$fileName')
+                    .getDownloadURL();
+                FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(postId)
+                    .collection('media')
+                    .add({'url': url});
               } else {
                 final path = results!.files.single.path!;
                 final fileName = results.files.single.name;
                 await FirebaseStorage.instance
-                    .ref('images/$fileName')
+                    .ref('images/$postId/$fileName')
                     .putFile(File(path));
+                final url = await FirebaseStorage.instance
+                    .ref('images/$postId/$fileName')
+                    .getDownloadURL();
+                FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(postId)
+                    .collection('media')
+                    .add({'url': url});
               }
             },
             foregroundColor: Colors.white,
