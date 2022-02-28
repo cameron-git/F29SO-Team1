@@ -56,11 +56,13 @@ class _PostState extends State<Post> {
         return Scaffold(
           key: _scaffoldKey,
           appBar: AppBar(
+            leading: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back),
+            ),
             title: Text(
               data['title'],
             ),
-            bottomOpacity: 0.0,
-            elevation: 0.0,
             actions: [
               // edit button
               (perms)
@@ -153,7 +155,7 @@ class _PostState extends State<Post> {
                   .snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (!snapshot.hasData) {
-                  return Container();
+                  return const CircularProgressIndicator();
                 }
                 List<Widget> drawerItems = {
                   Padding(
