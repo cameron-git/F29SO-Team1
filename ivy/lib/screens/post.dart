@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/rendering.dart';
 import 'package:ivy/storage_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -249,41 +250,104 @@ class _PostState extends State<Post> {
 
           // top part of the post page containing the author and description
 
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FutureBuilder(
-                future: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(data['ownerId'])
-                    .get(),
-                builder: (BuildContext context,
-                    AsyncSnapshot<DocumentSnapshot> snapshot) {
-                  if (snapshot.hasError ||
-                      (snapshot.hasData && !snapshot.data!.exists)) {
-                    return const Text('Post Owner Error!!!');
-                  }
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    Map<String, dynamic> data =
-                        snapshot.data!.data() as Map<String, dynamic>;
-                    return Text('Post Owner: ${data['name']}');
-                  }
+          body: LiveCanvas(postId),
+          // Column(
+          //   crossAxisAlignment: CrossAxisAlignment.start,
+          //   children: [
+          //     FutureBuilder(
+          //       future: FirebaseFirestore.instance
+          //           .collection('users')
+          //           .doc(data['ownerId'])
+          //           .get(),
+          //       builder: (BuildContext context,
+          //           AsyncSnapshot<DocumentSnapshot> snapshot) {
+          //         if (snapshot.hasError ||
+          //             (snapshot.hasData && !snapshot.data!.exists)) {
+          //           return const Text('Post Owner Error!!!');
+          //         }
+          //         if (snapshot.connectionState == ConnectionState.done) {
+          //           Map<String, dynamic> data =
+          //               snapshot.data!.data() as Map<String, dynamic>;
+          //           return Text('Post Owner: ${data['name']}');
+          //         }
 
-                  return const Text('Post Owner:');
-                },
-              ),
-              Text('Time Posted : ' +
-                  DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
-                      .toString()
-                      .substring(0, 16)),
-              Text('Description : ' + data['description']),
-              Row(
-                children: <Widget>[
-                  const Text('tags: '),
-                  for (var item in tags) Text(item + ' '),
-                ],
-              ),
-            ],
+          //         return const Text('Post Owner:');
+          //       },
+          //     ),
+          //     Text('Time Posted : ' +
+          //         DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
+          //             .toString()
+          //             .substring(0, 16)),
+          //     Text('Description : ' + data['description']),
+          //     Row(
+          //       children: <Widget>[
+          //         const Text('tags: '),
+          //         for (var item in tags) Text(item + ' '),
+          //       ],
+          //     ),
+          //   ],
+          // ),
+        );
+      },
+    );
+  }
+}
+
+class LiveCanvas extends StatelessWidget {
+  const LiveCanvas(this.postId, {Key? key}) : super(key: key);
+  final String postId;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .collection('media')
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              var squareSize = constraints
+                  .constrainSizeAndAttemptToPreserveAspectRatio(
+                      const Size.square(2000))
+                  .shortestSide;
+              return Center(
+                child: Container(
+                  width: squareSize,
+                  height: squareSize,
+                  decoration: BoxDecoration(
+                    border: Border.all(),
+                  ),
+                  child: Stack(
+                    children: snapshot.data!.docs.map(
+                      (e) {
+                        return SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: Image.network(
+                            e['url'],
+                            fit: BoxFit.cover,
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },
