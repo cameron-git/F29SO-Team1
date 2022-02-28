@@ -27,6 +27,8 @@ class _PostState extends State<Post> {
     final Stream<DocumentSnapshot> _postStream =
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
 
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
     // Storage instance from storage_service.dart
     final Storage storage = Storage();
 
@@ -52,6 +54,7 @@ class _PostState extends State<Post> {
             userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
 
         return Scaffold(
+          key: _scaffoldKey,
           appBar: AppBar(
             title: Text(
               data['title'],
@@ -65,60 +68,60 @@ class _PostState extends State<Post> {
                       icon: const Icon(Icons.edit),
                       onPressed: () {
                         showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                scrollable: true,
-                                title: const Text('Edit Post Info'),
-                                content: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Form(
-                                    child: Column(
-                                      children: <Widget>[
-                                        TextFormField(
-                                          controller: _titleController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Title',
-                                          ),
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              scrollable: true,
+                              title: const Text('Edit Post Info'),
+                              content: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Form(
+                                  child: Column(
+                                    children: <Widget>[
+                                      TextFormField(
+                                        controller: _titleController,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Title',
                                         ),
-                                        TextFormField(
-                                          controller: _descController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Description',
-                                          ),
+                                      ),
+                                      TextFormField(
+                                        controller: _descController,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Description',
                                         ),
-                                        TextFormField(
-                                          controller: _tagsController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Tags',
-                                          ),
-                                        )
-                                      ],
-                                    ),
+                                      ),
+                                      TextFormField(
+                                        controller: _tagsController,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Tags',
+                                        ),
+                                      )
+                                    ],
                                   ),
                                 ),
-                                actions: [
-                                  ElevatedButton(
-                                    child: const Text("Submit"),
-                                    onPressed: () {
-                                      FirebaseFirestore.instance
-                                          .collection('posts')
-                                          .doc(postId)
-                                          .set(
-                                        <String, dynamic>{
-                                          'title': _titleController.text,
-                                          'description': _descController.text,
-                                          'tags':
-                                              _tagsController.text.split(" "),
-                                        },
-                                        SetOptions(merge: true),
-                                      );
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                ],
-                              );
-                            });
+                              ),
+                              actions: [
+                                ElevatedButton(
+                                  child: const Text("Submit"),
+                                  onPressed: () {
+                                    FirebaseFirestore.instance
+                                        .collection('posts')
+                                        .doc(postId)
+                                        .set(
+                                      <String, dynamic>{
+                                        'title': _titleController.text,
+                                        'description': _descController.text,
+                                        'tags': _tagsController.text.split(" "),
+                                      },
+                                      SetOptions(merge: true),
+                                    );
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
                       },
                     )
                   : const SizedBox(),
@@ -135,8 +138,112 @@ class _PostState extends State<Post> {
                       icon: const Icon(Icons.delete),
                     )
                   : const SizedBox(),
+              IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => _scaffoldKey.currentState!.openEndDrawer(),
+              )
             ],
           ),
+          endDrawer: Drawer(
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('posts')
+                  .doc(postId)
+                  .collection('media')
+                  .snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return Container();
+                }
+                List<Widget> drawerItems = {
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Material(
+                      color: const Color.fromARGB(255, 240, 240, 240),
+                      child: InkWell(
+                        hoverColor: const Color.fromARGB(255, 230, 230, 230),
+                        onTap: () async {
+                          final results = await FilePicker.platform.pickFiles(
+                            allowMultiple: false,
+                            type: FileType.custom,
+                            allowedExtensions: ['png', 'jpg'],
+                          );
+
+                          if (results == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('No file selected.'),
+                              ),
+                            );
+                          }
+                          if (kIsWeb) {
+                            final bytes = results!.files.single.bytes!;
+                            final fileName = results.files.single.name;
+                            await FirebaseStorage.instance
+                                .ref('images/$postId/$fileName')
+                                .putData(bytes);
+                            final url = await FirebaseStorage.instance
+                                .ref('images/$postId/$fileName')
+                                .getDownloadURL();
+                            FirebaseFirestore.instance
+                                .collection('posts')
+                                .doc(postId)
+                                .collection('media')
+                                .add({'url': url});
+                          } else {
+                            final path = results!.files.single.path!;
+                            final fileName = results.files.single.name;
+                            await FirebaseStorage.instance
+                                .ref('images/$postId/$fileName')
+                                .putFile(File(path));
+                            final url = await FirebaseStorage.instance
+                                .ref('images/$postId/$fileName')
+                                .getDownloadURL();
+                            FirebaseFirestore.instance
+                                .collection('posts')
+                                .doc(postId)
+                                .collection('media')
+                                .add({'url': url});
+                          }
+                        },
+                        child: const SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: Icon(Icons.add),
+                        ),
+                      ),
+                    ),
+                  ),
+                }.toList();
+                drawerItems += snapshot.data!.docs.map(
+                  (e) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Image.network(
+                          e['url'],
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ).toList();
+                return ListView(
+                  children: drawerItems,
+                );
+              },
+            ),
+          ),
+          endDrawerEnableOpenDragGesture: !kIsWeb,
 
           // top part of the post page containing the author and description
 
@@ -174,95 +281,7 @@ class _PostState extends State<Post> {
                   for (var item in tags) Text(item + ' '),
                 ],
               ),
-              StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(postId)
-                    .collection('media')
-                    .snapshots(),
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-                  return Expanded(
-                    child: ListView(
-                        children: snapshot.data!.docs.map(
-                      (e) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SizedBox(
-                            width: 300,
-                            height: 250,
-                            child: Image.network(
-                              e['url'],
-                              fit: BoxFit.cover,
-                              loadingBuilder: (BuildContext context,
-                                  Widget child,
-                                  ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ).toList()),
-                  );
-                },
-              ),
             ],
-          ),
-
-          // floating button to add new media to the post
-          floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () async {
-              final results = await FilePicker.platform.pickFiles(
-                allowMultiple: false,
-                type: FileType.custom,
-                allowedExtensions: ['png', 'jpg'],
-              );
-
-              if (results == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('No file selected.'),
-                  ),
-                );
-              }
-              if (kIsWeb) {
-                final bytes = results!.files.single.bytes!;
-                final fileName = results.files.single.name;
-                await FirebaseStorage.instance
-                    .ref('images/$postId/$fileName')
-                    .putData(bytes);
-                final url = await FirebaseStorage.instance
-                    .ref('images/$postId/$fileName')
-                    .getDownloadURL();
-                FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(postId)
-                    .collection('media')
-                    .add({'url': url});
-              } else {
-                final path = results!.files.single.path!;
-                final fileName = results.files.single.name;
-                await FirebaseStorage.instance
-                    .ref('images/$postId/$fileName')
-                    .putFile(File(path));
-                final url = await FirebaseStorage.instance
-                    .ref('images/$postId/$fileName')
-                    .getDownloadURL();
-                FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(postId)
-                    .collection('media')
-                    .add({'url': url});
-              }
-            },
-            foregroundColor: Colors.white,
           ),
         );
       },
