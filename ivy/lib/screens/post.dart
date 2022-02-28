@@ -1,13 +1,17 @@
 // Should contain all post stuff and create new post widget
 import 'dart:io';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/rendering.dart';
+import 'package:ivy/constants.dart';
 import 'package:ivy/storage_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+
+Random rand = Random();
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -322,14 +326,19 @@ class LiveCanvas extends StatelessWidget {
                   width: squareSize,
                   height: squareSize,
                   decoration: BoxDecoration(
-                    border: Border.all(),
+                    border: Border.all(
+                      color: primaryColour,
+                      width: 2,
+                    ),
                   ),
                   child: Stack(
                     children: snapshot.data!.docs.map(
                       (e) {
-                        return SizedBox(
-                          width: 200,
-                          height: 200,
+                        return Positioned(
+                          left: squareSize * rand.nextInt(80) / 100,
+                          top: squareSize * rand.nextInt(80) / 100,
+                          width: squareSize * 0.2,
+                          height: squareSize * 0.2,
                           child: Image.network(
                             e['url'],
                             fit: BoxFit.cover,
