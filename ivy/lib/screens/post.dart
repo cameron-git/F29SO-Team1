@@ -10,6 +10,7 @@ import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 Random rand = Random();
+final GlobalKey _canvasKey = GlobalKey();
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -45,6 +46,7 @@ class _PostState extends State<Post> {
                   .shortestSide;
               return Center(
                 child: Container(
+                  key: _canvasKey,
                   width: squareSize,
                   height: squareSize,
                   decoration: BoxDecoration(
@@ -58,8 +60,8 @@ class _PostState extends State<Post> {
                       (e) {
                         Widget img = Image.network(
                           e['url'],
-                          width: squareSize * 0.2,
-                          height: squareSize * 0.2,
+                          width: squareSize * e['width'] / 100,
+                          height: squareSize * e['height'] / 100,
                           fit: BoxFit.cover,
                           loadingBuilder: (BuildContext context, Widget child,
                               ImageChunkEvent? loadingProgress) {
@@ -70,11 +72,36 @@ class _PostState extends State<Post> {
                           },
                         );
                         return Positioned(
-                          left: squareSize * rand.nextInt(80) / 100,
-                          top: squareSize * rand.nextInt(80) / 100,
+                          left: squareSize * e['left'] / 100,
+                          top: squareSize * e['top'] / 100,
                           child: Draggable(
                             feedback: img,
                             child: img,
+                            childWhenDragging: Container(),
+                            onDragEnd: (dragDetails) {
+                              final RenderBox renderBox =
+                                  _canvasKey.currentContext?.findRenderObject()
+                                      as RenderBox;
+                              final Offset offset =
+                                  renderBox.localToGlobal(Offset.zero);
+                              final x = (dragDetails.offset.dx - offset.dx) /
+                                  squareSize *
+                                  100;
+                              final y = (dragDetails.offset.dy - offset.dy) /
+                                  squareSize *
+                                  100;
+                              FirebaseFirestore.instance
+                                  .collection('posts')
+                                  .doc(postId)
+                                  .collection('media')
+                                  .doc(e.id)
+                                  .update(
+                                {
+                                  'left': x,
+                                  'top': y,
+                                },
+                              );
+                            },
                           ),
                         );
                       },
@@ -101,7 +128,8 @@ class _PostState extends State<Post> {
       stream: _postStream,
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.data?.data() == null) {
           return Container();
         }
         Map<String, dynamic> data =
@@ -256,7 +284,15 @@ class _PostState extends State<Post> {
                                 .collection('posts')
                                 .doc(postId)
                                 .collection('media')
-                                .add({'url': url});
+                                .add(
+                              {
+                                'url': url,
+                                'left': 0,
+                                'top': 0,
+                                'width': 20,
+                                'height': 20,
+                              },
+                            );
                           } else {
                             final path = results!.files.single.path!;
                             final fileName = results.files.single.name;
@@ -270,7 +306,15 @@ class _PostState extends State<Post> {
                                 .collection('posts')
                                 .doc(postId)
                                 .collection('media')
-                                .add({'url': url});
+                                .add(
+                              {
+                                'url': url,
+                                'left': 0,
+                                'top': 0,
+                                'width': 20,
+                                'height': 20,
+                              },
+                            );
                           }
                         },
                         child: const SizedBox(
