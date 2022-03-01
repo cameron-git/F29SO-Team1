@@ -6,9 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/rendering.dart';
 import 'package:ivy/constants.dart';
-import 'package:ivy/storage_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 Random rand = Random();
@@ -26,6 +24,71 @@ class _PostState extends State<Post> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
 
+  Widget liveCanvas(postId) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .collection('media')
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              var squareSize = constraints
+                  .constrainSizeAndAttemptToPreserveAspectRatio(
+                      const Size.square(2000))
+                  .shortestSide;
+              return Center(
+                child: Container(
+                  width: squareSize,
+                  height: squareSize,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: primaryColour,
+                      width: 2,
+                    ),
+                  ),
+                  child: Stack(
+                    children: snapshot.data!.docs.map(
+                      (e) {
+                        Widget img = Image.network(
+                          e['url'],
+                          width: squareSize * 0.2,
+                          height: squareSize * 0.2,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        );
+                        return Positioned(
+                          left: squareSize * rand.nextInt(80) / 100,
+                          top: squareSize * rand.nextInt(80) / 100,
+                          child: Draggable(
+                            feedback: img,
+                            child: img,
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final postId = widget.postId;
@@ -33,9 +96,6 @@ class _PostState extends State<Post> {
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
 
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-    // Storage instance from storage_service.dart
-    final Storage storage = Storage();
 
     return StreamBuilder<DocumentSnapshot>(
       stream: _postStream,
@@ -254,7 +314,7 @@ class _PostState extends State<Post> {
 
           // top part of the post page containing the author and description
 
-          body: LiveCanvas(postId),
+          body: liveCanvas(postId),
           // Column(
           //   crossAxisAlignment: CrossAxisAlignment.start,
           //   children: [
@@ -291,73 +351,6 @@ class _PostState extends State<Post> {
           //     ),
           //   ],
           // ),
-        );
-      },
-    );
-  }
-}
-
-class LiveCanvas extends StatelessWidget {
-  const LiveCanvas(this.postId, {Key? key}) : super(key: key);
-  final String postId;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('posts')
-          .doc(postId)
-          .collection('media')
-          .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              var squareSize = constraints
-                  .constrainSizeAndAttemptToPreserveAspectRatio(
-                      const Size.square(2000))
-                  .shortestSide;
-              return Center(
-                child: Container(
-                  width: squareSize,
-                  height: squareSize,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: primaryColour,
-                      width: 2,
-                    ),
-                  ),
-                  child: Stack(
-                    children: snapshot.data!.docs.map(
-                      (e) {
-                        return Positioned(
-                          left: squareSize * rand.nextInt(80) / 100,
-                          top: squareSize * rand.nextInt(80) / 100,
-                          width: squareSize * 0.2,
-                          height: squareSize * 0.2,
-                          child: Image.network(
-                            e['url'],
-                            fit: BoxFit.cover,
-                            loadingBuilder: (BuildContext context, Widget child,
-                                ImageChunkEvent? loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  ),
-                ),
-              );
-            },
-          ),
         );
       },
     );
