@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "public": "/build/web",
+    "public": "build/web",
+    "site": "ivy-mashup",
     "ignore": [
       "firebase.json",
       "**/.*",
