@@ -24,6 +24,7 @@ class _PostState extends State<Post> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
   double aspectRatio = 1;
 
 // For Craig to implement
@@ -52,12 +53,29 @@ class _PostState extends State<Post> {
                     );
                   }),
             ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'Message',
-                ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) print(value.trimRight());
+                      },
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        labelText: 'Message',
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.send),
+                          onPressed: () {
+                            if (_messageController.text.isNotEmpty)
+                              (_messageController.text.trimRight());
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -168,7 +186,7 @@ class _PostState extends State<Post> {
         if (!snapshot.hasData) {
           return const CircularProgressIndicator();
         }
-        List<Widget> drawerItems = {
+        List<Widget> items = {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
@@ -245,7 +263,7 @@ class _PostState extends State<Post> {
             ),
           ),
         }.toList();
-        drawerItems += snapshot.data!.docs.map(
+        items += snapshot.data!.docs.map(
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
@@ -266,7 +284,7 @@ class _PostState extends State<Post> {
           },
         ).toList();
         return ListView(
-          children: drawerItems,
+          children: items,
         );
       },
     );
@@ -295,10 +313,7 @@ class _PostState extends State<Post> {
             snapshot.data!.data() as Map<String, dynamic>;
         List<dynamic> tags = data['tags'];
         List<dynamic> userPermissions = data['userPermissions'];
-        _tagsController.text = "";
-        for (var tag in tags) {
-          _tagsController.text += tag + " ";
-        }
+        _tagsController.text = tags.join(' ') + ' ';
         _titleController.text = data['title'];
         _descController.text = data['description'];
 
@@ -332,22 +347,31 @@ class _PostState extends State<Post> {
                                 child: Form(
                                   child: Column(
                                     children: <Widget>[
-                                      TextFormField(
-                                        controller: _titleController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Title',
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _titleController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Title',
+                                          ),
                                         ),
                                       ),
-                                      TextFormField(
-                                        controller: _descController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Description',
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _descController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Description',
+                                          ),
                                         ),
                                       ),
-                                      TextFormField(
-                                        controller: _tagsController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Tags',
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _tagsController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Tags',
+                                          ),
                                         ),
                                       )
                                     ],
@@ -365,7 +389,10 @@ class _PostState extends State<Post> {
                                       <String, dynamic>{
                                         'title': _titleController.text,
                                         'description': _descController.text,
-                                        'tags': _tagsController.text.toUpperCase().split(" "),
+                                        'tags': _tagsController.text
+                                            .toUpperCase()
+                                            .trim()
+                                            .split(" "),
                                       },
                                       SetOptions(merge: true),
                                     );
@@ -529,7 +556,8 @@ class _NewPostState extends State<NewPost> {
                       ],
                       'title': _titleController.text,
                       'description': _descController.text,
-                      'tags': _tagController.text.toUpperCase().split(' '),
+                      'tags':
+                          _tagController.text.toUpperCase().trim().split(' '),
                     },
                   );
                   Navigator.pop(context);
