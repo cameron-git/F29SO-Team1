@@ -53,7 +53,8 @@ class _SearchState extends State<Search> {
                         .collection('posts')
                         .where(
                           'tags',
-                          arrayContains: _searchBoxController.text,
+                          arrayContains:
+                              _searchBoxController.text.toUpperCase(),
                         )
                         .get(),
                   ],
