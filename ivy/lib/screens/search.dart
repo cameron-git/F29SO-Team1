@@ -11,6 +11,16 @@ class Search extends StatefulWidget {
 class _SearchState extends State<Search> {
   final TextEditingController _searchBoxController = TextEditingController();
 
+  // Stream<List<QuerySnapshot>> getData(){
+  //   Stream titleStream = FirebaseFirestore.instance.collection('posts')
+  //     .where('title', isGreaterThanOrEqualTo: _searchBoxController.text)
+  //     .snapshots();
+  //   Stream tagStream = FirebaseFirestore.instance.collection('posts')
+  //     .where('tags', isGreaterThanOrEqualTo: _searchBoxController.text)
+  //     .snapshots();
+  //   return StreamZip([titleStream, tagStream]);
+  // }
+
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
@@ -41,6 +51,7 @@ class _SearchState extends State<Search> {
             Expanded(
               child: StreamBuilder(
                 // need to handle loading
+                //stream: getData(),
                 stream: FirebaseFirestore.instance
                     .collection('posts')
                     .where('title',

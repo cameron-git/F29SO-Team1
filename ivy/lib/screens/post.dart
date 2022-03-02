@@ -246,7 +246,7 @@ class _PostState extends State<Post> {
                                       <String, dynamic>{
                                         'title': _titleController.text,
                                         'description': _descController.text,
-                                        'tags': _tagsController.text.toUpperCase().split(" "),
+                                        'tags': _tagsController.text.toUpperCase().split(" ").toList(),
                                       },
                                       SetOptions(merge: true),
                                     );
@@ -511,7 +511,7 @@ class _NewPostState extends State<NewPost> {
                       ],
                       'title': _titleController.text,
                       'description': _descController.text,
-                      'tags': _tagController.text.toUpperCase().split(' '),
+                      'tags': _tagController.text.toUpperCase().split(' ').toList(),
                     },
                   );
                   Navigator.pop(context);
