@@ -24,9 +24,11 @@ class _PostState extends State<Post> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+  double aspectRatio = 1;
 
 // For Craig to implement
-  Widget messageBoard(postId) {
+  Widget messageBoard() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -42,7 +44,7 @@ class _PostState extends State<Post> {
               child: StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('posts')
-                      .doc(postId)
+                      .doc(widget.postId)
                       .collection('messages')
                       .snapshots(),
                   builder: (context, snapshot) {
@@ -51,12 +53,29 @@ class _PostState extends State<Post> {
                     );
                   }),
             ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'Message',
-                ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) print(value.trimRight());
+                      },
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        labelText: 'Message',
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.send),
+                          onPressed: () {
+                            if (_messageController.text.isNotEmpty)
+                              (_messageController.text.trimRight());
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -65,36 +84,36 @@ class _PostState extends State<Post> {
     );
   }
 
-  Widget liveCanvas(postId) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('posts')
-          .doc(postId)
-          .collection('media')
-          .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              var squareSize = constraints
-                  .constrainSizeAndAttemptToPreserveAspectRatio(
-                      const Size.square(2000))
-                  .shortestSide;
-              return Center(
-                child: Container(
-                  width: squareSize,
-                  height: squareSize,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: primaryColour,
-                      width: 2,
-                    ),
-                  ),
-                  child: Stack(
+  Widget liveCanvas() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          var squareSize = constraints
+              .constrainSizeAndAttemptToPreserveAspectRatio(
+                  const Size.square(2000))
+              .shortestSide;
+          return Center(
+            child: Container(
+              width: squareSize,
+              height: squareSize,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: primaryColour,
+                  width: 2,
+                ),
+              ),
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .collection('media')
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+                  return Stack(
                     key: _canvasKey,
                     children: snapshot.data!.docs.map(
                       (e) {
@@ -132,7 +151,7 @@ class _PostState extends State<Post> {
                                   100;
                               FirebaseFirestore.instance
                                   .collection('posts')
-                                  .doc(postId)
+                                  .doc(widget.postId)
                                   .collection('media')
                                   .doc(e.id)
                                   .update(
@@ -146,11 +165,126 @@ class _PostState extends State<Post> {
                         );
                       },
                     ).toList(),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget mediaList() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .collection('media')
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+        List<Widget> items = {
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              height: 100,
+              child: Material(
+                color: const Color.fromARGB(255, 240, 240, 240),
+                child: InkWell(
+                  hoverColor: const Color.fromARGB(255, 230, 230, 230),
+                  onTap: () async {
+                    final results = await FilePicker.platform.pickFiles(
+                      allowMultiple: false,
+                      type: FileType.custom,
+                      allowedExtensions: ['png', 'jpg'],
+                    );
+
+                    if (results == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No file selected.'),
+                        ),
+                      );
+                    }
+                    if (kIsWeb) {
+                      final bytes = results!.files.single.bytes!;
+                      final fileName = results.files.single.name;
+                      await FirebaseStorage.instance
+                          .ref('images/${widget.postId}/$fileName')
+                          .putData(bytes);
+                      final url = await FirebaseStorage.instance
+                          .ref('images/${widget.postId}/$fileName')
+                          .getDownloadURL();
+                      FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc(widget.postId)
+                          .collection('media')
+                          .add(
+                        {
+                          'url': url,
+                          'left': 0,
+                          'top': 0,
+                          'width': 20,
+                          'height': 20,
+                        },
+                      );
+                    } else {
+                      final path = results!.files.single.path!;
+                      final fileName = results.files.single.name;
+                      await FirebaseStorage.instance
+                          .ref('images/${widget.postId}/$fileName')
+                          .putFile(File(path));
+                      final url = await FirebaseStorage.instance
+                          .ref('images/${widget.postId}/$fileName')
+                          .getDownloadURL();
+                      FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc(widget.postId)
+                          .collection('media')
+                          .add(
+                        {
+                          'url': url,
+                          'left': 0,
+                          'top': 0,
+                          'width': 20,
+                          'height': 20,
+                        },
+                      );
+                    }
+                  },
+                  child: const SizedBox(
+                    child: Icon(Icons.add),
                   ),
                 ),
-              );
-            },
+              ),
+            ),
           ),
+        }.toList();
+        items += snapshot.data!.docs.map(
+          (e) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.network(
+                e['url'],
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
+              ),
+            );
+          },
+        ).toList();
+        return ListView(
+          children: items,
         );
       },
     );
@@ -161,6 +295,9 @@ class _PostState extends State<Post> {
     final postId = widget.postId;
     final Stream<DocumentSnapshot> _postStream =
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
+
+    aspectRatio =
+        MediaQuery.of(context).size.width / MediaQuery.of(context).size.height;
 
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -176,10 +313,7 @@ class _PostState extends State<Post> {
             snapshot.data!.data() as Map<String, dynamic>;
         List<dynamic> tags = data['tags'];
         List<dynamic> userPermissions = data['userPermissions'];
-        _tagsController.text = "";
-        for (var tag in tags) {
-          _tagsController.text += tag + " ";
-        }
+        _tagsController.text = tags.join(' ') + ' ';
         _titleController.text = data['title'];
         _descController.text = data['description'];
 
@@ -213,22 +347,31 @@ class _PostState extends State<Post> {
                                 child: Form(
                                   child: Column(
                                     children: <Widget>[
-                                      TextFormField(
-                                        controller: _titleController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Title',
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _titleController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Title',
+                                          ),
                                         ),
                                       ),
-                                      TextFormField(
-                                        controller: _descController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Description',
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _descController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Description',
+                                          ),
                                         ),
                                       ),
-                                      TextFormField(
-                                        controller: _tagsController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Tags',
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _tagsController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Tags',
+                                          ),
                                         ),
                                       )
                                     ],
@@ -246,7 +389,10 @@ class _PostState extends State<Post> {
                                       <String, dynamic>{
                                         'title': _titleController.text,
                                         'description': _descController.text,
-                                        'tags': _tagsController.text.toUpperCase().split(" ").toList(),
+                                        'tags': _tagsController.text
+                                            .toUpperCase()
+                                            .trim()
+                                            .split(" "),
                                       },
                                       SetOptions(merge: true),
                                     );
@@ -279,133 +425,32 @@ class _PostState extends State<Post> {
               )
             ],
           ),
-          endDrawer: Drawer(
-            child: StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('posts')
-                  .doc(postId)
-                  .collection('media')
-                  .snapshots(),
-              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
-                List<Widget> drawerItems = {
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Material(
-                      color: const Color.fromARGB(255, 240, 240, 240),
-                      child: InkWell(
-                        hoverColor: const Color.fromARGB(255, 230, 230, 230),
-                        onTap: () async {
-                          final results = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: ['png', 'jpg'],
-                          );
-
-                          if (results == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('No file selected.'),
-                              ),
-                            );
-                          }
-                          if (kIsWeb) {
-                            final bytes = results!.files.single.bytes!;
-                            final fileName = results.files.single.name;
-                            await FirebaseStorage.instance
-                                .ref('images/$postId/$fileName')
-                                .putData(bytes);
-                            final url = await FirebaseStorage.instance
-                                .ref('images/$postId/$fileName')
-                                .getDownloadURL();
-                            FirebaseFirestore.instance
-                                .collection('posts')
-                                .doc(postId)
-                                .collection('media')
-                                .add(
-                              {
-                                'url': url,
-                                'left': 0,
-                                'top': 0,
-                                'width': 20,
-                                'height': 20,
-                              },
-                            );
-                          } else {
-                            final path = results!.files.single.path!;
-                            final fileName = results.files.single.name;
-                            await FirebaseStorage.instance
-                                .ref('images/$postId/$fileName')
-                                .putFile(File(path));
-                            final url = await FirebaseStorage.instance
-                                .ref('images/$postId/$fileName')
-                                .getDownloadURL();
-                            FirebaseFirestore.instance
-                                .collection('posts')
-                                .doc(postId)
-                                .collection('media')
-                                .add(
-                              {
-                                'url': url,
-                                'left': 0,
-                                'top': 0,
-                                'width': 20,
-                                'height': 20,
-                              },
-                            );
-                          }
-                        },
-                        child: const SizedBox(
-                          width: 200,
-                          height: 200,
-                          child: Icon(Icons.add),
-                        ),
-                      ),
-                    ),
-                  ),
-                }.toList();
-                drawerItems += snapshot.data!.docs.map(
-                  (e) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 200,
-                        height: 200,
-                        child: Image.network(
-                          e['url'],
-                          fit: BoxFit.cover,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ).toList();
-                return ListView(
-                  children: drawerItems,
-                );
-              },
-            ),
-          ),
+          // endDrawer: Drawer(
+          //   child: mediaList(postId),
+          // ),
           endDrawerEnableOpenDragGesture: !kIsWeb,
 
           // top part of the post page containing the author and description
 
-          body: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: messageBoard(postId),
-              ),
-              liveCanvas(postId),
-            ],
+          body: SizedBox(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (aspectRatio > 1)
+                  Expanded(
+                    child: messageBoard(),
+                    flex: 2,
+                  ),
+                Expanded(
+                  child: liveCanvas(),
+                  flex: 4,
+                ),
+                if (aspectRatio > 4 / 3)
+                  Expanded(
+                    child: mediaList(),
+                  ),
+              ],
+            ),
           ),
           // Column(
           //   crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,7 +556,8 @@ class _NewPostState extends State<NewPost> {
                       ],
                       'title': _titleController.text,
                       'description': _descController.text,
-                      'tags': _tagController.text.toUpperCase().split(' ').toList(),
+                      'tags':
+                          _tagController.text.toUpperCase().trim().split(' '),
                     },
                   );
                   Navigator.pop(context);

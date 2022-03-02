@@ -67,12 +67,11 @@ class _IvyAppState extends State<IvyApp> {
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
         theme: ThemeData(
-          inputDecorationTheme: InputDecorationTheme(
-            border: const OutlineInputBorder(),
+          inputDecorationTheme: const InputDecorationTheme(
+            border: OutlineInputBorder(),
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(
-                width: 2,
-                color: Colors.grey.shade400,
+                color: Colors.grey,
               ),
             ),
           ),
