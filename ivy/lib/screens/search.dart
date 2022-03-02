@@ -46,7 +46,8 @@ class _SearchState extends State<Search> {
                   [
                     FirebaseFirestore.instance
                         .collection('posts')
-                        .where('title', isEqualTo: _searchBoxController.text)
+                        .where('title',
+                            isGreaterThanOrEqualTo: _searchBoxController.text)
                         .get(),
                     FirebaseFirestore.instance
                         .collection('posts')
