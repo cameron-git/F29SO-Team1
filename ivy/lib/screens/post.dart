@@ -25,6 +25,46 @@ class _PostState extends State<Post> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
 
+// For Craig to implement
+  Widget messageBoard(postId) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: primaryColour,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('posts')
+                      .doc(postId)
+                      .collection('messages')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    return ListView(
+                      children: [],
+                    );
+                  }),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  labelText: 'Message',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget liveCanvas(postId) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
@@ -46,7 +86,6 @@ class _PostState extends State<Post> {
                   .shortestSide;
               return Center(
                 child: Container(
-                  key: _canvasKey,
                   width: squareSize,
                   height: squareSize,
                   decoration: BoxDecoration(
@@ -56,6 +95,7 @@ class _PostState extends State<Post> {
                     ),
                   ),
                   child: Stack(
+                    key: _canvasKey,
                     children: snapshot.data!.docs.map(
                       (e) {
                         Widget img = Image.network(
@@ -358,7 +398,15 @@ class _PostState extends State<Post> {
 
           // top part of the post page containing the author and description
 
-          body: liveCanvas(postId),
+          body: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: messageBoard(postId),
+              ),
+              liveCanvas(postId),
+            ],
+          ),
           // Column(
           //   crossAxisAlignment: CrossAxisAlignment.start,
           //   children: [

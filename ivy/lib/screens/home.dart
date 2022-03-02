@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ivy/auth.dart';
 import 'package:ivy/screens/message.dart';
 import 'package:ivy/screens/profile.dart';
 import 'package:ivy/screens/search.dart';
@@ -46,10 +45,6 @@ class _HomePageState extends State<HomePage> {
             curve: Curves.ease,
           );
         },
-        backgroundColor: const Color(0xFF73C597),
-        selectedItemColor: Colors.white,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(
             label: 'Home',
