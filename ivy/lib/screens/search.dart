@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:async/async.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
@@ -10,16 +11,6 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   final TextEditingController _searchBoxController = TextEditingController();
-
-  // Stream<List<QuerySnapshot>> getData(){
-  //   Stream titleStream = FirebaseFirestore.instance.collection('posts')
-  //     .where('title', isGreaterThanOrEqualTo: _searchBoxController.text)
-  //     .snapshots();
-  //   Stream tagStream = FirebaseFirestore.instance.collection('posts')
-  //     .where('tags', isGreaterThanOrEqualTo: _searchBoxController.text)
-  //     .snapshots();
-  //   return StreamZip([titleStream, tagStream]);
-  // }
 
   @override
   void dispose() {
@@ -49,20 +40,36 @@ class _SearchState extends State<Search> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: StreamBuilder(
+              child: FutureBuilder(
                 // need to handle loading
-                //stream: getData(),
-                stream: FirebaseFirestore.instance
-                    .collection('posts')
-                    .where('title',
-                        isGreaterThanOrEqualTo: _searchBoxController.text)
-                    .snapshots(),
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                future: Future.wait(
+                  [
+                    FirebaseFirestore.instance
+                        .collection('posts')
+                        .where('title', isEqualTo: _searchBoxController.text)
+                        .get(),
+                    FirebaseFirestore.instance
+                        .collection('posts')
+                        .where(
+                          'tags',
+                          arrayContains: _searchBoxController.text,
+                        )
+                        .get(),
+                  ],
+                ),
+                builder:
+                    (context, AsyncSnapshot<List<QuerySnapshot>> snapshot) {
                   if (!snapshot.hasData) {
-                    return Container();
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }
+                  List<QueryDocumentSnapshot<Object?>> posts =
+                      snapshot.data!.elementAt(0).docs;
+                  posts.addAll(snapshot.data!.elementAt(1).docs);
+
                   return ListView(
-                    children: snapshot.data!.docs.map(
+                    children: posts.map(
                       (e) {
                         return Padding(
                           padding: (MediaQuery.of(context).size.width /

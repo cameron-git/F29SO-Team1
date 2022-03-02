@@ -69,7 +69,7 @@ class _PostState extends State<Post> {
                           icon: const Icon(Icons.send),
                           onPressed: () {
                             if (_messageController.text.isNotEmpty)
-                              (_messageController.text.trimRight());
+                              print(_messageController.text.trimRight());
                           },
                         ),
                       ),

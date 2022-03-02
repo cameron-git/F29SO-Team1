@@ -85,11 +85,13 @@ class _IvyAppState extends State<IvyApp> {
           colorScheme: darkMode
               ? const ColorScheme.dark().copyWith(
                   primary: const Color(0xFF73C597),
+                  secondary: const Color(0xFF73C597),
                   surface: const Color(0xFF73C597),
                   onSurface: Colors.black,
                 )
               : const ColorScheme.light().copyWith(
                   primary: const Color(0xFF73C597),
+                  secondary: const Color(0xFF73C597),
                 ),
         ),
         // Creates NamesRoutes for the pages of the app
