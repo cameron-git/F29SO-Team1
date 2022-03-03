@@ -1,6 +1,7 @@
 // Should contain all post stuff and create new post widget
 import 'dart:io';
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -56,24 +57,6 @@ class _PostState extends State<Post> {
     );
   }
 
-// For Craig to implement
-  // this was a weird attempt on grabbing the name
-  /*getName(){
-    var sender; 
-    FirebaseFirestore.instance
-    .collection('users')
-    .doc(FirebaseAuth.instance.currentUser!.uid)
-    .snapshots();
-
-    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
-      if(!snapshot.hasData){
-        return Container(); 
-      }
-      sender = ['name'];
-    };
-    return sender;
-  }*/
-  @override
   Widget messageBoard() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -88,60 +71,104 @@ class _PostState extends State<Post> {
           children: [
             Expanded(
               child: StreamBuilder(
-                  // Selects location in firebase storage
-                  // posts\post\messages
-                  stream: FirebaseFirestore.instance
+                // Selects location in firebase storage
+                // posts\post\messages
+                stream: FirebaseFirestore.instance
                     .collection('posts')
                     .doc(widget.postId)
                     .collection('messages')
-                    .orderBy('timestamp', descending: false)
+                    .orderBy('timestamp', descending: true)
                     .snapshots(),
-                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
-                    if(!snapshot.hasData){
-                      return Container();
-                    }
-                    return ListView(
-                     children: snapshot.data!.docs.map(
-                       (e) {
-                          return Padding(
-                            padding: (MediaQuery.of(context).size.width /
-                              MediaQuery.of(context).size.height <
-                               15 / 9)
-                              ? const EdgeInsets.all(8)
-                              : EdgeInsets.fromLTRB(
-                              0,0,0,0),
-                          child: InkWell(
-                            borderRadius: const BorderRadius.all(Radius.circular(4)),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Container();
+                  }
+                  return ListView(
+                    reverse: true,
+                    children: snapshot.data!.docs.map(
+                      (e) {
+                        return FutureBuilder(
+                          future: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(e['uid'])
+                              .get(),
+                          builder: (context,
+                              AsyncSnapshot<
+                                      DocumentSnapshot<Map<String, dynamic>>>
+                                  snapshot) {
+                            if (!snapshot.hasData) return Container();
+                            Duration d = DateTime.now().difference(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    e['timestamp']));
 
-                            child: Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: Column(
-                                  children: [
-
-                                    Text(e['author']),
-                                    Text(
-                                      DateTime.fromMicrosecondsSinceEpoch(
-                                        e['timestamp'])
-                                        .toString()
-                                        .substring(0,16),
+                            String ago = '';
+                            if (d.inMinutes == 0) {
+                              ago = 'just now';
+                            } else if (d.inMinutes < 60) {
+                              ago = d.inMinutes.toString();
+                              ago += (d.inMinutes == 1)
+                                  ? ' minute ago'
+                                  : ' minutes ago';
+                            } else if (d.inHours < 24) {
+                              ago = d.inHours.toString();
+                              ago +=
+                                  (d.inHours == 1) ? ' hour ago' : ' hours ago';
+                            } else if (d.inDays < 365) {
+                              ago = d.inDays.toString();
+                              ago += (d.inDays == 1) ? ' day ago' : ' days ago';
+                            } else {
+                              ago = (d.inDays / 365).floor().toString();
+                              ago += ((d.inDays / 365).floor() == 1)
+                                  ? ' year ago'
+                                  : ' years ago';
+                            }
+                            bool myPost = e['uid'] ==
+                                FirebaseAuth.instance.currentUser?.uid;
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Card(
+                                color: myPost
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          myPost
+                                              ? 'Me: ${e['message']}'
+                                              : '${snapshot.data!.get('name')}: ${e['message']}',
+                                          style: TextStyle(
+                                              color:
+                                                  myPost ? Colors.black : null),
+                                        ),
                                       ),
-                                    Text(e['content']),
-                                    
-                                  ]
+                                      Align(
+                                        alignment: Alignment.bottomLeft,
+                                        child: Text(
+                                          ago,
+                                          style: TextStyle(
+                                              color: myPost
+                                                  ? Colors.black54
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .onBackground),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          );
-                        },
-
-                      ).toList(),
-
-                    );
-
-                  }
-                  ),
+                            );
+                          },
+                        );
+                      },
+                    ).toList(),
+                  );
+                },
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -149,30 +176,21 @@ class _PostState extends State<Post> {
                 children: [
                   Expanded(
                     child: TextField(
+                      maxLength: 512,
                       onSubmitted: (value) {
+                        if (_messageController.text == '') return;
                         FirebaseFirestore.instance
                             .collection('posts')
                             .doc(widget.postId)
                             .collection('messages')
                             .add(
-                              <String, dynamic>{
-                                
-                                'timestamp': DateTime.now().millisecondsSinceEpoch,
-                                'author': FirebaseAuth.instance.currentUser!.uid,
-                                
-
-                                'ownerId': FirebaseAuth.instance.currentUser!.uid,
-                                'userPermissions': [
-                                  FirebaseAuth.instance.currentUser!.uid
-                                ],
-                                'content': _messageController.text,
-
-                              }
-                              
-                            );
-                            if (_messageController.text.isNotEmpty)
-                              print(_messageController.text.trimRight());
-                            _messageController.text = '';
+                          {
+                            'timestamp': DateTime.now().millisecondsSinceEpoch,
+                            'uid': FirebaseAuth.instance.currentUser!.uid,
+                            'message': _messageController.text.trimRight(),
+                          },
+                        );
+                        _messageController.clear();
                       },
                       controller: _messageController,
                       decoration: InputDecoration(
@@ -180,33 +198,22 @@ class _PostState extends State<Post> {
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.send),
                           onPressed: () {
+                            if (_messageController.text == '') return;
                             FirebaseFirestore.instance
-                            .collection('posts')
-                            .doc(widget.postId)
-                            .collection('messages')
-                            .add(
-                              <String, dynamic>{
-                                
-                                'timestamp': DateTime.now().millisecondsSinceEpoch,
-                                'author': FirebaseAuth.instance.currentUser!.uid,
-                                
-
-                                'ownerId': FirebaseAuth.instance.currentUser!.uid,
-                                'userPermissions': [
-                                  FirebaseAuth.instance.currentUser!.uid
-                                ],
-                                'content': _messageController.text,
-
-                              }
-                              
+                                .collection('posts')
+                                .doc(widget.postId)
+                                .collection('messages')
+                                .add(
+                              {
+                                'timestamp':
+                                    DateTime.now().millisecondsSinceEpoch,
+                                'uid': FirebaseAuth.instance.currentUser!.uid,
+                                'message': _messageController.text.trimRight(),
+                              },
                             );
-                            if (_messageController.text.isNotEmpty)
-                              print(_messageController.text.trimRight());
-                            _messageController.text = '';
+                            _messageController.clear();
                           },
-
                         ),
-                        
                       ),
                     ),
                   ),
@@ -218,7 +225,6 @@ class _PostState extends State<Post> {
       ),
     );
   }
-
 
   Widget liveCanvas() {
     return Padding(
@@ -247,24 +253,17 @@ class _PostState extends State<Post> {
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   }
                   return Stack(
                     key: _canvasKey,
                     children: snapshot.data!.docs.map(
                       (e) {
-                        Widget img = Image.network(
-                          e['url'],
+                        Widget img = CachedNetworkImage(
+                          imageUrl: e['url'],
                           width: squareSize * e['width'] / 100,
                           height: squareSize * e['height'] / 100,
                           fit: BoxFit.cover,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          },
                         );
                         return Positioned(
                           left: squareSize * e['left'] / 100,
@@ -320,7 +319,7 @@ class _PostState extends State<Post> {
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
+          return const Center(child: CircularProgressIndicator());
         }
         List<Widget> items = {
           Padding(
@@ -403,18 +402,11 @@ class _PostState extends State<Post> {
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Image.network(
-                e['url'],
+              child: CachedNetworkImage(
+                imageUrl: e['url'],
                 width: 200,
                 height: 100,
                 fit: BoxFit.cover,
-                loadingBuilder: (BuildContext context, Widget child,
-                    ImageChunkEvent? loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
               ),
             );
           },
@@ -712,7 +704,6 @@ class _NewPostState extends State<NewPost> {
               const SizedBox(height: 8),
               ElevatedButton(
                 style: TextButton.styleFrom(
-                  primary: Colors.white,
                   minimumSize: const Size(5, 60),
                 ),
                 onPressed: () {
