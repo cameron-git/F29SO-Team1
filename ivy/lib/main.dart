@@ -16,6 +16,8 @@ App structure:
 */
 
 // imports core flutter libraries
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -49,8 +51,6 @@ class IvyApp extends StatefulWidget {
 }
 
 class _IvyAppState extends State<IvyApp> {
-  bool darkMode = false;
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -64,9 +64,12 @@ class _IvyAppState extends State<IvyApp> {
         )
       ],
       child: MaterialApp(
+        // themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
         theme: ThemeData(
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+              foregroundColor: Colors.white),
           inputDecorationTheme: const InputDecorationTheme(
             border: OutlineInputBorder(),
             enabledBorder: OutlineInputBorder(
@@ -82,17 +85,45 @@ class _IvyAppState extends State<IvyApp> {
             showSelectedLabels: false,
             showUnselectedLabels: false,
           ),
-          colorScheme: darkMode
-              ? const ColorScheme.dark().copyWith(
-                  primary: const Color(0xFF73C597),
-                  secondary: const Color(0xFF73C597),
-                  surface: const Color(0xFF73C597),
-                  onSurface: Colors.black,
-                )
-              : const ColorScheme.light().copyWith(
-                  primary: const Color(0xFF73C597),
-                  secondary: const Color(0xFF73C597),
-                ),
+          colorScheme: const ColorScheme.light().copyWith(
+            primary: const Color(0xFF73C597),
+            secondary: const Color(0xFF73C597),
+          ),
+        ),
+        darkTheme: ThemeData(
+          textTheme: const TextTheme(
+            bodyText1: TextStyle(),
+            bodyText2: TextStyle(),
+            headline6: TextStyle(),
+          ).apply(
+            bodyColor: Colors.grey.shade300,
+            displayColor: const Color(0xFF73C597),
+          ),
+          iconTheme: const IconThemeData(
+            color: Colors.black,
+          ),
+          inputDecorationTheme: const InputDecorationTheme(
+            border: OutlineInputBorder(),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            backgroundColor: Color(0xFF73C597),
+            selectedItemColor: Colors.black,
+            unselectedItemColor: Colors.black54,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+          ),
+          colorScheme: const ColorScheme.dark().copyWith(
+            primary: const Color(0xFF73C597),
+            secondary: const Color(0xFF73C597),
+            surface: const Color(0xFF73C597),
+            onSurface: Colors.black,
+            onBackground: Colors.black,
+          ),
         ),
         // Creates NamesRoutes for the pages of the app
         // Makes switching pages easier

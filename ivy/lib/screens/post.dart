@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ivy/constants.dart';
@@ -25,7 +26,35 @@ class _PostState extends State<Post> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  final _scrollController = ScrollController();
   double aspectRatio = 1;
+
+  void mediaPopUp() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Listener(
+          onPointerSignal: (PointerSignalEvent event) {
+            if (_scrollController.position.atEdge &&
+                _scrollController.position.pixels == 0) {
+              if (event is PointerScrollEvent && event.scrollDelta.dy < -10) {
+                Navigator.of(context).pop();
+              }
+            }
+          },
+          child: GestureDetector(
+            onVerticalDragUpdate: (details) {
+              if (_scrollController.position.atEdge &&
+                  _scrollController.position.pixels == 0) {
+                if (details.primaryDelta! > 1) Navigator.of(context).pop();
+              }
+            },
+            child: mediaList(),
+          ),
+        );
+      },
+    );
+  }
 
 // For Craig to implement
   Widget messageBoard() {
@@ -192,9 +221,9 @@ class _PostState extends State<Post> {
             child: SizedBox(
               height: 100,
               child: Material(
-                color: const Color.fromARGB(255, 240, 240, 240),
+                color: const Color.fromRGBO(127, 127, 127, 0.1),
                 child: InkWell(
-                  hoverColor: const Color.fromARGB(255, 230, 230, 230),
+                  hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
                   onTap: () async {
                     final results = await FilePicker.platform.pickFiles(
                       allowMultiple: false,
@@ -269,7 +298,7 @@ class _PostState extends State<Post> {
               padding: const EdgeInsets.all(8.0),
               child: Image.network(
                 e['url'],
-                width: 100,
+                width: 200,
                 height: 100,
                 fit: BoxFit.cover,
                 loadingBuilder: (BuildContext context, Widget child,
@@ -284,6 +313,7 @@ class _PostState extends State<Post> {
           },
         ).toList();
         return ListView(
+          controller: _scrollController,
           children: items,
         );
       },
@@ -320,175 +350,207 @@ class _PostState extends State<Post> {
         bool perms =
             userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
 
-        return Scaffold(
-          key: _scaffoldKey,
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.arrow_back),
-            ),
-            title: Text(
-              data['title'],
-            ),
-            actions: [
-              // edit button
-              (perms)
-                  ? IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              scrollable: true,
-                              title: const Text('Edit Post Info'),
-                              content: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Form(
-                                  child: Column(
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          controller: _titleController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Title',
+        return Listener(
+          onPointerSignal: (PointerSignalEvent event) {
+            if (event is PointerScrollEvent &&
+                event.scrollDelta.dy > 10 &&
+                aspectRatio < 1.2) {
+              mediaPopUp();
+            }
+          },
+          child: GestureDetector(
+            onVerticalDragUpdate: (details) {
+              if (details.primaryDelta! < -1 && aspectRatio < 1.2) {
+                mediaPopUp();
+              }
+            },
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              key: _scaffoldKey,
+              appBar: AppBar(
+                leading: IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+                title: Text(
+                  data['title'],
+                ),
+                actions: [
+                  // edit button
+                  (perms)
+                      ? IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  scrollable: true,
+                                  title: const Text('Edit Post Info'),
+                                  content: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Form(
+                                      child: Column(
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: TextFormField(
+                                              controller: _titleController,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Title',
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: TextFormField(
+                                              controller: _descController,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Description',
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: TextFormField(
+                                              controller: _tagsController,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Tags',
+                                              ),
+                                            ),
+                                          )
+                                        ],
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          controller: _descController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Description',
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          controller: _tagsController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Tags',
-                                          ),
-                                        ),
-                                      )
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                              actions: [
-                                ElevatedButton(
-                                  child: const Text("Submit"),
-                                  onPressed: () {
-                                    FirebaseFirestore.instance
-                                        .collection('posts')
-                                        .doc(postId)
-                                        .set(
-                                      <String, dynamic>{
-                                        'title': _titleController.text,
-                                        'description': _descController.text,
-                                        'tags': _tagsController.text
-                                            .toUpperCase()
-                                            .trim()
-                                            .split(" "),
+                                  actions: [
+                                    ElevatedButton(
+                                      child: const Text("Submit"),
+                                      onPressed: () {
+                                        FirebaseFirestore.instance
+                                            .collection('posts')
+                                            .doc(postId)
+                                            .set(
+                                          <String, dynamic>{
+                                            'title': _titleController.text,
+                                            'description': _descController.text,
+                                            'tags': _tagsController.text
+                                                .toUpperCase()
+                                                .trim()
+                                                .split(" "),
+                                          },
+                                          SetOptions(merge: true),
+                                        );
+                                        Navigator.pop(context);
                                       },
-                                      SetOptions(merge: true),
-                                    );
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ],
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    )
-                  : const SizedBox(),
-              // delete button
-              (data['ownerId'] == FirebaseAuth.instance.currentUser?.uid)
-                  ? IconButton(
+                        )
+                      : const SizedBox(),
+                  // delete button
+                  (data['ownerId'] == FirebaseAuth.instance.currentUser?.uid)
+                      ? IconButton(
+                          onPressed: () {
+                            FirebaseFirestore.instance
+                                .collection('posts')
+                                .doc(postId)
+                                .delete();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.delete),
+                        )
+                      : const SizedBox(),
+                ],
+              ),
+              // endDrawer: Drawer(
+              //   child: mediaList(postId),
+              // ),
+              endDrawerEnableOpenDragGesture: !kIsWeb,
+
+              // top part of the post page containing the author and description
+              body: Column(
+                children: [
+                  SizedBox(
+                    height: (aspectRatio > 1.2)
+                        ? MediaQuery.of(context).size.height - 56
+                        : MediaQuery.of(context).size.height - 140,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (aspectRatio > 1.2)
+                          Expanded(
+                            child: messageBoard(),
+                          ),
+                        Expanded(
+                          child: liveCanvas(),
+                          flex: 2,
+                        ),
+                        if (aspectRatio > 1.2)
+                          Expanded(
+                            child: mediaList(),
+                          )
+                      ],
+                    ),
+                  ),
+                  if (aspectRatio < 1.2)
+                    Expanded(
+                      child: Container(),
+                    ),
+                  if (aspectRatio < 1.2)
+                    IconButton(
                       onPressed: () {
-                        FirebaseFirestore.instance
-                            .collection('posts')
-                            .doc(postId)
-                            .delete();
-                        Navigator.pop(context);
+                        mediaPopUp();
                       },
-                      icon: const Icon(Icons.delete),
-                    )
-                  : const SizedBox(),
-              IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => _scaffoldKey.currentState!.openEndDrawer(),
-              )
-            ],
-          ),
-          // endDrawer: Drawer(
-          //   child: mediaList(postId),
-          // ),
-          endDrawerEnableOpenDragGesture: !kIsWeb,
-
-          // top part of the post page containing the author and description
-
-          body: SizedBox(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (aspectRatio > 1)
-                  Expanded(
-                    child: messageBoard(),
-                    flex: 2,
-                  ),
-                Expanded(
-                  child: liveCanvas(),
-                  flex: 4,
-                ),
-                if (aspectRatio > 4 / 3)
-                  Expanded(
-                    child: mediaList(),
-                  ),
-              ],
+                      icon: const Icon(
+                        Icons.arrow_drop_up,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
-          // Column(
-          //   crossAxisAlignment: CrossAxisAlignment.start,
-          //   children: [
-          //     FutureBuilder(
-          //       future: FirebaseFirestore.instance
-          //           .collection('users')
-          //           .doc(data['ownerId'])
-          //           .get(),
-          //       builder: (BuildContext context,
-          //           AsyncSnapshot<DocumentSnapshot> snapshot) {
-          //         if (snapshot.hasError ||
-          //             (snapshot.hasData && !snapshot.data!.exists)) {
-          //           return const Text('Post Owner Error!!!');
-          //         }
-          //         if (snapshot.connectionState == ConnectionState.done) {
-          //           Map<String, dynamic> data =
-          //               snapshot.data!.data() as Map<String, dynamic>;
-          //           return Text('Post Owner: ${data['name']}');
-          //         }
-
-          //         return const Text('Post Owner:');
-          //       },
-          //     ),
-          //     Text('Time Posted : ' +
-          //         DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
-          //             .toString()
-          //             .substring(0, 16)),
-          //     Text('Description : ' + data['description']),
-          //     Row(
-          //       children: <Widget>[
-          //         const Text('tags: '),
-          //         for (var item in tags) Text(item + ' '),
-          //       ],
-          //     ),
-          //   ],
-          // ),
         );
+
+        // Column(
+        //   crossAxisAlignment: CrossAxisAlignment.start,
+        //   children: [
+        //     FutureBuilder(
+        //       future: FirebaseFirestore.instance
+        //           .collection('users')
+        //           .doc(data['ownerId'])
+        //           .get(),
+        //       builder: (BuildContext context,
+        //           AsyncSnapshot<DocumentSnapshot> snapshot) {
+        //         if (snapshot.hasError ||
+        //             (snapshot.hasData && !snapshot.data!.exists)) {
+        //           return const Text('Post Owner Error!!!');
+        //         }
+        //         if (snapshot.connectionState == ConnectionState.done) {
+        //           Map<String, dynamic> data =
+        //               snapshot.data!.data() as Map<String, dynamic>;
+        //           return Text('Post Owner: ${data['name']}');
+        //         }
+
+        //         return const Text('Post Owner:');
+        //       },
+        //     ),
+        //     Text('Time Posted : ' +
+        //         DateTime.fromMillisecondsSinceEpoch(data['timestamp'])
+        //             .toString()
+        //             .substring(0, 16)),
+        //     Text('Description : ' + data['description']),
+        //     Row(
+        //       children: <Widget>[
+        //         const Text('tags: '),
+        //         for (var item in tags) Text(item + ' '),
+        //       ],
+        //     ),
+        //   ],
+        // ),
       },
     );
   }

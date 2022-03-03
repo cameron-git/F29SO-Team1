@@ -70,7 +70,6 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
         onPressed: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => const NewPost())),
-        foregroundColor: Colors.white,
       ),
       body: PageView(
         onPageChanged: (index) => setState(() {

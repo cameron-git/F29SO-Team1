@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:async/async.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
@@ -29,13 +28,12 @@ class _SearchState extends State<Search> {
           children: [
             TextField(
               controller: _searchBoxController,
-              autofocus: true,
+              autofocus: false,
               onChanged: (text) {
                 setState(() {});
               },
               decoration: const InputDecoration(
                 labelText: 'Search',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
