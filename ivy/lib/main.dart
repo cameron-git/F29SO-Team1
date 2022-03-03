@@ -62,7 +62,7 @@ class _IvyAppState extends State<IvyApp> {
         )
       ],
       child: MaterialApp(
-        // themeMode: ThemeMode.light,
+        themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
         theme: ThemeData(
@@ -73,6 +73,7 @@ class _IvyAppState extends State<IvyApp> {
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(
                 color: Colors.grey,
+                width: 2,
               ),
             ),
           ),
@@ -106,6 +107,7 @@ class _IvyAppState extends State<IvyApp> {
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(
                 color: Colors.grey,
+                width: 2,
               ),
             ),
           ),

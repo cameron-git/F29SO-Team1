@@ -33,55 +33,12 @@ class _HomePageState extends State<HomePage> {
         ),
         title: const Text('Ivy'),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: pageIndex,
-        onTap: (index) {
-          setState(() {
-            pageIndex = index;
-          });
-          pageController.animateToPage(
-            index,
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.ease,
-          );
-        },
-        items: const [
-          BottomNavigationBarItem(
-            label: 'Home',
-            icon: Icon(
-              Icons.home,
-            ),
-          ),
-          BottomNavigationBarItem(
-            label: 'Search',
-            icon: Icon(
-              Icons.search,
-            ),
-          ),
-          BottomNavigationBarItem(
-            label: 'Message',
-            icon: Icon(
-              Icons.message_outlined,
-            ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => const NewPost())),
       ),
-      body: PageView(
-        onPageChanged: (index) => setState(() {
-          pageIndex = index;
-        }),
-        controller: pageController,
-        children: const [
-          Feed(),
-          Search(),
-          MessagePage(),
-        ],
-      ),
+      body: Search(),
     );
   }
 }
@@ -145,6 +102,127 @@ class Feed extends StatelessWidget {
             ).toList(),
           );
         },
+      ),
+    );
+  }
+}
+
+class Search extends StatefulWidget {
+  const Search({Key? key}) : super(key: key);
+
+  @override
+  _SearchState createState() => _SearchState();
+}
+
+class _SearchState extends State<Search> {
+  final TextEditingController _searchBoxController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _searchBoxController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchBoxController,
+              autofocus: false,
+              onChanged: (text) {
+                setState(() {});
+              },
+              decoration: const InputDecoration(
+                labelText: 'Search',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _searchBoxController.text.isEmpty
+                  ? const Feed()
+                  : FutureBuilder(
+                      // need to handle loading
+                      future: Future.wait(
+                        [
+                          FirebaseFirestore.instance
+                              .collection('posts')
+                              .where('title',
+                                  isGreaterThanOrEqualTo:
+                                      _searchBoxController.text)
+                              .get(),
+                          FirebaseFirestore.instance
+                              .collection('posts')
+                              .where(
+                                'tags',
+                                arrayContains:
+                                    _searchBoxController.text.toUpperCase(),
+                              )
+                              .get(),
+                        ],
+                      ),
+                      builder: (context,
+                          AsyncSnapshot<List<QuerySnapshot>> snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        List<QueryDocumentSnapshot<Object?>> posts =
+                            snapshot.data!.elementAt(0).docs;
+                        posts.addAll(snapshot.data!.elementAt(1).docs);
+
+                        return ListView(
+                          children: posts.map(
+                            (e) {
+                              return Padding(
+                                padding: (MediaQuery.of(context).size.width /
+                                            MediaQuery.of(context).size.height <
+                                        15 / 9)
+                                    ? const EdgeInsets.fromLTRB(0, 8, 0, 8)
+                                    : EdgeInsets.fromLTRB(
+                                        MediaQuery.of(context).size.width / 3,
+                                        8,
+                                        MediaQuery.of(context).size.width / 3,
+                                        8),
+                                child: InkWell(
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(4)),
+                                  onTap: () => Navigator.pushNamed(
+                                      context, '/post',
+                                      arguments: e.id),
+                                  child: Card(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(30),
+                                      child: Column(
+                                        children: [
+                                          // Text(e['name'].toString()),
+                                          Text(e['title']),
+                                          Text(
+                                            DateTime.fromMillisecondsSinceEpoch(
+                                                    e['timestamp'])
+                                                .toString()
+                                                .substring(0, 16),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ).toList(),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
