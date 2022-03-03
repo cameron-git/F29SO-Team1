@@ -57,6 +57,23 @@ class _PostState extends State<Post> {
   }
 
 // For Craig to implement
+  // this was a weird attempt on grabbing the name
+  /*getName(){
+    var sender; 
+    FirebaseFirestore.instance
+    .collection('users')
+    .doc(FirebaseAuth.instance.currentUser!.uid)
+    .snapshots();
+
+    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
+      if(!snapshot.hasData){
+        return Container(); 
+      }
+      sender = ['name'];
+    };
+    return sender;
+  }*/
+  @override
   Widget messageBoard() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -71,16 +88,60 @@ class _PostState extends State<Post> {
           children: [
             Expanded(
               child: StreamBuilder(
+                  // Selects location in firebase storage
+                  // posts\post\messages
                   stream: FirebaseFirestore.instance
-                      .collection('posts')
-                      .doc(widget.postId)
-                      .collection('messages')
-                      .snapshots(),
-                  builder: (context, snapshot) {
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .collection('messages')
+                    .orderBy('timestamp', descending: false)
+                    .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
+                    if(!snapshot.hasData){
+                      return Container();
+                    }
                     return ListView(
-                      children: [],
+                     children: snapshot.data!.docs.map(
+                       (e) {
+                          return Padding(
+                            padding: (MediaQuery.of(context).size.width /
+                              MediaQuery.of(context).size.height <
+                               15 / 9)
+                              ? const EdgeInsets.all(8)
+                              : EdgeInsets.fromLTRB(
+                              0,0,0,0),
+                          child: InkWell(
+                            borderRadius: const BorderRadius.all(Radius.circular(4)),
+
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Column(
+                                  children: [
+
+                                    Text(e['author']),
+                                    Text(
+                                      DateTime.fromMicrosecondsSinceEpoch(
+                                        e['timestamp'])
+                                        .toString()
+                                        .substring(0,16),
+                                      ),
+                                    Text(e['content']),
+                                    
+                                  ]
+                                ),
+                              ),
+                            ),
+                          ),
+                          );
+                        },
+
+                      ).toList(),
+
                     );
-                  }),
+
+                  }
+                  ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -89,7 +150,29 @@ class _PostState extends State<Post> {
                   Expanded(
                     child: TextField(
                       onSubmitted: (value) {
-                        if (value.isNotEmpty) print(value.trimRight());
+                        FirebaseFirestore.instance
+                            .collection('posts')
+                            .doc(widget.postId)
+                            .collection('messages')
+                            .add(
+                              <String, dynamic>{
+                                
+                                'timestamp': DateTime.now().millisecondsSinceEpoch,
+                                'author': FirebaseAuth.instance.currentUser!.uid,
+                                
+
+                                'ownerId': FirebaseAuth.instance.currentUser!.uid,
+                                'userPermissions': [
+                                  FirebaseAuth.instance.currentUser!.uid
+                                ],
+                                'content': _messageController.text,
+
+                              }
+                              
+                            );
+                            if (_messageController.text.isNotEmpty)
+                              print(_messageController.text.trimRight());
+                            _messageController.text = '';
                       },
                       controller: _messageController,
                       decoration: InputDecoration(
@@ -97,10 +180,33 @@ class _PostState extends State<Post> {
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.send),
                           onPressed: () {
+                            FirebaseFirestore.instance
+                            .collection('posts')
+                            .doc(widget.postId)
+                            .collection('messages')
+                            .add(
+                              <String, dynamic>{
+                                
+                                'timestamp': DateTime.now().millisecondsSinceEpoch,
+                                'author': FirebaseAuth.instance.currentUser!.uid,
+                                
+
+                                'ownerId': FirebaseAuth.instance.currentUser!.uid,
+                                'userPermissions': [
+                                  FirebaseAuth.instance.currentUser!.uid
+                                ],
+                                'content': _messageController.text,
+
+                              }
+                              
+                            );
                             if (_messageController.text.isNotEmpty)
                               print(_messageController.text.trimRight());
+                            _messageController.text = '';
                           },
+
                         ),
+                        
                       ),
                     ),
                   ),
@@ -112,6 +218,7 @@ class _PostState extends State<Post> {
       ),
     );
   }
+
 
   Widget liveCanvas() {
     return Padding(
