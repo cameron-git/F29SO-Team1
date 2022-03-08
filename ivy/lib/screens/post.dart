@@ -11,7 +11,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-Random rand = Random();
+Random rand = Random(); // TODO: What is this for?
 final GlobalKey _canvasKey = GlobalKey();
 
 class Post extends StatefulWidget {
@@ -28,8 +28,10 @@ class _PostState extends State<Post> {
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  double aspectRatio = 1;
 
+  double aspectRatio = 1; // to get the aspect ratio of the screen
+
+  // drawer pop up to select the media on the post
   void mediaPopUp() {
     showModalBottomSheet(
       context: context,
@@ -50,13 +52,14 @@ class _PostState extends State<Post> {
                 if (details.primaryDelta! > 1) Navigator.of(context).pop();
               }
             },
-            child: mediaList(),
+            child: mediaList(), // display the media list in the the drawer
           ),
         );
       },
     );
   }
 
+  // widget for the message board on a certain post
   Widget messageBoard() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -226,6 +229,7 @@ class _PostState extends State<Post> {
     );
   }
 
+  // widget holding the canvas
   Widget liveCanvas() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -271,7 +275,7 @@ class _PostState extends State<Post> {
                           child: Draggable(
                             feedback: img,
                             child: img,
-                            childWhenDragging: Container(),
+                            childWhenDragging: img,
                             onDragEnd: (dragDetails) {
                               final RenderBox renderBox =
                                   _canvasKey.currentContext?.findRenderObject()
@@ -310,6 +314,7 @@ class _PostState extends State<Post> {
     );
   }
 
+  // widget containing all the media in a post
   Widget mediaList() {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
@@ -318,9 +323,11 @@ class _PostState extends State<Post> {
           .collection('media')
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        // return loading circle while the images are loading
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        // list of all the items displayed in the media list
         List<Widget> items = {
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -344,9 +351,14 @@ class _PostState extends State<Post> {
                         ),
                       );
                     }
+                    // if the app is running on the web
                     if (kIsWeb) {
-                      final bytes = results!.files.single.bytes!;
-                      final fileName = results.files.single.name;
+                      final bytes =
+                          results!.files.single.bytes!; // get the selected file
+                      final fileName = results.files.single
+                          .name; // get the name of the selected file
+
+                      // upload the image to firebase storage
                       await FirebaseStorage.instance
                           .ref('images/${widget.postId}/$fileName')
                           .putData(bytes);
@@ -366,9 +378,12 @@ class _PostState extends State<Post> {
                           'height': 20,
                         },
                       );
+                      // if the app is hosted on a mobile device
                     } else {
                       final path = results!.files.single.path!;
                       final fileName = results.files.single.name;
+
+                      // upload the image to firebase storage
                       await FirebaseStorage.instance
                           .ref('images/${widget.postId}/$fileName')
                           .putFile(File(path));
@@ -390,6 +405,7 @@ class _PostState extends State<Post> {
                       );
                     }
                   },
+                  // add-button to add more media
                   child: const SizedBox(
                     child: Icon(Icons.add),
                   ),
@@ -397,7 +413,7 @@ class _PostState extends State<Post> {
               ),
             ),
           ),
-        }.toList();
+        }.toList(); // put all the items into a list and display below the add button
         items += snapshot.data!.docs.map(
           (e) {
             return Padding(
@@ -449,7 +465,9 @@ class _PostState extends State<Post> {
         bool perms =
             userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
 
+        // listener for media pop-up
         return Listener(
+          // on scroll-up open up the media pop-up
           onPointerSignal: (PointerSignalEvent event) {
             if (event is PointerScrollEvent &&
                 event.scrollDelta.dy > 10 &&
@@ -457,6 +475,7 @@ class _PostState extends State<Post> {
               mediaPopUp();
             }
           },
+          // on swipe-up open up the media pop-up
           child: GestureDetector(
             onVerticalDragUpdate: (details) {
               if (details.primaryDelta! < -1 && aspectRatio < 1.2) {
@@ -575,8 +594,9 @@ class _PostState extends State<Post> {
                 children: [
                   SizedBox(
                     height: (aspectRatio > 1.2)
-                        ? MediaQuery.of(context).size.height - 56
-                        : MediaQuery.of(context).size.height - 140,
+                        ? MediaQuery.of(context).size.height - 68
+                        : MediaQuery.of(context).size.height -
+                            167, // TODO: these two cannot be hard-coded
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
