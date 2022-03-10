@@ -263,19 +263,42 @@ class _PostState extends State<Post> {
                     key: _canvasKey,
                     children: snapshot.data!.docs.map(
                       (e) {
-                        Widget img = CachedNetworkImage(
-                          imageUrl: e['url'],
-                          width: squareSize * e['width'] / 100,
-                          height: squareSize * e['height'] / 100,
-                          fit: BoxFit.cover,
-                        );
+                        Widget media;
+                        if (e['type'] == "videos") {
+                          debugPrint("It's a video");
+                          media = CachedNetworkImage(
+                            imageUrl:
+                                "https://firebasestorage.googleapis.com/v0/b/ivycollaborative-cebdc.appspot.com/o/images%2F3KnGvEvCZZWlOCNGEuzr%2FIMG_20220223_155447.jpg?alt=media&token=eab5470e-bd16-49a0-85e4-6c3d557a90dc",
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            fit: BoxFit.cover,
+                          );
+                        } else if (e['type'] == "audio") {
+                          debugPrint("It's an audio file");
+                          media = CachedNetworkImage(
+                            imageUrl:
+                                "https://firebasestorage.googleapis.com/v0/b/ivycollaborative-cebdc.appspot.com/o/images%2F3KnGvEvCZZWlOCNGEuzr%2FIMG_20220223_155447.jpg?alt=media&token=eab5470e-bd16-49a0-85e4-6c3d557a90dc",
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            fit: BoxFit.cover,
+                          );
+                        } else {
+                          media = CachedNetworkImage(
+                            imageUrl: e['url'],
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            fit: BoxFit.cover,
+                          );
+                        }
+
                         return Positioned(
                           left: squareSize * e['left'] / 100,
                           top: squareSize * e['top'] / 100,
+                          // ability to drag the media
                           child: Draggable(
-                            feedback: img,
-                            child: img,
-                            childWhenDragging: img,
+                            feedback: media,
+                            child: media,
+                            childWhenDragging: media,
                             onDragEnd: (dragDetails) {
                               final RenderBox renderBox =
                                   _canvasKey.currentContext?.findRenderObject()
@@ -288,6 +311,7 @@ class _PostState extends State<Post> {
                               final y = (dragDetails.offset.dy - offset.dy) /
                                   squareSize *
                                   100;
+                              // update storage with position
                               FirebaseFirestore.instance
                                   .collection('posts')
                                   .doc(widget.postId)
@@ -335,15 +359,17 @@ class _PostState extends State<Post> {
               height: 100,
               child: Material(
                 color: const Color.fromRGBO(127, 127, 127, 0.1),
+                // button with + sign
                 child: InkWell(
                   hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
+                  // when you tap on it, open local phone file storage
                   onTap: () async {
                     final results = await FilePicker.platform.pickFiles(
                       allowMultiple: false,
                       type: FileType.custom,
-                      allowedExtensions: ['png', 'jpg'],
+                      allowedExtensions: ['png', 'jpg', 'mp4', 'mp3'],
                     );
-
+                    // if no file was chosen, tell the user
                     if (results == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -359,6 +385,7 @@ class _PostState extends State<Post> {
                           .name; // get the name of the selected file
 
                       // upload the image to firebase storage
+                      // TODO: could use the methods from storage_service.dart?
                       await FirebaseStorage.instance
                           .ref('images/${widget.postId}/$fileName')
                           .putData(bytes);
@@ -382,14 +409,27 @@ class _PostState extends State<Post> {
                     } else {
                       final path = results!.files.single.path!;
                       final fileName = results.files.single.name;
+                      var type = results.files.single.extension;
 
                       // upload the image to firebase storage
+                      String folder;
+                      if (type == "jpg" || type == "png") {
+                        folder = "images";
+                      } else if (type == "mp4") {
+                        folder = "videos";
+                      } else if (type == "mp3") {
+                        folder = "audio";
+                      } else {
+                        folder = "default";
+                      }
+
                       await FirebaseStorage.instance
-                          .ref('images/${widget.postId}/$fileName')
+                          .ref('$folder/${widget.postId}/$fileName')
                           .putFile(File(path));
                       final url = await FirebaseStorage.instance
-                          .ref('images/${widget.postId}/$fileName')
+                          .ref('$folder/${widget.postId}/$fileName')
                           .getDownloadURL();
+                      // adding media to the post instance
                       FirebaseFirestore.instance
                           .collection('posts')
                           .doc(widget.postId)
@@ -401,6 +441,7 @@ class _PostState extends State<Post> {
                           'top': 0,
                           'width': 20,
                           'height': 20,
+                          'type': folder,
                         },
                       );
                     }
@@ -414,25 +455,36 @@ class _PostState extends State<Post> {
             ),
           ),
         }.toList(); // put all the items into a list and display below the add button
+
         items += snapshot.data!.docs.map(
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CachedNetworkImage(
-                imageUrl: e['url'],
-                width: 200,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
+              child: displayMediaType(e),
             );
           },
         ).toList();
+
         return ListView(
           controller: _scrollController,
           children: items,
         );
       },
     );
+  }
+
+  displayMediaType(QueryDocumentSnapshot media) {
+    var mediaType = media['type'];
+    debugPrint("This is the type: " + mediaType);
+
+    if (mediaType == "images") {
+      return CachedNetworkImage(
+        imageUrl: media['url'],
+        width: 200,
+        height: 100,
+        fit: BoxFit.cover,
+      );
+    }
   }
 
   @override
