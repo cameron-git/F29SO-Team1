@@ -11,7 +11,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-Random rand = Random();
+Random rand = Random(); // TODO: What is this for?
 final GlobalKey _canvasKey = GlobalKey();
 
 class Post extends StatefulWidget {
@@ -28,8 +28,10 @@ class _PostState extends State<Post> {
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  double aspectRatio = 1;
 
+  double aspectRatio = 1; // to get the aspect ratio of the screen
+
+  // drawer pop up to select the media on the post
   void mediaPopUp() {
     showModalBottomSheet(
       context: context,
@@ -50,13 +52,14 @@ class _PostState extends State<Post> {
                 if (details.primaryDelta! > 1) Navigator.of(context).pop();
               }
             },
-            child: mediaList(),
+            child: mediaList(), // display the media list in the the drawer
           ),
         );
       },
     );
   }
 
+  // widget for the message board on a certain post
   Widget messageBoard() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -226,6 +229,7 @@ class _PostState extends State<Post> {
     );
   }
 
+  // widget holding the canvas
   Widget liveCanvas() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -259,19 +263,30 @@ class _PostState extends State<Post> {
                     key: _canvasKey,
                     children: snapshot.data!.docs.map(
                       (e) {
-                        Widget img = CachedNetworkImage(
-                          imageUrl: e['url'],
-                          width: squareSize * e['width'] / 100,
-                          height: squareSize * e['height'] / 100,
-                          fit: BoxFit.cover,
-                        );
+                        Widget media;
+                        if (e['type'] == "videos") {
+                          debugPrint("It's a video");
+                          media = Placeholder();
+                        } else if (e['type'] == "audio") {
+                          debugPrint("It's an audio file");
+                          media = media = Placeholder();
+                        } else {
+                          media = CachedNetworkImage(
+                            imageUrl: e['url'],
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            fit: BoxFit.cover,
+                          );
+                        }
+
                         return Positioned(
                           left: squareSize * e['left'] / 100,
                           top: squareSize * e['top'] / 100,
+                          // ability to drag the media
                           child: Draggable(
-                            feedback: img,
-                            child: img,
-                            childWhenDragging: Container(),
+                            feedback: media,
+                            child: media,
+                            childWhenDragging: media,
                             onDragEnd: (dragDetails) {
                               final RenderBox renderBox =
                                   _canvasKey.currentContext?.findRenderObject()
@@ -284,6 +299,7 @@ class _PostState extends State<Post> {
                               final y = (dragDetails.offset.dy - offset.dy) /
                                   squareSize *
                                   100;
+                              // update storage with position
                               FirebaseFirestore.instance
                                   .collection('posts')
                                   .doc(widget.postId)
@@ -310,6 +326,7 @@ class _PostState extends State<Post> {
     );
   }
 
+  // widget containing all the media in a post
   Widget mediaList() {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
@@ -318,9 +335,11 @@ class _PostState extends State<Post> {
           .collection('media')
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        // return loading circle while the images are loading
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        // list of all the items displayed in the media list
         List<Widget> items = {
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -328,15 +347,17 @@ class _PostState extends State<Post> {
               height: 100,
               child: Material(
                 color: const Color.fromRGBO(127, 127, 127, 0.1),
+                // button with + sign
                 child: InkWell(
                   hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
+                  // when you tap on it, open local phone file storage
                   onTap: () async {
                     final results = await FilePicker.platform.pickFiles(
                       allowMultiple: false,
                       type: FileType.custom,
-                      allowedExtensions: ['png', 'jpg'],
+                      allowedExtensions: ['png', 'jpg', 'mp4', 'mp3'],
                     );
-
+                    // if no file was chosen, tell the user
                     if (results == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -344,9 +365,15 @@ class _PostState extends State<Post> {
                         ),
                       );
                     }
+                    // if the app is running on the web
                     if (kIsWeb) {
-                      final bytes = results!.files.single.bytes!;
-                      final fileName = results.files.single.name;
+                      final bytes =
+                          results!.files.single.bytes!; // get the selected file
+                      final fileName = results.files.single
+                          .name; // get the name of the selected file
+
+                      // upload the image to firebase storage
+                      // TODO: could use the methods from storage_service.dart?
                       await FirebaseStorage.instance
                           .ref('images/${widget.postId}/$fileName')
                           .putData(bytes);
@@ -366,15 +393,31 @@ class _PostState extends State<Post> {
                           'height': 20,
                         },
                       );
+                      // if the app is hosted on a mobile device
                     } else {
                       final path = results!.files.single.path!;
                       final fileName = results.files.single.name;
+                      var type = results.files.single.extension;
+
+                      // upload the image to firebase storage
+                      String folder;
+                      if (type == "jpg" || type == "png") {
+                        folder = "images";
+                      } else if (type == "mp4") {
+                        folder = "videos";
+                      } else if (type == "mp3") {
+                        folder = "audio";
+                      } else {
+                        folder = "default";
+                      }
+
                       await FirebaseStorage.instance
-                          .ref('images/${widget.postId}/$fileName')
+                          .ref('$folder/${widget.postId}/$fileName')
                           .putFile(File(path));
                       final url = await FirebaseStorage.instance
-                          .ref('images/${widget.postId}/$fileName')
+                          .ref('$folder/${widget.postId}/$fileName')
                           .getDownloadURL();
+                      // adding media to the post instance
                       FirebaseFirestore.instance
                           .collection('posts')
                           .doc(widget.postId)
@@ -386,10 +429,12 @@ class _PostState extends State<Post> {
                           'top': 0,
                           'width': 20,
                           'height': 20,
+                          'type': folder,
                         },
                       );
                     }
                   },
+                  // add-button to add more media
                   child: const SizedBox(
                     child: Icon(Icons.add),
                   ),
@@ -397,11 +442,13 @@ class _PostState extends State<Post> {
               ),
             ),
           ),
-        }.toList();
+        }.toList(); // put all the items into a list and display below the add button
+
         items += snapshot.data!.docs.map(
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
+<<<<<<< HEAD
               child: SizedBox(
                 height: 100,
                 width: 200,
@@ -425,15 +472,33 @@ class _PostState extends State<Post> {
                   ],
                 ),
               ),
+=======
+              child: displayMediaType(e),
+>>>>>>> 23ac30aa15d4a555a89bdc621f5308e9efac26be
             );
           },
         ).toList();
+
         return ListView(
           controller: _scrollController,
           children: items,
         );
       },
     );
+  }
+
+  displayMediaType(QueryDocumentSnapshot media) {
+    var mediaType = media['type'];
+    debugPrint("This is the type: " + mediaType);
+
+    if (mediaType == "images") {
+      return CachedNetworkImage(
+        imageUrl: media['url'],
+        width: 200,
+        height: 100,
+        fit: BoxFit.cover,
+      );
+    }
   }
 
   @override
@@ -466,7 +531,9 @@ class _PostState extends State<Post> {
         bool perms =
             userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
 
+        // listener for media pop-up
         return Listener(
+          // on scroll-up open up the media pop-up
           onPointerSignal: (PointerSignalEvent event) {
             if (event is PointerScrollEvent &&
                 event.scrollDelta.dy > 10 &&
@@ -474,6 +541,7 @@ class _PostState extends State<Post> {
               mediaPopUp();
             }
           },
+          // on swipe-up open up the media pop-up
           child: GestureDetector(
             onVerticalDragUpdate: (details) {
               if (details.primaryDelta! < -1 && aspectRatio < 1.2) {
@@ -592,8 +660,9 @@ class _PostState extends State<Post> {
                 children: [
                   SizedBox(
                     height: (aspectRatio > 1.2)
-                        ? MediaQuery.of(context).size.height - 56
-                        : MediaQuery.of(context).size.height - 140,
+                        ? MediaQuery.of(context).size.height - 68
+                        : MediaQuery.of(context).size.height -
+                            167, // TODO: these two cannot be hard-coded
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
