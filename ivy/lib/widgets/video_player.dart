@@ -15,32 +15,29 @@ class VideoPlayerWidget extends StatefulWidget {
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late VideoPlayerController _controller;
-
-  void initPlayer() async {
-    _controller = VideoPlayerController.network(
-        widget.videoURL); // create the controller with the passed in URL
-    await _controller.initialize();
-    _controller.setLooping(true);
-  }
+  late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
-    initPlayer();
+    _controller = VideoPlayerController.network(widget.videoURL);
+    _initializeVideoPlayerFuture = _controller.initialize();
+    _controller.setLooping(true);
+    _controller.setVolume(1);
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
-            : Container(),
-      ],
-    );
+    return FutureBuilder(
+        future: _initializeVideoPlayerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return VideoPlayer(_controller);
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
   }
 
   @override
