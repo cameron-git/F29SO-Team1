@@ -1,3 +1,4 @@
+// New comment
 // Should contain all post stuff and create new post widget
 import 'dart:io';
 import 'dart:math';
