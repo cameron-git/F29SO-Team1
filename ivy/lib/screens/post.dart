@@ -269,7 +269,13 @@ class _PostState extends State<Post> {
 
                         if (e['type'] == "videos") {
                           debugPrint("It's a video");
-                          media = VideoPlayerWidget(videoURL: e['url']);
+                          // media = VideoPlayerWidget(videoURL: e['url']);
+                          // have a blue container for debugging for now
+                          media = Container(
+                            height: 100,
+                            width: 100,
+                            color: Colors.blue,
+                          );
                         } else if (e['type'] == "audio") {
                           debugPrint("It's an audio file");
                           media = Container(
