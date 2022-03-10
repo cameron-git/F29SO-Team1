@@ -1,7 +1,6 @@
 // New comment
 // Should contain all post stuff and create new post widget
 import 'dart:io';
-import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,7 +12,6 @@ import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
 
-Random rand = Random(); // TODO: What is this for?
 final GlobalKey _canvasKey = GlobalKey();
 
 class Post extends StatefulWidget {
@@ -402,7 +400,6 @@ class _PostState extends State<Post> {
                       }
 
                       // upload the image to firebase storage
-                      // TODO: could use the methods from storage_service.dart?
                       await FirebaseStorage.instance
                           .ref('$folder/${widget.postId}/$fileName')
                           .putData(bytes);
@@ -478,7 +475,27 @@ class _PostState extends State<Post> {
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: displayMediaType(e),
+              child: SizedBox(
+                height: 100,
+                width: 200,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          displayMediaType(e),
+                          Container(
+                              color: Theme.of(context).colorScheme.background,
+                              child: const Icon(Icons.image)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                        onPressed: () {}, icon: const Icon(Icons.download)),
+                    IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+                  ],
+                ),
+              ),
             );
           },
         ).toList();
@@ -498,8 +515,7 @@ class _PostState extends State<Post> {
     if (mediaType == "images") {
       return CachedNetworkImage(
         imageUrl: media['url'],
-        width: 200,
-        height: 100,
+        width: 500,
         fit: BoxFit.cover,
       );
     } else if (mediaType == "audio") {
@@ -576,6 +592,8 @@ class _PostState extends State<Post> {
                   data['title'],
                 ),
                 actions: [
+                  IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.play_arrow)),
                   // edit button
                   (perms)
                       ? IconButton(
