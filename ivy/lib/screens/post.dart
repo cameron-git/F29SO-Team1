@@ -270,7 +270,7 @@ class _PostState extends State<Post> {
                           media = Placeholder();
                         } else if (e['type'] == "audio") {
                           debugPrint("It's an audio file");
-                          media = media = Placeholder();
+                          media = Placeholder();
                         } else {
                           media = CachedNetworkImage(
                             imageUrl: e['url'],
