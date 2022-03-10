@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ivy/widgets/video_player.dart';
 
 Random rand = Random(); // TODO: What is this for?
 final GlobalKey _canvasKey = GlobalKey();
@@ -265,12 +266,17 @@ class _PostState extends State<Post> {
                     children: snapshot.data!.docs.map(
                       (e) {
                         Widget media;
+
                         if (e['type'] == "videos") {
                           debugPrint("It's a video");
-                          media = Placeholder();
+                          media = VideoPlayerWidget(videoURL: e['url']);
                         } else if (e['type'] == "audio") {
                           debugPrint("It's an audio file");
-                          media = Placeholder();
+                          media = Container(
+                            height: 100,
+                            width: 100,
+                            color: Colors.green,
+                          );
                         } else {
                           media = CachedNetworkImage(
                             imageUrl: e['url'],
@@ -287,7 +293,7 @@ class _PostState extends State<Post> {
                           child: Draggable(
                             feedback: media,
                             child: media,
-                            childWhenDragging: media,
+                            childWhenDragging: Container(),
                             onDragEnd: (dragDetails) {
                               final RenderBox renderBox =
                                   _canvasKey.currentContext?.findRenderObject()
@@ -372,14 +378,27 @@ class _PostState extends State<Post> {
                           results!.files.single.bytes!; // get the selected file
                       final fileName = results.files.single
                           .name; // get the name of the selected file
+                      var type = results.files.single.extension;
+
+                      // upload the image to firebase storage
+                      String folder;
+                      if (type == "jpg" || type == "png") {
+                        folder = "images";
+                      } else if (type == "mp4") {
+                        folder = "videos";
+                      } else if (type == "mp3") {
+                        folder = "audio";
+                      } else {
+                        folder = "default";
+                      }
 
                       // upload the image to firebase storage
                       // TODO: could use the methods from storage_service.dart?
                       await FirebaseStorage.instance
-                          .ref('images/${widget.postId}/$fileName')
+                          .ref('$folder/${widget.postId}/$fileName')
                           .putData(bytes);
                       final url = await FirebaseStorage.instance
-                          .ref('images/${widget.postId}/$fileName')
+                          .ref('$folder/${widget.postId}/$fileName')
                           .getDownloadURL();
                       FirebaseFirestore.instance
                           .collection('posts')
@@ -392,6 +411,7 @@ class _PostState extends State<Post> {
                           'top': 0,
                           'width': 20,
                           'height': 20,
+                          'type': folder,
                         },
                       );
                       // if the app is hosted on a mobile device
@@ -472,6 +492,18 @@ class _PostState extends State<Post> {
         width: 200,
         height: 100,
         fit: BoxFit.cover,
+      );
+    } else if (mediaType == "audio") {
+      return Container(
+        height: 200,
+        width: 50,
+        color: Colors.green,
+      );
+    } else if (mediaType == "videos") {
+      return Container(
+        height: 200,
+        width: 50,
+        color: Colors.blue,
       );
     }
   }
