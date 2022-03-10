@@ -448,33 +448,7 @@ class _PostState extends State<Post> {
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
-<<<<<<< HEAD
-              child: SizedBox(
-                height: 100,
-                width: 200,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: e['url'],
-                            width: 500,
-                            fit: BoxFit.cover,
-                          ),
-                          const Icon(Icons.image),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                        onPressed: () {}, icon: const Icon(Icons.download)),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
-                  ],
-                ),
-              ),
-=======
               child: displayMediaType(e),
->>>>>>> 23ac30aa15d4a555a89bdc621f5308e9efac26be
             );
           },
         ).toList();
