@@ -266,22 +266,10 @@ class _PostState extends State<Post> {
                         Widget media;
                         if (e['type'] == "videos") {
                           debugPrint("It's a video");
-                          media = CachedNetworkImage(
-                            imageUrl:
-                                "https://firebasestorage.googleapis.com/v0/b/ivycollaborative-cebdc.appspot.com/o/images%2F3KnGvEvCZZWlOCNGEuzr%2FIMG_20220223_155447.jpg?alt=media&token=eab5470e-bd16-49a0-85e4-6c3d557a90dc",
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            fit: BoxFit.cover,
-                          );
+                          media = Placeholder();
                         } else if (e['type'] == "audio") {
                           debugPrint("It's an audio file");
-                          media = CachedNetworkImage(
-                            imageUrl:
-                                "https://firebasestorage.googleapis.com/v0/b/ivycollaborative-cebdc.appspot.com/o/images%2F3KnGvEvCZZWlOCNGEuzr%2FIMG_20220223_155447.jpg?alt=media&token=eab5470e-bd16-49a0-85e4-6c3d557a90dc",
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            fit: BoxFit.cover,
-                          );
+                          media = media = Placeholder();
                         } else {
                           media = CachedNetworkImage(
                             imageUrl: e['url'],
