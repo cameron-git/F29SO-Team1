@@ -402,11 +402,28 @@ class _PostState extends State<Post> {
           (e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CachedNetworkImage(
-                imageUrl: e['url'],
-                width: 200,
+              child: SizedBox(
                 height: 100,
-                fit: BoxFit.cover,
+                width: 200,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: e['url'],
+                            width: 500,
+                            fit: BoxFit.cover,
+                          ),
+                          const Icon(Icons.image),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                        onPressed: () {}, icon: const Icon(Icons.download)),
+                    IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+                  ],
+                ),
               ),
             );
           },
