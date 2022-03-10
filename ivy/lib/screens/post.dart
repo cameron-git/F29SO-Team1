@@ -573,6 +573,8 @@ class _PostState extends State<Post> {
                   data['title'],
                 ),
                 actions: [
+                  IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.play_arrow)),
                   // edit button
                   (perms)
                       ? IconButton(
