@@ -653,7 +653,7 @@ class _PostState extends State<Post> {
                                             'title': _titleController.text,
                                             'description': _descController.text,
                                             'tags': _tagsController.text
-                                                .toUpperCase()
+                                                .toLowerCase()
                                                 .trim()
                                                 .split(" "),
                                           },

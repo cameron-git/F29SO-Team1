@@ -45,15 +45,20 @@ class _SearchState extends State<Search> {
                     FirebaseFirestore.instance
                         .collection('posts')
                         .where('title',
-                            isGreaterThanOrEqualTo: _searchBoxController.text)
+                            isGreaterThanOrEqualTo: _searchBoxController.text.toLowerCase())
                         .get(),
                     FirebaseFirestore.instance
                         .collection('posts')
                         .where(
                           'tags',
                           arrayContains:
-                              _searchBoxController.text.toUpperCase(),
+                              _searchBoxController.text.toLowerCase(),
                         )
+                        .get(),
+                    FirebaseFirestore.instance
+                        .collection('users')
+                        .where('name',
+                            isGreaterThanOrEqualTo: _searchBoxController.text.toLowerCase())
                         .get(),
                   ],
                 ),
