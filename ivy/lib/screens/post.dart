@@ -322,8 +322,8 @@ class _PostState extends State<Post> {
                                   .doc(e.id)
                                   .update(
                                 {
-                                  'left': x,
-                                  'top': y,
+                                  'left': x.clamp(-100, 100),
+                                  'top': y.clamp(-100, 100),
                                 },
                               );
                             },
@@ -495,7 +495,12 @@ class _PostState extends State<Post> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                EditDialog(e, widget.postId));
+                      },
                       icon: Icon(
                         Icons.edit,
                         color: Theme.of(context).colorScheme.onBackground,
@@ -875,5 +880,124 @@ class _NewPostState extends State<NewPost> {
         ),
       ),
     );
+  }
+}
+
+class EditDialog extends StatefulWidget {
+  const EditDialog(this.e, this.postId, {Key? key}) : super(key: key);
+  final QueryDocumentSnapshot<Object?> e;
+  final String postId;
+
+  @override
+  State<EditDialog> createState() => _EditDialogState();
+}
+
+class _EditDialogState extends State<EditDialog> {
+  double left = 0;
+  double top = 0;
+  double width = 0;
+  double height = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    width = widget.e['width'];
+    height = widget.e['height'];
+
+    left = widget.e['left'] + width / 2;
+    top = widget.e['top'] + height / 2;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.e['type'] == 'jpg' ||
+        widget.e['type'] == 'png' ||
+        widget.e['type'] == 'mp4') {
+      return AlertDialog(
+        title: const Text('Edit'),
+        content: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView(
+              children: [
+                Text(
+                    'Horizontal Position (${left.round()}% of width from left)'),
+                Slider(
+                  value: left,
+                  onChanged: (d) {
+                    left = d;
+                    setState(() {});
+                  },
+                  min: -50,
+                  max: 150,
+                ),
+                const Divider(),
+                Text('Vertical Position (${top.round()}% of height from top)'),
+                Slider(
+                  value: top,
+                  onChanged: (d) {
+                    top = d;
+                    setState(() {});
+                  },
+                  min: -50,
+                  max: 150,
+                ),
+                const Divider(),
+                Text('Width (${width.round()}% of width)'),
+                Slider(
+                  value: width,
+                  onChanged: (d) {
+                    width = d;
+                    setState(() {});
+                  },
+                  min: 1,
+                  max: 100,
+                ),
+                const Divider(),
+                Text('Height (${height.round()}% of height)'),
+                Slider(
+                  value: height,
+                  onChanged: (d) {
+                    height = d;
+                    setState(() {});
+                  },
+                  min: 1,
+                  max: 100,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              FirebaseFirestore.instance
+                  .collection('posts')
+                  .doc(widget.postId)
+                  .collection('media')
+                  .doc(widget.e.id)
+                  .update(
+                {
+                  'left': left - width / 2,
+                  'top': top - height / 2,
+                  'width': width,
+                  'height': height,
+                },
+              );
+              Navigator.pop(context, 'OK');
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    } else {
+      return const AlertDialog();
+    }
   }
 }
