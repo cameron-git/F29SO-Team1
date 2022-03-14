@@ -470,8 +470,12 @@ class _PostState extends State<Post> {
                         children: [
                           displayMediaType(e),
                           Container(
-                              color: Theme.of(context).colorScheme.background,
-                              child: const Icon(Icons.image)),
+                            color: Theme.of(context).colorScheme.background,
+                            child: Icon(
+                              Icons.image,
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -485,11 +489,17 @@ class _PostState extends State<Post> {
                           );
                         }
                       },
-                      icon: const Icon(Icons.download),
+                      icon: Icon(
+                        Icons.download,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
                     ),
                     IconButton(
                       onPressed: () {},
-                      icon: const Icon(Icons.edit),
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
                     ),
                   ],
                 ),
@@ -590,8 +600,26 @@ class _PostState extends State<Post> {
                   data['title'],
                 ),
                 actions: [
+                  if (aspectRatio <= 1.2)
+                    IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return Scaffold(
+                                  appBar: AppBar(),
+                                  body: messageBoard(),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.message)),
+
                   IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.play_arrow)),
+                    onPressed: () {},
+                    icon: const Icon(Icons.play_arrow),
+                  ),
                   // edit button
                   (perms)
                       ? IconButton(

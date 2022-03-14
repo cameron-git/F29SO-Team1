@@ -64,7 +64,7 @@ class _IvyAppState extends State<IvyApp> {
         )
       ],
       child: MaterialApp(
-        themeMode: ThemeMode.light,
+        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
         theme: ThemeData(
@@ -125,6 +125,7 @@ class _IvyAppState extends State<IvyApp> {
             secondary: const Color(0xFF73C597),
             surface: const Color(0xFF73C597),
             onSurface: Colors.black,
+            background: const Color(0xFF303030),
             onBackground: Colors.white54,
           ),
         ),
