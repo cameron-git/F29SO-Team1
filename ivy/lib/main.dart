@@ -64,7 +64,7 @@ class _IvyAppState extends State<IvyApp> {
         )
       ],
       child: MaterialApp(
-        themeMode: ThemeMode.system,
+        // themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
         theme: ThemeData(

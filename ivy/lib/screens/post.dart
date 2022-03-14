@@ -255,6 +255,7 @@ class _PostState extends State<Post> {
                     .collection('posts')
                     .doc(widget.postId)
                     .collection('media')
+                    .orderBy('layer')
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
@@ -396,6 +397,7 @@ class _PostState extends State<Post> {
                         'width': 20,
                         'height': 20,
                         'type': type,
+                        'layer': 1,
                       });
 
                       // upload the image to firebase storage
@@ -436,6 +438,7 @@ class _PostState extends State<Post> {
                           'width': 20,
                           'height': 20,
                           'type': type,
+                          'layer': 1,
                         },
                       );
                     }
@@ -462,8 +465,8 @@ class _PostState extends State<Post> {
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
                 height: 100,
-                width: 200,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Stack(
@@ -493,18 +496,21 @@ class _PostState extends State<Post> {
                         Icons.download,
                         color: Theme.of(context).colorScheme.onBackground,
                       ),
+                      splashRadius: Material.defaultSplashRadius / 2,
                     ),
                     IconButton(
                       onPressed: () {
                         showDialog(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                EditDialog(e, widget.postId));
+                          context: context,
+                          builder: (BuildContext context) =>
+                              EditDialog(e, widget.postId),
+                        );
                       },
                       icon: Icon(
                         Icons.edit,
                         color: Theme.of(context).colorScheme.onBackground,
                       ),
+                      splashRadius: Material.defaultSplashRadius / 2,
                     ),
                   ],
                 ),
@@ -523,7 +529,6 @@ class _PostState extends State<Post> {
 
   displayMediaType(QueryDocumentSnapshot media) {
     var mediaType = media['type'];
-    debugPrint("This is the type: " + mediaType);
 
     if (mediaType == 'jpg' || mediaType == 'png') {
       return CachedNetworkImage(
@@ -722,6 +727,9 @@ class _PostState extends State<Post> {
 
               // top part of the post page containing the author and description
               body: Column(
+                mainAxisAlignment: (aspectRatio > 1.2)
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.end,
                 children: [
                   SizedBox(
                     height: (aspectRatio > 1.2)
@@ -747,10 +755,6 @@ class _PostState extends State<Post> {
                     ),
                   ),
                   if (aspectRatio < 1.2)
-                    Expanded(
-                      child: Container(),
-                    ),
-                  if (aspectRatio < 1.2)
                     IconButton(
                       onPressed: () {
                         mediaPopUp();
@@ -758,6 +762,7 @@ class _PostState extends State<Post> {
                       icon: const Icon(
                         Icons.arrow_drop_up,
                       ),
+                      splashRadius: Material.defaultSplashRadius / 2,
                     ),
                 ],
               ),
@@ -897,15 +902,16 @@ class _EditDialogState extends State<EditDialog> {
   double top = 0;
   double width = 0;
   double height = 0;
+  double layer = 5;
 
   @override
   void initState() {
     super.initState();
     width = widget.e['width'];
     height = widget.e['height'];
-
     left = widget.e['left'] + width / 2;
     top = widget.e['top'] + height / 2;
+    layer = widget.e['layer'];
   }
 
   @override
@@ -914,14 +920,63 @@ class _EditDialogState extends State<EditDialog> {
         widget.e['type'] == 'png' ||
         widget.e['type'] == 'mp4') {
       return AlertDialog(
-        title: const Text('Edit'),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Edit'),
+            IconButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .collection('media')
+                    .doc(widget.e.id)
+                    .delete();
+                await FirebaseStorage.instance
+                    .ref('${widget.postId}/${widget.e.id}.${widget.e['type']}')
+                    .delete();
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.delete),
+              splashRadius: Material.defaultSplashRadius / 2,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ],
+        ),
         content: SizedBox(
           height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          width: 800,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: ListView(
               children: [
+                Row(
+                  children: [
+                    Text('Layer ($layer of 5)'),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    Tooltip(
+                      message: '1 is the bottom layer and 5 is the top layer',
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    )
+                  ],
+                ),
+                Slider(
+                  value: layer,
+                  onChanged: (d) {
+                    layer = d;
+                    setState(() {});
+                  },
+                  min: 1,
+                  max: 5,
+                  divisions: 4,
+                ),
+                const Divider(),
                 Text(
                     'Horizontal Position (${left.round()}% of width from left)'),
                 Slider(
@@ -975,7 +1030,7 @@ class _EditDialogState extends State<EditDialog> {
             onPressed: () => Navigator.pop(context, 'Cancel'),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               FirebaseFirestore.instance
                   .collection('posts')
@@ -988,6 +1043,7 @@ class _EditDialogState extends State<EditDialog> {
                   'top': top - height / 2,
                   'width': width,
                   'height': height,
+                  'layer': layer,
                 },
               );
               Navigator.pop(context, 'OK');
