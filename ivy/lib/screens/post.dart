@@ -11,6 +11,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -383,80 +384,58 @@ class _PostState extends State<Post> {
                     if (kIsWeb) {
                       final bytes =
                           results!.files.single.bytes!; // get the selected file
-                      final fileName = results.files.single
-                          .name; // get the name of the selected file
                       var type = results.files.single.extension;
-
-                      // upload the image to firebase storage
-                      String folder;
-                      if (type == "jpg" || type == "png") {
-                        folder = "images";
-                      } else if (type == "mp4") {
-                        folder = "videos";
-                      } else if (type == "mp3") {
-                        folder = "audio";
-                      } else {
-                        folder = "default";
-                      }
-
-                      // upload the image to firebase storage
-                      await FirebaseStorage.instance
-                          .ref('$folder/${widget.postId}/$fileName')
-                          .putData(bytes);
-                      final url = await FirebaseStorage.instance
-                          .ref('$folder/${widget.postId}/$fileName')
-                          .getDownloadURL();
-                      FirebaseFirestore.instance
+                      DocumentReference fbDoc = await FirebaseFirestore.instance
                           .collection('posts')
                           .doc(widget.postId)
                           .collection('media')
-                          .add(
+                          .add({
+                        'url': '',
+                        'left': 0,
+                        'top': 0,
+                        'width': 20,
+                        'height': 20,
+                        'type': type,
+                      });
+
+                      // upload the image to firebase storage
+                      await FirebaseStorage.instance
+                          .ref('${widget.postId}/${fbDoc.id}.$type')
+                          .putData(bytes);
+                      final url = await FirebaseStorage.instance
+                          .ref('${widget.postId}/${fbDoc.id}.$type')
+                          .getDownloadURL();
+                      fbDoc.update(
                         {
                           'url': url,
-                          'left': 0,
-                          'top': 0,
-                          'width': 20,
-                          'height': 20,
-                          'type': folder,
                         },
                       );
                       // if the app is hosted on a mobile device
                     } else {
                       final path = results!.files.single.path!;
-                      final fileName = results.files.single.name;
                       var type = results.files.single.extension;
-
-                      // upload the image to firebase storage
-                      String folder;
-                      if (type == "jpg" || type == "png") {
-                        folder = "images";
-                      } else if (type == "mp4") {
-                        folder = "videos";
-                      } else if (type == "mp3") {
-                        folder = "audio";
-                      } else {
-                        folder = "default";
-                      }
-
-                      await FirebaseStorage.instance
-                          .ref('$folder/${widget.postId}/$fileName')
-                          .putFile(File(path));
-                      final url = await FirebaseStorage.instance
-                          .ref('$folder/${widget.postId}/$fileName')
-                          .getDownloadURL();
-                      // adding media to the post instance
-                      FirebaseFirestore.instance
+                      DocumentReference fbDoc = await FirebaseFirestore.instance
                           .collection('posts')
                           .doc(widget.postId)
                           .collection('media')
-                          .add(
+                          .add({});
+
+                      // upload the image to firebase storage
+                      await FirebaseStorage.instance
+                          .ref('${widget.postId}/${fbDoc.id}.$type')
+                          .putFile(File(path));
+                      final url = await FirebaseStorage.instance
+                          .ref('${widget.postId}/${fbDoc.id}.$type')
+                          .getDownloadURL();
+                      // adding media to the post instance
+                      fbDoc.set(
                         {
                           'url': url,
                           'left': 0,
                           'top': 0,
                           'width': 20,
                           'height': 20,
-                          'type': folder,
+                          'type': type,
                         },
                       );
                     }
@@ -473,6 +452,12 @@ class _PostState extends State<Post> {
 
         items += snapshot.data!.docs.map(
           (e) {
+            if (e['url'] == '') {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(),
+              );
+            }
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
@@ -491,8 +476,21 @@ class _PostState extends State<Post> {
                       ),
                     ),
                     IconButton(
-                        onPressed: () {}, icon: const Icon(Icons.download)),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+                      onPressed: () async {
+                        if (!await launch(e['url'])) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Invalid file link.'),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.download),
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.edit),
+                    ),
                   ],
                 ),
               ),
@@ -512,7 +510,7 @@ class _PostState extends State<Post> {
     var mediaType = media['type'];
     debugPrint("This is the type: " + mediaType);
 
-    if (mediaType == "images") {
+    if (mediaType == 'jpg' || mediaType == 'png') {
       return CachedNetworkImage(
         imageUrl: media['url'],
         width: 500,

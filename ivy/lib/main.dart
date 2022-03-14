@@ -16,6 +16,8 @@ App structure:
 */
 
 // imports core flutter libraries
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
