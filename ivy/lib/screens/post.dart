@@ -629,6 +629,7 @@ class _PostState extends State<Post> {
                   IconButton(
                     onPressed: () {},
                     icon: const Icon(Icons.play_arrow),
+                    tooltip: "Play Media",
                   ),
                   // edit button
                   (perms)
@@ -703,7 +704,9 @@ class _PostState extends State<Post> {
                               },
                             );
                           },
+                          tooltip: "Edit Post",
                         )
+                        
                       : const SizedBox(),
                   // delete button
                   (data['ownerId'] == FirebaseAuth.instance.currentUser?.uid)
@@ -716,8 +719,26 @@ class _PostState extends State<Post> {
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.delete),
+                          tooltip: "Delete Post",
                         )
                       : const SizedBox(),
+                      
+                  // Report button that will add to the firebase a report
+                  // that will consist of a drop down reason, description of reason
+                  // who by and timestamp
+                  // It will then be retrievable by the admin panel
+                  IconButton(
+                    onPressed: (){
+                      showDialog(
+                       context: context,
+                       builder: (context) => AlertDialog(
+                      content: Text("report button"),
+                        ));
+                    },
+                    icon: const Icon(Icons.report_outlined),
+                    tooltip: "Report Post",
+                  )
+                   
                 ],
               ),
               // endDrawer: Drawer(
