@@ -31,7 +31,7 @@ class _PostState extends State<Post> {
   final _scrollController = ScrollController();
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
-
+  String dropdownValue = 'Sexual Content';
   // drawer pop up to select the media on the post
   void mediaPopUp() {
     showModalBottomSheet(
@@ -749,12 +749,38 @@ class _PostState extends State<Post> {
                                   children: <Widget>[
                                     Padding(
                                       padding: const EdgeInsets.all(8),
+                                      child: Text(
+                                        "Reason",
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8),
                                       // Drop down button to select one of the reaosns why they're reporting the post
-                                      child: TextFormField(
-                                        controller: _titleController,
-                                        decoration: const InputDecoration(
-                                          labelText: "Reason",
-                                        )
+                                      
+                                      child: DropdownButton<String>(
+                                        
+                                        value: dropdownValue,
+                                        icon: const Icon(Icons.expand_more),
+                                        elevation: 16,
+                                        onChanged: (String? newValue){
+                                          setState((){
+                                            dropdownValue = newValue!;
+                                          });
+                                        },
+                                        // List of all the options available in the drop down menu
+                                        items: <String>['Sexual Content', 
+                                        'Violent or repulsive content', 
+                                        'Hateful or abusive content', 
+                                        'Harmful or dangerous acts', 
+                                        ].map<DropdownMenuItem<String>>((String value) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: new Text(value),
+                                            );
+                                          
+                                        }).toList(),
+
+                                        
                                       )
                                     ),
                                     Padding(
