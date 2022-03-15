@@ -28,10 +28,12 @@ class _PostState extends State<Post> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _reportReasonController = TextEditingController();
+    String dropdownValue = "Sexual Content";
   final _scrollController = ScrollController();
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
-  String dropdownValue = 'Sexual Content';
+
   // drawer pop up to select the media on the post
   void mediaPopUp() {
     showModalBottomSheet(
@@ -759,7 +761,7 @@ class _PostState extends State<Post> {
                                       
                                       child: DropdownButton<String>(
                                         
-                                        value: dropdownValue,
+                                        value: null,
                                         icon: const Icon(Icons.expand_more),
                                         elevation: 16,
                                         onChanged: (String? newValue){
@@ -768,7 +770,8 @@ class _PostState extends State<Post> {
                                           });
                                         },
                                         // List of all the options available in the drop down menu
-                                        items: <String>['Sexual Content', 
+                                        items: <String>[
+                                          'Sexual Content', 
                                         'Violent or repulsive content', 
                                         'Hateful or abusive content', 
                                         'Harmful or dangerous acts', 
@@ -786,7 +789,7 @@ class _PostState extends State<Post> {
                                     Padding(
                                       padding: const EdgeInsets.all(8),
                                       child: TextFormField(
-                                        controller: _descController,
+                                        controller: _reportReasonController,
                                         decoration: const InputDecoration(
                                           labelText: "Further Detail",
                                         )
@@ -795,7 +798,28 @@ class _PostState extends State<Post> {
                                   ]
                                 )
                               )
-                            )
+                            ),
+                            actions:[
+                              ElevatedButton(
+                                child: const Text("Submit Report"),
+                                onPressed: (){
+                                  FirebaseFirestore.instance
+                                  .collection("posts")
+                                  .doc(postId)
+                                  .collection("reports")
+                                  .add(
+                                    {
+                                      "reason": dropdownValue.toString(),
+                                      "description": _reportReasonController.text,
+                                      "timestamp": DateTime.now().millisecondsSinceEpoch,
+                                      "submittedBy": FirebaseAuth.instance.currentUser!.uid,
+                                    },
+                                    
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              )
+                            ]
                           );
                           
                         }
