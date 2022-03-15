@@ -609,6 +609,7 @@ class _PostState extends State<Post> {
                 title: Text(
                   data['title'],
                 ),
+                
                 actions: [
                   if (aspectRatio <= 1.2)
                     IconButton(
@@ -624,12 +625,17 @@ class _PostState extends State<Post> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.message)),
+                        icon: const Icon(Icons.message),
+                        tooltip: "Open Chat",
+                        iconSize: 30,
+                        ),
+
 
                   IconButton(
                     onPressed: () {},
                     icon: const Icon(Icons.play_arrow),
                     tooltip: "Play Media",
+                    iconSize: 38,
                   ),
                   // edit button
                   (perms)
@@ -719,6 +725,7 @@ class _PostState extends State<Post> {
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.delete),
+                          iconSize: 30,
                           tooltip: "Delete Post",
                         )
                       : const SizedBox(),
@@ -730,12 +737,48 @@ class _PostState extends State<Post> {
                   IconButton(
                     onPressed: (){
                       showDialog(
-                       context: context,
-                       builder: (context) => AlertDialog(
-                      content: Text("report button"),
-                        ));
+                        context: context,
+                        builder: (BuildContext context){
+                          return AlertDialog(
+                            title: const Text("Create Post Report"),
+                            scrollable: true,
+                            content: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Form(
+                                child: Column(
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      // Drop down button to select one of the reaosns why they're reporting the post
+                                      child: TextFormField(
+                                        controller: _titleController,
+                                        decoration: const InputDecoration(
+                                          labelText: "Reason",
+                                        )
+                                      )
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: TextFormField(
+                                        controller: _descController,
+                                        decoration: const InputDecoration(
+                                          labelText: "Further Detail",
+                                        )
+                                      )
+                                    )
+                                  ]
+                                )
+                              )
+                            )
+                          );
+                          
+                        }
+                        );
                     },
-                    icon: const Icon(Icons.report_outlined),
+                    
+                    icon: const Icon(Icons.flag_outlined),
+                    color: Color.fromARGB(255, 255, 0, 25),
+                    iconSize: 35,
                     tooltip: "Report Post",
                   )
                    
