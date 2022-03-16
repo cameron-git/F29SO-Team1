@@ -28,8 +28,6 @@ class _PostState extends State<Post> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
-  final TextEditingController _reportReasonController = TextEditingController();
-    String dropdownValue = "Sexual Content";
   final _scrollController = ScrollController();
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
@@ -611,27 +609,25 @@ class _PostState extends State<Post> {
                 title: Text(
                   data['title'],
                 ),
-                
                 actions: [
                   if (aspectRatio <= 1.2)
                     IconButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return Scaffold(
-                                  appBar: AppBar(),
-                                  body: messageBoard(),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.message),
-                        tooltip: "Open Chat",
-                        iconSize: 30,
-                        ),
-
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return Scaffold(
+                                appBar: AppBar(),
+                                body: messageBoard(),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.message),
+                      tooltip: "Open Chat",
+                      iconSize: 30,
+                    ),
 
                   IconButton(
                     onPressed: () {},
@@ -714,7 +710,6 @@ class _PostState extends State<Post> {
                           },
                           tooltip: "Edit Post",
                         )
-                        
                       : const SizedBox(),
                   // delete button
                   (data['ownerId'] == FirebaseAuth.instance.currentUser?.uid)
@@ -731,107 +726,24 @@ class _PostState extends State<Post> {
                           tooltip: "Delete Post",
                         )
                       : const SizedBox(),
-                      
+
                   // Report button that will add to the firebase a report
                   // that will consist of a drop down reason, description of reason
                   // who by and timestamp
                   // It will then be retrievable by the admin panel
                   IconButton(
-                    onPressed: (){
+                    onPressed: () {
                       showDialog(
-                        context: context,
-                        builder: (BuildContext context){
-                          return AlertDialog(
-                            title: const Text("Create Post Report"),
-                            scrollable: true,
-                            content: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Form(
-                                child: Column(
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Text(
-                                        "Reason",
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      // Drop down button to select one of the reaosns why they're reporting the post
-                                      
-                                      child: DropdownButton<String>(
-                                        
-                                        value: null,
-                                        icon: const Icon(Icons.expand_more),
-                                        elevation: 16,
-                                        onChanged: (String? newValue){
-                                          setState((){
-                                            dropdownValue = newValue!;
-                                          });
-                                        },
-                                        // List of all the options available in the drop down menu
-                                        items: <String>[
-                                          'Sexual Content', 
-                                        'Violent or repulsive content', 
-                                        'Hateful or abusive content', 
-                                        'Harmful or dangerous acts', 
-                                        ].map<DropdownMenuItem<String>>((String value) {
-                                          return DropdownMenuItem<String>(
-                                            value: value,
-                                            child: new Text(value),
-                                            );
-                                          
-                                        }).toList(),
-
-                                        
-                                      )
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: TextFormField(
-                                        controller: _reportReasonController,
-                                        decoration: const InputDecoration(
-                                          labelText: "Further Detail",
-                                        )
-                                      )
-                                    )
-                                  ]
-                                )
-                              )
-                            ),
-                            actions:[
-                              ElevatedButton(
-                                child: const Text("Submit Report"),
-                                onPressed: (){
-                                  FirebaseFirestore.instance
-                                  .collection("posts")
-                                  .doc(postId)
-                                  .collection("reports")
-                                  .add(
-                                    {
-                                      "reason": dropdownValue.toString(),
-                                      "description": _reportReasonController.text,
-                                      "timestamp": DateTime.now().millisecondsSinceEpoch,
-                                      "submittedBy": FirebaseAuth.instance.currentUser!.uid,
-                                    },
-                                    
-                                  );
-                                  Navigator.pop(context);
-                                }
-                              )
-                            ]
-                          );
-                          
-                        }
-                        );
+                          context: context,
+                          builder: (BuildContext context) {
+                            return ReportDialog(postId);
+                          });
                     },
-                    
                     icon: const Icon(Icons.flag_outlined),
                     color: Color.fromARGB(255, 255, 0, 25),
                     iconSize: 35,
                     tooltip: "Report Post",
                   )
-                   
                 ],
               ),
               // endDrawer: Drawer(
@@ -1169,5 +1081,87 @@ class _EditDialogState extends State<EditDialog> {
     } else {
       return const AlertDialog();
     }
+  }
+}
+
+class ReportDialog extends StatefulWidget {
+  const ReportDialog(this.postId, {Key? key}) : super(key: key);
+  final String postId;
+
+  @override
+  State<ReportDialog> createState() => _ReportDialogState();
+}
+
+class _ReportDialogState extends State<ReportDialog> {
+  String dropdownValue = "Sexual Content";
+  final TextEditingController _reportReasonController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        title: const Text("Create Post Report"),
+        scrollable: true,
+        content: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Form(
+                child: Column(children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  "Reason",
+                ),
+              ),
+              Padding(
+                  padding: const EdgeInsets.all(8),
+                  // Drop down button to select one of the reaosns why they're reporting the post
+
+                  child: DropdownButton<String>(
+                    value: dropdownValue,
+                    icon: const Icon(Icons.expand_more),
+                    elevation: 16,
+                    onChanged: (String? newValue) {
+                      dropdownValue = newValue!;
+                      setState(() {});
+                    },
+                    // List of all the options available in the drop down menu
+                    items: <String>[
+                      'Sexual Content',
+                      'Violent or repulsive content',
+                      'Hateful or abusive content',
+                      'Harmful or dangerous acts',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: new Text(value),
+                      );
+                    }).toList(),
+                  )),
+              Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: TextFormField(
+                      controller: _reportReasonController,
+                      decoration: const InputDecoration(
+                        labelText: "Further Detail",
+                      )))
+            ]))),
+        actions: [
+          ElevatedButton(
+              child: const Text("Submit Report"),
+              onPressed: () {
+                FirebaseFirestore.instance
+                    .collection("posts")
+                    .doc(widget.postId)
+                    .collection("reports")
+                    .add(
+                  {
+                    "reason": dropdownValue.toString(),
+                    "description": _reportReasonController.text,
+                    "timestamp": DateTime.now().millisecondsSinceEpoch,
+                    "submittedBy": FirebaseAuth.instance.currentUser!.uid,
+                  },
+                );
+                Navigator.pop(context);
+              })
+        ]);
   }
 }
