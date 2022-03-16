@@ -626,124 +626,128 @@ class _PostState extends State<Post> {
                       },
                       icon: const Icon(Icons.message),
                       tooltip: "Open Chat",
-                      iconSize: 30,
                     ),
-
                   IconButton(
                     onPressed: () {},
                     icon: const Icon(Icons.play_arrow),
                     tooltip: "Play Media",
-                    iconSize: 38,
                   ),
-                  // edit button
-                  (perms)
-                      ? IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  scrollable: true,
-                                  title: const Text('Edit Post Info'),
-                                  content: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Form(
-                                      child: Column(
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: TextFormField(
-                                              controller: _titleController,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Title',
-                                              ),
+                  PopupMenuButton(
+                    onSelected: (value) {
+                      switch (value) {
+                        case 1:
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                scrollable: true,
+                                title: const Text('Edit Post Info'),
+                                content: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Form(
+                                    child: Column(
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextFormField(
+                                            controller: _titleController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Title',
                                             ),
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: TextFormField(
-                                              controller: _descController,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Description',
-                                              ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextFormField(
+                                            controller: _descController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Description',
                                             ),
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: TextFormField(
-                                              controller: _tagsController,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Tags',
-                                              ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextFormField(
+                                            controller: _tagsController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Tags',
                                             ),
-                                          )
-                                        ],
-                                      ),
+                                          ),
+                                        )
+                                      ],
                                     ),
                                   ),
-                                  actions: [
-                                    ElevatedButton(
-                                      child: const Text("Submit"),
-                                      onPressed: () {
-                                        FirebaseFirestore.instance
-                                            .collection('posts')
-                                            .doc(postId)
-                                            .set(
-                                          <String, dynamic>{
-                                            'title': _titleController.text,
-                                            'description': _descController.text,
-                                            'tags': _tagsController.text
-                                                .toLowerCase()
-                                                .trim()
-                                                .split(" "),
-                                          },
-                                          SetOptions(merge: true),
-                                        );
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          tooltip: "Edit Post",
-                        )
-                      : const SizedBox(),
-                  // delete button
-                  (data['ownerId'] == FirebaseAuth.instance.currentUser?.uid)
-                      ? IconButton(
-                          onPressed: () {
-                            FirebaseFirestore.instance
-                                .collection('posts')
-                                .doc(postId)
-                                .delete();
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.delete),
-                          iconSize: 30,
-                          tooltip: "Delete Post",
-                        )
-                      : const SizedBox(),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    child: const Text("Submit"),
+                                    onPressed: () {
+                                      FirebaseFirestore.instance
+                                          .collection('posts')
+                                          .doc(postId)
+                                          .set(
+                                        <String, dynamic>{
+                                          'title': _titleController.text,
+                                          'description': _descController.text,
+                                          'tags': _tagsController.text
+                                              .toLowerCase()
+                                              .trim()
+                                              .split(" "),
+                                        },
+                                        SetOptions(merge: true),
+                                      );
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          break;
+                        case 2:
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return ReportDialog(postId);
+                            },
+                          );
+                          break;
+                        case 3:
+                          FirebaseFirestore.instance
+                              .collection('posts')
+                              .doc(postId)
+                              .delete();
+                          Navigator.pop(context);
 
-                  // Report button that will add to the firebase a report
-                  // that will consist of a drop down reason, description of reason
-                  // who by and timestamp
-                  // It will then be retrievable by the admin panel
-                  IconButton(
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return ReportDialog(postId);
-                          });
+                          break;
+
+                        default:
+                      }
                     },
-                    icon: const Icon(Icons.flag_outlined),
-                    color: Color.fromARGB(255, 255, 0, 25),
-                    iconSize: 35,
-                    tooltip: "Report Post",
-                  )
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        enabled: perms,
+                        child: const Tooltip(
+                          message: 'Need to have edit permissions',
+                          child: Text('Edit Post'),
+                        ),
+                        value: 1,
+                      ),
+                      const PopupMenuItem(
+                        child: Text('Report Post'),
+                        value: 2,
+                      ),
+                      PopupMenuItem(
+                        enabled: (data['ownerId'] ==
+                            FirebaseAuth.instance.currentUser?.uid),
+                        child: const Tooltip(
+                          message: 'Need to be post Owner to delete',
+                          child: Text('Delete Post'),
+                        ),
+                        value: 3,
+                      ),
+                    ],
+                  ),
                 ],
               ),
               // endDrawer: Drawer(
@@ -1105,9 +1109,9 @@ class _ReportDialogState extends State<ReportDialog> {
             padding: const EdgeInsets.all(8),
             child: Form(
                 child: Column(children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: const Text(
                   "Reason",
                 ),
               ),
