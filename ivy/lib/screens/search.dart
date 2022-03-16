@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:ivy/screens/post.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
@@ -44,21 +45,19 @@ class _SearchState extends State<Search> {
                   [
                     FirebaseFirestore.instance
                         .collection('posts')
-                        .where('title',
-                            isGreaterThanOrEqualTo: _searchBoxController.text.toLowerCase())
+                        .where('title', isEqualTo: _searchBoxController.text)
                         .get(),
                     FirebaseFirestore.instance
                         .collection('posts')
                         .where(
                           'tags',
                           arrayContains:
-                              _searchBoxController.text.toLowerCase(),
+                              _searchBoxController.text.toUpperCase(),
                         )
                         .get(),
                     FirebaseFirestore.instance
                         .collection('users')
-                        .where('name',
-                            isGreaterThanOrEqualTo: _searchBoxController.text.toLowerCase())
+                        .where('name', isEqualTo: _searchBoxController.text)
                         .get(),
                   ],
                 ),
@@ -72,9 +71,46 @@ class _SearchState extends State<Search> {
                   List<QueryDocumentSnapshot<Object?>> posts =
                       snapshot.data!.elementAt(0).docs;
                   posts.addAll(snapshot.data!.elementAt(1).docs);
-
-                  return ListView(
-                    children: posts.map(
+                  List<QueryDocumentSnapshot<Object?>> users =
+                      snapshot.data!.elementAt(2).docs;
+                  List<Widget> listItems = users.map(
+                    (e) {
+                      return Padding(
+                        padding: (MediaQuery.of(context).size.width /
+                                    MediaQuery.of(context).size.height <
+                                15 / 9)
+                            ? const EdgeInsets.fromLTRB(0, 8, 0, 8)
+                            : EdgeInsets.fromLTRB(
+                                MediaQuery.of(context).size.width / 3,
+                                8,
+                                MediaQuery.of(context).size.width / 3,
+                                8),
+                        child: InkWell(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(4)),
+                          onTap: () {},
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(30),
+                              child: Row(
+                                children: [
+                                  Image.network(e['photoURL']),
+                                  Column(
+                                    children: [
+                                      Text(e['name']),
+                                      Text(e['email']),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ).toList();
+                  listItems.addAll(
+                    posts.map(
                       (e) {
                         return Padding(
                           padding: (MediaQuery.of(context).size.width /
@@ -89,14 +125,15 @@ class _SearchState extends State<Search> {
                           child: InkWell(
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(4)),
-                            onTap: () => Navigator.pushNamed(context, '/post',
-                                arguments: e.id),
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Post(e.id))),
                             child: Card(
                               child: Padding(
                                 padding: const EdgeInsets.all(30),
                                 child: Column(
                                   children: [
-                                    // Text(e['name'].toString()),
                                     Text(e['title']),
                                     Text(
                                       DateTime.fromMillisecondsSinceEpoch(
@@ -111,7 +148,10 @@ class _SearchState extends State<Search> {
                           ),
                         );
                       },
-                    ).toList(),
+                    ),
+                  );
+                  return ListView(
+                    children: listItems,
                   );
                 },
               ),

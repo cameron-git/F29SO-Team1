@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ivy/screens/message.dart';
 import 'package:ivy/screens/profile.dart';
-import 'package:ivy/screens/search.dart';
 
 import 'post.dart';
 
@@ -38,7 +36,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => const NewPost())),
       ),
-      body: Search(),
+      body: const Search(),
     );
   }
 }
@@ -164,6 +162,11 @@ class _SearchState extends State<Search> {
                                     _searchBoxController.text.toUpperCase(),
                               )
                               .get(),
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .where('name',
+                                  isEqualTo: _searchBoxController.text)
+                              .get(),
                         ],
                       ),
                       builder: (context,
@@ -176,9 +179,68 @@ class _SearchState extends State<Search> {
                         List<QueryDocumentSnapshot<Object?>> posts =
                             snapshot.data!.elementAt(0).docs;
                         posts.addAll(snapshot.data!.elementAt(1).docs);
-
-                        return ListView(
-                          children: posts.map(
+                        List<QueryDocumentSnapshot<Object?>> users =
+                            snapshot.data!.elementAt(2).docs;
+                        List<Widget> listItems = users.map(
+                          (e) {
+                            return Padding(
+                              padding: (MediaQuery.of(context).size.width /
+                                          MediaQuery.of(context).size.height <
+                                      15 / 9)
+                                  ? const EdgeInsets.fromLTRB(0, 8, 0, 8)
+                                  : EdgeInsets.fromLTRB(
+                                      MediaQuery.of(context).size.width / 3,
+                                      8,
+                                      MediaQuery.of(context).size.width / 3,
+                                      8),
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(4)),
+                                onTap: () {},
+                                child: Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(30),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        (e['photoURL'] != null)
+                                            ? ClipOval(
+                                                child: Image.network(
+                                                  e['photoURL'],
+                                                  width: 64,
+                                                  height: 64,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              )
+                                            : Icon(
+                                                Icons.account_circle,
+                                                size: 64,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onBackground,
+                                              ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(e['name']),
+                                            Text(e['email']),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ).toList();
+                        listItems.addAll(
+                          posts.map(
                             (e) {
                               return Padding(
                                 padding: (MediaQuery.of(context).size.width /
@@ -193,15 +255,15 @@ class _SearchState extends State<Search> {
                                 child: InkWell(
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(4)),
-                                  onTap: () => Navigator.pushNamed(
-                                      context, '/post',
-                                      arguments: e.id),
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Post(e.id))),
                                   child: Card(
                                     child: Padding(
                                       padding: const EdgeInsets.all(30),
                                       child: Column(
                                         children: [
-                                          // Text(e['name'].toString()),
                                           Text(e['title']),
                                           Text(
                                             DateTime.fromMillisecondsSinceEpoch(
@@ -217,6 +279,9 @@ class _SearchState extends State<Search> {
                               );
                             },
                           ).toList(),
+                        );
+                        return ListView(
+                          children: listItems,
                         );
                       },
                     ),
