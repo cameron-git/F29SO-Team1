@@ -5,11 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:ivy/auth.dart';
 import 'package:provider/provider.dart';
 
-import '../auth.dart';
-
-// This Widget is adapted from the ProfileScreen Widget from the FlutterFire_UI package
+// This Widget is adapted from the ProfileScreen Widget from the FlutterFire_UI package which is under the BSD-3-Clause license
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
 
@@ -18,17 +17,11 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late final User? user;
   String dropdownValue = 'System';
 
   @override
-  initState() {
-    user = context.read<AuthService>().currentUser;
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    User? user = context.watch<AuthService>().currentUser;
     late final usernameContoller =
         TextEditingController(text: user?.displayName ?? '');
 
@@ -75,7 +68,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
                 return;
               }
-              var type = results.files.single.extension;
               // if the app is running on the web
               if (kIsWeb) {
                 final bytes =
@@ -83,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // upload the image to firebase storage
                 await FirebaseStorage.instance
-                    .ref('ProfilePics/${user?.uid}.$type')
+                    .ref('ProfilePics/${user?.uid}')
                     .putData(bytes);
 
                 // if the app is hosted on a mobile device
@@ -92,12 +84,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // upload the image to firebase storage
                 await FirebaseStorage.instance
-                    .ref('ProfilePics/${user?.uid}.$type')
+                    .ref('ProfilePics/${user?.uid}')
                     .putFile(File(path));
               }
 
               final url = await FirebaseStorage.instance
-                  .ref('ProfilePics/${user?.uid}.$type')
+                  .ref('ProfilePics/${user?.uid}')
                   .getDownloadURL();
               await FirebaseFirestore.instance
                   .collection('users')
@@ -123,6 +115,12 @@ class _ProfilePageState extends State<ProfilePage> {
           onSubmitted: (_) async {
             if (user?.displayName == usernameContoller.text) return;
             await user?.updateDisplayName(usernameContoller.text);
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user?.uid)
+                .update(
+              {'name': usernameContoller.text},
+            );
             await user?.reload();
             setState(() {});
           },
@@ -144,15 +142,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 'System',
                 'Light',
                 'Dark',
-              ].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(value),
-                  ),
-                );
-              }).toList(),
+              ].map<DropdownMenuItem<String>>(
+                (String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(value),
+                    ),
+                  );
+                },
+              ).toList(),
             ),
           ],
         ),
@@ -164,6 +164,11 @@ class _ProfilePageState extends State<ProfilePage> {
               side: const BorderSide(color: Colors.grey, width: 2),
             ),
             onPressed: () {
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user?.uid)
+                  .delete();
+
               user?.delete();
             },
             child: Row(

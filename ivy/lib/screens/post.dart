@@ -933,11 +933,11 @@ class EditDialog extends StatefulWidget {
 }
 
 class _EditDialogState extends State<EditDialog> {
-  double left = 0;
-  double top = 0;
-  double width = 0;
-  double height = 0;
-  double layer = 5;
+  num left = 0;
+  num top = 0;
+  num width = 0;
+  num height = 0;
+  num layer = 5;
 
   @override
   void initState() {
@@ -1002,7 +1002,7 @@ class _EditDialogState extends State<EditDialog> {
                   ],
                 ),
                 Slider(
-                  value: layer,
+                  value: layer.toDouble(),
                   onChanged: (d) {
                     layer = d;
                     setState(() {});
@@ -1015,7 +1015,7 @@ class _EditDialogState extends State<EditDialog> {
                 Text(
                     'Horizontal Position (${left.round()}% of width from left)'),
                 Slider(
-                  value: left,
+                  value: left.toDouble(),
                   onChanged: (d) {
                     left = d;
                     setState(() {});
@@ -1026,7 +1026,7 @@ class _EditDialogState extends State<EditDialog> {
                 const Divider(),
                 Text('Vertical Position (${top.round()}% of height from top)'),
                 Slider(
-                  value: top,
+                  value: top.toDouble(),
                   onChanged: (d) {
                     top = d;
                     setState(() {});
@@ -1037,7 +1037,7 @@ class _EditDialogState extends State<EditDialog> {
                 const Divider(),
                 Text('Width (${width.round()}% of width)'),
                 Slider(
-                  value: width,
+                  value: width.toDouble(),
                   onChanged: (d) {
                     width = d;
                     setState(() {});
@@ -1048,7 +1048,7 @@ class _EditDialogState extends State<EditDialog> {
                 const Divider(),
                 Text('Height (${height.round()}% of height)'),
                 Slider(
-                  value: height,
+                  value: height.toDouble(),
                   onChanged: (d) {
                     height = d;
                     setState(() {});
