@@ -11,14 +11,19 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: SignInScreen(
         actions: [
-          AuthStateChangeAction<SignedIn>((context, _) {
-            final User? user = FirebaseAuth.instance.currentUser;
-            FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
-              'name': user?.displayName,
-              'email': user?.email,
-              'photoURL': user?.photoURL,
-            });
-          }),
+          AuthStateChangeAction<SignedIn>(
+            (context, _) {
+              final user = FirebaseAuth.instance.currentUser;
+              FirebaseFirestore.instance.collection('users').doc(user?.uid).set(
+                {
+                  'name': user?.displayName,
+                  'email': user?.email,
+                  'photoURL': user?.photoURL,
+                  'admin': false,
+                },
+              );
+            },
+          ),
         ],
         providerConfigs: const [
           EmailProviderConfiguration(),

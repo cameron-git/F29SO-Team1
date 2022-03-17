@@ -380,11 +380,12 @@ class _PostState extends State<Post> {
                           content: Text('No file selected.'),
                         ),
                       );
+                      return;
                     }
                     // if the app is running on the web
                     if (kIsWeb) {
                       final bytes =
-                          results!.files.single.bytes!; // get the selected file
+                          results.files.single.bytes!; // get the selected file
                       var type = results.files.single.extension;
                       DocumentReference fbDoc = await FirebaseFirestore.instance
                           .collection('posts')
@@ -414,13 +415,23 @@ class _PostState extends State<Post> {
                       );
                       // if the app is hosted on a mobile device
                     } else {
-                      final path = results!.files.single.path!;
+                      final path = results.files.single.path!;
                       var type = results.files.single.extension;
                       DocumentReference fbDoc = await FirebaseFirestore.instance
                           .collection('posts')
                           .doc(widget.postId)
                           .collection('media')
-                          .add({});
+                          .add(
+                        {
+                          'url': '',
+                          'left': 0,
+                          'top': 0,
+                          'width': 20,
+                          'height': 20,
+                          'type': type,
+                          'layer': 1,
+                        },
+                      );
 
                       // upload the image to firebase storage
                       await FirebaseStorage.instance
@@ -430,15 +441,9 @@ class _PostState extends State<Post> {
                           .ref('${widget.postId}/${fbDoc.id}.$type')
                           .getDownloadURL();
                       // adding media to the post instance
-                      fbDoc.set(
+                      fbDoc.update(
                         {
                           'url': url,
-                          'left': 0,
-                          'top': 0,
-                          'width': 20,
-                          'height': 20,
-                          'type': type,
-                          'layer': 1,
                         },
                       );
                     }
@@ -1111,7 +1116,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 child: Column(children: <Widget>[
               const Padding(
                 padding: EdgeInsets.all(8),
-                child: const Text(
+                child: Text(
                   "Reason",
                 ),
               ),
@@ -1122,7 +1127,6 @@ class _ReportDialogState extends State<ReportDialog> {
                   child: DropdownButton<String>(
                     value: dropdownValue,
                     icon: const Icon(Icons.expand_more),
-                    elevation: 16,
                     onChanged: (String? newValue) {
                       dropdownValue = newValue!;
                       setState(() {});
@@ -1136,7 +1140,7 @@ class _ReportDialogState extends State<ReportDialog> {
                     ].map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: new Text(value),
+                        child: Text(value),
                       );
                     }).toList(),
                   )),
