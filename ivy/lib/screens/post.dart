@@ -803,12 +803,6 @@ class _PostState extends State<Post> {
                         ),
                         value: 3,
                       ),
-                      PopupMenuItem(
-                        child:
-                          Text(
-                            adminBool.toString()
-                          )
-                      ),
                     ],
                   ),
                 ],
