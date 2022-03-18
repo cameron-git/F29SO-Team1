@@ -81,16 +81,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 // if the app is hosted on a mobile device
               } else {
                 final path = results.files.single.path!;
-
                 // upload the image to firebase storage
                 await FirebaseStorage.instance
                     .ref('ProfilePics/${user?.uid}')
                     .putFile(File(path));
               }
-
               final url = await FirebaseStorage.instance
                   .ref('ProfilePics/${user?.uid}')
                   .getDownloadURL();
+              await user?.updatePhotoURL(url);
               await FirebaseFirestore.instance
                   .collection('users')
                   .doc(user?.uid)
@@ -99,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'photoURL': url,
                 },
               );
-              user?.updatePhotoURL(url);
+              await user?.reload();
               setState(() {});
             },
             child: Padding(
