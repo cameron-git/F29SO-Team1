@@ -732,22 +732,54 @@ class _PostState extends State<Post> {
                     itemBuilder: (context) => [
                       PopupMenuItem(
                         enabled: perms,
-                        child: const Tooltip(
-                          message: 'Need to have edit permissions',
-                          child: Text('Edit Post'),
+                        // Set them up as rows instead, which lets for the icon widget alongside the tooltip
+                        child: Row(
+                          children: const<Widget>[
+                            // Thought adding icons would be good as a UI thing
+                            // Twitter, Facebook, Youtube all use something similar for their menus
+                            Icon(
+                              Icons.edit,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                            ),
+                            Tooltip(
+                              message: "Need to have edit permissions",
+                              child: Text("  Edit Post"),
+                            ),
+                          ]
                         ),
                         value: 1,
                       ),
-                      const PopupMenuItem(
-                        child: Text('Report Post'),
+                      PopupMenuItem(
+                        // Checks whether or not the post owner is the current user, if so, disables them from reporting their own post
+                        enabled: (data["ownerId"] != FirebaseAuth.instance.currentUser?.uid),
+                        child: Row(
+                          children: const <Widget>[
+                            Icon(
+                              Icons.flag_outlined,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              ),
+                            Tooltip(
+                              message: "Report other user's post",
+                              child: Text("  Report Post"),
+                            ),
+                          ],
+                        ),
                         value: 2,
+                        //value: 2,
                       ),
                       PopupMenuItem(
-                        enabled: (data['ownerId'] ==
-                            FirebaseAuth.instance.currentUser?.uid),
-                        child: const Tooltip(
-                          message: 'Need to be post Owner to delete',
-                          child: Text('Delete Post'),
+                        enabled: (data["ownerId"] == FirebaseAuth.instance.currentUser?.uid),
+                        child: Row(
+                          children: const <Widget>[
+                            Icon(
+                              Icons.delete_forever,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                            ),
+                            Tooltip(
+                              message: "Need to be post owner to delete",
+                              child: Text("  Delete Post",)
+                            )
+                          ]
                         ),
                         value: 3,
                       ),
@@ -1108,17 +1140,17 @@ class _ReportDialogState extends State<ReportDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text("Create Post Report"),
+        title: const Text("Report Post"),
         scrollable: true,
         content: Padding(
             padding: const EdgeInsets.all(8),
             child: Form(
                 child: Column(children: <Widget>[
               const Padding(
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
                 child: Text(
-                  "Reason",
-                ),
+                  "Select reason for report:", 
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               ),
               Padding(
                   padding: const EdgeInsets.all(8),
@@ -1150,9 +1182,29 @@ class _ReportDialogState extends State<ReportDialog> {
                       controller: _reportReasonController,
                       decoration: const InputDecoration(
                         labelText: "Further Detail",
-                      )))
-            ]))),
+                      )
+                    )
+                  )
+                ]
+              )
+            )
+         ),
+        
         actions: [
+          // Text Button cancel which even though you cane exit the alert popup
+          // by clicking anywhere else, just makes it a clear exit option
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: 
+            const Text(
+              "Cancel", 
+              style: TextStyle(
+                color: Color.fromARGB(200, 0, 0, 0)
+              ),
+            ),
+          ),
+          // Button that will submit the selected reason and any further detail
+          // to a collection within the post inside the firebase database
           ElevatedButton(
               child: const Text("Submit Report"),
               onPressed: () {
@@ -1170,6 +1222,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 );
                 Navigator.pop(context);
               })
-        ]);
+        ]
+    );
   }
 }
