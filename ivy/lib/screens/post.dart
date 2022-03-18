@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ivy/screens/admin.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -23,12 +24,16 @@ class Post extends StatefulWidget {
   _PostState createState() => _PostState();
 }
 
+
+
 class _PostState extends State<Post> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  //List<dynamic> db = FirebaseFirestore.instance.collection("posts")
+
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
 
@@ -585,6 +590,19 @@ class _PostState extends State<Post> {
 
         bool perms =
             userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
+        // Boolean for determining if user is admin, well let them delete posts
+        bool adminBool = false;
+        // admin check
+        // code for checking if the user is an admin
+        FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser?.uid.toString())
+        .get()
+        .then((value){
+           adminBool = value.data()!["admin"];
+        });
+
+        
 
         // listener for media pop-up
         return Listener(
@@ -768,7 +786,9 @@ class _PostState extends State<Post> {
                         //value: 2,
                       ),
                       PopupMenuItem(
-                        enabled: (data["ownerId"] == FirebaseAuth.instance.currentUser?.uid),
+                        // Allows deletion if the owner is viewing it or a platform administrator
+                        enabled: (data["ownerId"] == FirebaseAuth.instance.currentUser?.uid || adminBool),
+                        //enabled: 
                         child: Row(
                           children: const <Widget>[
                             Icon(
@@ -782,6 +802,12 @@ class _PostState extends State<Post> {
                           ]
                         ),
                         value: 3,
+                      ),
+                      PopupMenuItem(
+                        child:
+                          Text(
+                            adminBool.toString()
+                          )
                       ),
                     ],
                   ),
@@ -1226,3 +1252,4 @@ class _ReportDialogState extends State<ReportDialog> {
     );
   }
 }
+
