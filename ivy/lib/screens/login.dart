@@ -119,31 +119,6 @@ class _LoginPageState extends State<LoginPage> {
                     counterText: '',
                   ),
                 ),
-<<<<<<< HEAD
-              ),
-              SizedBox(
-                height: reg ? 8 : 0,
-              ),
-              reg
-                  ? TextField(
-                      controller: repasswordController,
-                      maxLength: 127,
-                      obscureText: !peekPw,
-                      decoration: const InputDecoration(
-                        labelText: 'Confirm Password',
-                        counterText: '',
-                      ),
-                      
-                    )
-                  : Container(),
-              const SizedBox(
-                height: 16,
-              ),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                    color: Colors.grey,
-=======
                 SizedBox(
                   height: reg ? 8 : 0,
                 ),
@@ -213,7 +188,6 @@ class _LoginPageState extends State<LoginPage> {
                               peekPw ? Icons.visibility_off : Icons.visibility,
                             ),
                           ),
->>>>>>> 1168be8336feeddb4aa24d129b3606fbd4389c84
                   ),
                 ),
                 SizedBox(
