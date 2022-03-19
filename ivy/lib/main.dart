@@ -16,7 +16,6 @@ App structure:
 */
 
 // imports core flutter libraries
-import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +27,7 @@ import 'package:ivy/firebase_options.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/screens/login.dart';
 import 'package:ivy/screens/home.dart';
+import 'package:ivy/theme/theme_service.dart';
 import 'package:provider/provider.dart';
 
 var auth = FirebaseAuth.instance;
@@ -42,6 +42,8 @@ void main() async {
   runApp(const IvyApp());
 }
 
+ThemeService themeService = ThemeService();
+
 // The main app class
 class IvyApp extends StatefulWidget {
   const IvyApp({Key? key}) : super(key: key);
@@ -51,6 +53,25 @@ class IvyApp extends StatefulWidget {
 }
 
 class _IvyAppState extends State<IvyApp> {
+  @override
+  void dispose() {
+    themeService.removeListener(themeListener);
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    themeService.initialize();
+    themeService.addListener(themeListener);
+    super.initState();
+  }
+
+  themeListener() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -64,7 +85,7 @@ class _IvyAppState extends State<IvyApp> {
         )
       ],
       child: MaterialApp(
-        // themeMode: ThemeMode.light,
+        themeMode: themeService.themeMode,
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
         theme: ThemeData(

@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:ivy/auth.dart';
+import 'package:ivy/main.dart';
 import 'package:provider/provider.dart';
 
 // This Widget is adapted from the ProfileScreen Widget from the FlutterFire_UI package which is under the BSD-3-Clause license
@@ -17,7 +18,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String dropdownValue = 'System';
+  String dropdownValue = themeService.themeName;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +134,19 @@ class _ProfilePageState extends State<ProfilePage> {
               value: dropdownValue,
               icon: const Icon(Icons.expand_more),
               onChanged: (String? newValue) {
-                dropdownValue = newValue!;
+                switch (newValue) {
+                  case 'System':
+                    themeService.setThemeSystem();
+                    break;
+                  case 'Light':
+                    themeService.setThemeLight();
+                    break;
+                  case 'Dark':
+                    themeService.setThemeDark();
+                    break;
+                  default:
+                }
+                dropdownValue = themeService.themeName;
                 setState(() {});
               },
               // List of all the options available in the drop down menu
