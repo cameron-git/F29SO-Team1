@@ -8,10 +8,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/screens/admin.dart';
 import 'package:ivy/widgets/video_player.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
@@ -24,8 +26,6 @@ class Post extends StatefulWidget {
   _PostState createState() => _PostState();
 }
 
-
-
 class _PostState extends State<Post> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -33,7 +33,6 @@ class _PostState extends State<Post> {
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
   //List<dynamic> db = FirebaseFirestore.instance.collection("posts")
-
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
 
@@ -595,14 +594,12 @@ class _PostState extends State<Post> {
         // admin check
         // code for checking if the user is an admin
         FirebaseFirestore.instance
-        .collection("users")
-        .doc(FirebaseAuth.instance.currentUser?.uid.toString())
-        .get()
-        .then((value){
-           adminBool = value.data()!["admin"];
+            .collection("users")
+            .doc(context.watch<User?>()?.uid)
+            .get()
+            .then((value) {
+          adminBool = value.data()!["admin"];
         });
-
-        
 
         // listener for media pop-up
         return Listener(
@@ -751,31 +748,30 @@ class _PostState extends State<Post> {
                       PopupMenuItem(
                         enabled: perms,
                         // Set them up as rows instead, which lets for the icon widget alongside the tooltip
-                        child: Row(
-                          children: const<Widget>[
-                            // Thought adding icons would be good as a UI thing
-                            // Twitter, Facebook, Youtube all use something similar for their menus
-                            Icon(
-                              Icons.edit,
-                              color: Color.fromARGB(255, 0, 0, 0),
-                            ),
-                            Tooltip(
-                              message: "Need to have edit permissions",
-                              child: Text("  Edit Post"),
-                            ),
-                          ]
-                        ),
+                        child: Row(children: const <Widget>[
+                          // Thought adding icons would be good as a UI thing
+                          // Twitter, Facebook, Youtube all use something similar for their menus
+                          Icon(
+                            Icons.edit,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                          Tooltip(
+                            message: "Need to have edit permissions",
+                            child: Text("  Edit Post"),
+                          ),
+                        ]),
                         value: 1,
                       ),
                       PopupMenuItem(
                         // Checks whether or not the post owner is the current user, if so, disables them from reporting their own post
-                        enabled: (data["ownerId"] != FirebaseAuth.instance.currentUser?.uid),
+                        enabled: (data["ownerId"] !=
+                            FirebaseAuth.instance.currentUser?.uid),
                         child: Row(
                           children: const <Widget>[
                             Icon(
                               Icons.flag_outlined,
                               color: Color.fromARGB(255, 0, 0, 0),
-                              ),
+                            ),
                             Tooltip(
                               message: "Report other user's post",
                               child: Text("  Report Post"),
@@ -787,20 +783,21 @@ class _PostState extends State<Post> {
                       ),
                       PopupMenuItem(
                         // Allows deletion if the owner is viewing it or a platform administrator
-                        enabled: (data["ownerId"] == FirebaseAuth.instance.currentUser?.uid || adminBool),
-                        //enabled: 
-                        child: Row(
-                          children: const <Widget>[
-                            Icon(
-                              Icons.delete_forever,
-                              color: Color.fromARGB(255, 0, 0, 0),
-                            ),
-                            Tooltip(
+                        enabled: (data["ownerId"] ==
+                                FirebaseAuth.instance.currentUser?.uid ||
+                            adminBool),
+                        //enabled:
+                        child: Row(children: const <Widget>[
+                          Icon(
+                            Icons.delete_forever,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                          Tooltip(
                               message: "Need to be post owner to delete",
-                              child: Text("  Delete Post",)
-                            )
-                          ]
-                        ),
+                              child: Text(
+                                "  Delete Post",
+                              ))
+                        ]),
                         value: 3,
                       ),
                     ],
@@ -1168,9 +1165,8 @@ class _ReportDialogState extends State<ReportDialog> {
                 child: Column(children: <Widget>[
               const Padding(
                 padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
-                child: Text(
-                  "Select reason for report:", 
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text("Select reason for report:",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
               Padding(
                   padding: const EdgeInsets.all(8),
@@ -1202,25 +1198,16 @@ class _ReportDialogState extends State<ReportDialog> {
                       controller: _reportReasonController,
                       decoration: const InputDecoration(
                         labelText: "Further Detail",
-                      )
-                    )
-                  )
-                ]
-              )
-            )
-         ),
-        
+                      )))
+            ]))),
         actions: [
           // Text Button cancel which even though you cane exit the alert popup
           // by clicking anywhere else, just makes it a clear exit option
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: 
-            const Text(
-              "Cancel", 
-              style: TextStyle(
-                color: Color.fromARGB(200, 0, 0, 0)
-              ),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Color.fromARGB(200, 0, 0, 0)),
             ),
           ),
           // Button that will submit the selected reason and any further detail
@@ -1242,8 +1229,6 @@ class _ReportDialogState extends State<ReportDialog> {
                 );
                 Navigator.pop(context);
               })
-        ]
-    );
+        ]);
   }
 }
-
