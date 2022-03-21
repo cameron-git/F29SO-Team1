@@ -11,7 +11,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:ivy/screens/admin.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -388,71 +387,46 @@ class _PostState extends State<Post> {
                       );
                       return;
                     }
+                    var type = results.files.single.extension;
+                    DocumentReference fbDoc = await FirebaseFirestore.instance
+                        .collection('posts')
+                        .doc(widget.postId)
+                        .collection('media')
+                        .add({
+                      'url': '',
+                      'left': 0,
+                      'top': 0,
+                      'width': 20,
+                      'height': 20,
+                      'type': type,
+                      'layer': 1,
+                    });
                     // if the app is running on the web
                     if (kIsWeb) {
                       final bytes =
                           results.files.single.bytes!; // get the selected file
-                      var type = results.files.single.extension;
-                      DocumentReference fbDoc = await FirebaseFirestore.instance
-                          .collection('posts')
-                          .doc(widget.postId)
-                          .collection('media')
-                          .add({
-                        'url': '',
-                        'left': 0,
-                        'top': 0,
-                        'width': 20,
-                        'height': 20,
-                        'type': type,
-                        'layer': 1,
-                      });
-
                       // upload the image to firebase storage
                       await FirebaseStorage.instance
                           .ref('${widget.postId}/${fbDoc.id}.$type')
                           .putData(bytes);
-                      final url = await FirebaseStorage.instance
-                          .ref('${widget.postId}/${fbDoc.id}.$type')
-                          .getDownloadURL();
-                      fbDoc.update(
-                        {
-                          'url': url,
-                        },
-                      );
+
                       // if the app is hosted on a mobile device
                     } else {
                       final path = results.files.single.path!;
-                      var type = results.files.single.extension;
-                      DocumentReference fbDoc = await FirebaseFirestore.instance
-                          .collection('posts')
-                          .doc(widget.postId)
-                          .collection('media')
-                          .add(
-                        {
-                          'url': '',
-                          'left': 0,
-                          'top': 0,
-                          'width': 20,
-                          'height': 20,
-                          'type': type,
-                          'layer': 1,
-                        },
-                      );
-
                       // upload the image to firebase storage
                       await FirebaseStorage.instance
                           .ref('${widget.postId}/${fbDoc.id}.$type')
                           .putFile(File(path));
-                      final url = await FirebaseStorage.instance
-                          .ref('${widget.postId}/${fbDoc.id}.$type')
-                          .getDownloadURL();
-                      // adding media to the post instance
-                      fbDoc.update(
-                        {
-                          'url': url,
-                        },
-                      );
                     }
+                    final url = await FirebaseStorage.instance
+                        .ref('${widget.postId}/${fbDoc.id}.$type')
+                        .getDownloadURL();
+                    // adding media to the post instance
+                    fbDoc.update(
+                      {
+                        'url': url,
+                      },
+                    );
                   },
                   // add-button to add more media
                   child: const SizedBox(
@@ -597,7 +571,7 @@ class _PostState extends State<Post> {
         // code for checking if the user is an admin
         FirebaseFirestore.instance
             .collection("users")
-            .doc(context.watch<User?>()?.uid)
+            .doc(FirebaseAuth.instance.currentUser?.uid)
             .get()
             .then((value) {
           adminBool = value.data()!["admin"];
