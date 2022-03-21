@@ -19,12 +19,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void initState() {
+    super.initState();
     _controller = VideoPlayerController.network(widget.videoURL);
+    _controller.addListener(() {
+      setState(() {});
+    });
     _initializeVideoPlayerFuture = _controller.initialize();
     _controller.setLooping(true);
     _controller.setVolume(1);
-
-    super.initState();
   }
 
   @override
@@ -42,7 +44,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 }
