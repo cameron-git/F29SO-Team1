@@ -2,9 +2,9 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/material.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
-  String videoURL;
+  final String videoURL;
 
-  VideoPlayerWidget({
+  const VideoPlayerWidget({
     Key? key,
     this.videoURL = "",
   }) : super(key: key);
@@ -23,14 +23,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _controller = VideoPlayerController.network(widget.videoURL);
     _controller.addListener(() {
       setState(() {});
-    }); // TODO: What does this do?
+    });
     _initializeVideoPlayerFuture = _controller.initialize();
     _controller.setLooping(true);
     _controller.setVolume(1);
-<<<<<<< HEAD
     super.initState();
-=======
->>>>>>> 076ea67c859bc24879e5b2fb0ba83045294dfbb4
   }
 
   @override

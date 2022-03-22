@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -278,11 +279,12 @@ class _PostState extends State<Post> {
                         if (e['type'] == "mp4") {
                           debugPrint("It's a video");
                           media = SizedBox(
-                              width: squareSize * e['width'] / 100,
-                              height: squareSize * e['height'] / 100,
-                              child: VideoPlayerWidget(
-                                  videoURL:
-                                      "gs://ivycollaborative-cebdc.appspot.com/zfklYh9M5eaSQd4fHiKx/LWLpdXH2KLbWT9soApCO.mp4"));
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            child: VideoPlayerWidget(
+                              videoURL: e['url'],
+                            ),
+                          );
                           // have a blue container for debugging for now
                           /* media = Container(
                             height: 100,
@@ -465,10 +467,29 @@ class _PostState extends State<Post> {
                           displayMediaType(e),
                           Container(
                             color: Theme.of(context).colorScheme.background,
-                            child: Icon(
-                              Icons.image,
-                              color: Theme.of(context).colorScheme.onBackground,
-                            ),
+                            child: Builder(builder: (context) {
+                              IconData i;
+                              switch (e['type']) {
+                                case 'jpg':
+
+                                case 'png':
+                                  i = Icons.image;
+                                  break;
+                                case 'mp4':
+                                  i = Icons.video_camera_back;
+                                  break;
+                                case 'mp3':
+                                  i = Icons.music_video_rounded;
+                                  break;
+                                default:
+                                  i = Icons.error_outline;
+                              }
+                              return Icon(
+                                i,
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              );
+                            }),
                           ),
                         ],
                       ),
@@ -530,13 +551,13 @@ class _PostState extends State<Post> {
       return Container(
         height: 200,
         width: 50,
-        color: Colors.green,
+        color: Colors.grey,
       );
     } else if (mediaType == "mp4") {
       return Container(
         height: 200,
         width: 50,
-        color: Colors.blue,
+        color: Colors.grey,
       );
     }
   }
