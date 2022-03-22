@@ -275,7 +275,7 @@ class _PostState extends State<Post> {
                       (e) {
                         Widget media;
 
-                        if (e['type'] == "videos") {
+                        if (e['type'] == "mp4") {
                           debugPrint("It's a video");
                           media = SizedBox(
                               width: squareSize * e['width'] / 100,
@@ -289,7 +289,7 @@ class _PostState extends State<Post> {
                             width: 100,
                             color: Colors.blue,
                           ); */
-                        } else if (e['type'] == "audio") {
+                        } else if (e['type'] == "mp3") {
                           debugPrint("It's an audio file");
                           media = Container(
                             height: 100,
@@ -527,13 +527,13 @@ class _PostState extends State<Post> {
         width: 500,
         fit: BoxFit.cover,
       );
-    } else if (mediaType == "audio") {
+    } else if (mediaType == "mp3") {
       return Container(
         height: 200,
         width: 50,
         color: Colors.green,
       );
-    } else if (mediaType == "videos") {
+    } else if (mediaType == "mp4") {
       return Container(
         height: 200,
         width: 50,
