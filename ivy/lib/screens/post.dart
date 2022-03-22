@@ -31,9 +31,15 @@ class _PostState extends State<Post> {
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  //List<dynamic> db = FirebaseFirestore.instance.collection("posts")
+  late final User? currentUser;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
+
+  @override
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser;
+    super.initState();
+  }
 
   // drawer pop up to select the media on the post
   void mediaPopUp() {
@@ -129,8 +135,7 @@ class _PostState extends State<Post> {
                                   ? ' year ago'
                                   : ' years ago';
                             }
-                            bool myPost = e['uid'] ==
-                                FirebaseAuth.instance.currentUser?.uid;
+                            bool myPost = e['uid'] == currentUser!.uid;
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Card(
@@ -193,7 +198,7 @@ class _PostState extends State<Post> {
                             .add(
                           {
                             'timestamp': DateTime.now().millisecondsSinceEpoch,
-                            'uid': FirebaseAuth.instance.currentUser!.uid,
+                            'uid': currentUser!.uid,
                             'message': _messageController.text.trimRight(),
                           },
                         );
@@ -214,7 +219,7 @@ class _PostState extends State<Post> {
                               {
                                 'timestamp':
                                     DateTime.now().millisecondsSinceEpoch,
-                                'uid': FirebaseAuth.instance.currentUser!.uid,
+                                'uid': currentUser!.uid,
                                 'message': _messageController.text.trimRight(),
                               },
                             );
@@ -420,7 +425,7 @@ class _PostState extends State<Post> {
                         .ref('${widget.postId}/${fbDoc.id}.$type')
                         .getDownloadURL();
                     // adding media to the post instance
-                    fbDoc.update(
+                    await fbDoc.update(
                       {
                         'url': url,
                       },
@@ -561,15 +566,14 @@ class _PostState extends State<Post> {
         _titleController.text = data['title'];
         _descController.text = data['description'];
 
-        bool perms =
-            userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
+        bool perms = userPermissions.contains(currentUser!.uid);
         // Boolean for determining if user is admin, well let them delete posts
         bool adminBool = false;
         // admin check
         // code for checking if the user is an admin
         FirebaseFirestore.instance
             .collection("users")
-            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .doc(currentUser!.uid)
             .get()
             .then((value) {
           adminBool = value.data()!["admin"];
@@ -738,8 +742,7 @@ class _PostState extends State<Post> {
                       ),
                       PopupMenuItem(
                         // Checks whether or not the post owner is the current user, if so, disables them from reporting their own post
-                        enabled: (data["ownerId"] !=
-                            FirebaseAuth.instance.currentUser?.uid),
+                        enabled: (data["ownerId"] != currentUser!.uid),
                         child: Row(
                           children: const <Widget>[
                             Icon(
@@ -757,9 +760,8 @@ class _PostState extends State<Post> {
                       ),
                       PopupMenuItem(
                         // Allows deletion if the owner is viewing it or a platform administrator
-                        enabled: (data["ownerId"] ==
-                                FirebaseAuth.instance.currentUser?.uid ||
-                            adminBool),
+                        enabled:
+                            (data["ownerId"] == currentUser!.uid || adminBool),
                         //enabled:
                         child: Row(children: const <Widget>[
                           Icon(
@@ -880,6 +882,13 @@ class _NewPostState extends State<NewPost> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
+  late final User? currentUser;
+
+  @override
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -924,10 +933,8 @@ class _NewPostState extends State<NewPost> {
                   FirebaseFirestore.instance.collection('posts').add(
                     <String, dynamic>{
                       'timestamp': DateTime.now().millisecondsSinceEpoch,
-                      'ownerId': FirebaseAuth.instance.currentUser!.uid,
-                      'userPermissions': [
-                        FirebaseAuth.instance.currentUser!.uid
-                      ],
+                      'ownerId': currentUser!.uid,
+                      'userPermissions': [currentUser!.uid],
                       'title': _titleController.text,
                       'description': _descController.text,
                       'tags':
@@ -1127,6 +1134,13 @@ class ReportDialog extends StatefulWidget {
 class _ReportDialogState extends State<ReportDialog> {
   String dropdownValue = "Sexual Content";
   final TextEditingController _reportReasonController = TextEditingController();
+  late final User? currentUser;
+
+  @override
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1198,7 +1212,7 @@ class _ReportDialogState extends State<ReportDialog> {
                     "reason": dropdownValue.toString(),
                     "description": _reportReasonController.text,
                     "timestamp": DateTime.now().millisecondsSinceEpoch,
-                    "submittedBy": FirebaseAuth.instance.currentUser!.uid,
+                    "submittedBy": currentUser!.uid,
                   },
                 );
                 Navigator.pop(context);

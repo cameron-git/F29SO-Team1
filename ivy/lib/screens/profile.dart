@@ -22,15 +22,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    User? user = context.watch<AuthService>().currentUser;
+    User user = context.watch<AuthService>().currentUser!;
     late final usernameContoller =
-        TextEditingController(text: user?.displayName ?? '');
+        TextEditingController(text: user.displayName ?? '');
 
     Widget editPhoto() {
-      if (user?.photoURL != null) {
+      if (user.photoURL != null) {
         return ClipOval(
           child: Image.network(
-            user!.photoURL!,
+            user.photoURL!,
             width: 128,
             height: 128,
             fit: BoxFit.cover,
@@ -76,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // upload the image to firebase storage
                 await FirebaseStorage.instance
-                    .ref('ProfilePics/${user?.uid}')
+                    .ref('ProfilePics/${user.uid}')
                     .putData(bytes);
 
                 // if the app is hosted on a mobile device
@@ -84,22 +84,22 @@ class _ProfilePageState extends State<ProfilePage> {
                 final path = results.files.single.path!;
                 // upload the image to firebase storage
                 await FirebaseStorage.instance
-                    .ref('ProfilePics/${user?.uid}')
+                    .ref('ProfilePics/${user.uid}')
                     .putFile(File(path));
               }
               final url = await FirebaseStorage.instance
-                  .ref('ProfilePics/${user?.uid}')
+                  .ref('ProfilePics/${user.uid}')
                   .getDownloadURL();
-              await user?.updatePhotoURL(url);
+              await user.updatePhotoURL(url);
               await FirebaseFirestore.instance
                   .collection('users')
-                  .doc(user?.uid)
+                  .doc(user.uid)
                   .update(
                 {
                   'photoURL': url,
                 },
               );
-              await user?.reload();
+              await user.reload();
               setState(() {});
             },
             child: Padding(
@@ -113,15 +113,15 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: const InputDecoration(
               hintText: 'Username', labelText: 'Edit Username'),
           onSubmitted: (_) async {
-            if (user?.displayName == usernameContoller.text) return;
-            await user?.updateDisplayName(usernameContoller.text);
+            if (user.displayName == usernameContoller.text) return;
+            await user.updateDisplayName(usernameContoller.text);
             await FirebaseFirestore.instance
                 .collection('users')
-                .doc(user?.uid)
+                .doc(user.uid)
                 .update(
               {'name': usernameContoller.text},
             );
-            await user?.reload();
+            await user.reload();
             setState(() {});
           },
         ),
@@ -175,13 +175,13 @@ class _ProfilePageState extends State<ProfilePage> {
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Colors.grey, width: 2),
             ),
-            onPressed: () {
-              FirebaseFirestore.instance
+            onPressed: () async {
+              await FirebaseFirestore.instance
                   .collection('users')
-                  .doc(user?.uid)
+                  .doc(user.uid)
                   .delete();
 
-              user?.delete();
+              await user.delete();
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
