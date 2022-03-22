@@ -23,7 +23,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _controller = VideoPlayerController.network(widget.videoURL);
     _controller.addListener(() {
       setState(() {});
-    });
+    }); // TODO: What does this do?
     _initializeVideoPlayerFuture = _controller.initialize();
     _controller.setLooping(true);
     _controller.setVolume(1);

@@ -421,6 +421,7 @@ class _PostState extends State<Post> {
                     final url = await FirebaseStorage.instance
                         .ref('${widget.postId}/${fbDoc.id}.$type')
                         .getDownloadURL();
+                    debugPrint("\n This is the url: " + url);
                     // adding media to the post instance
                     fbDoc.update(
                       {
