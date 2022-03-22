@@ -276,16 +276,19 @@ class _PostState extends State<Post> {
                         Widget media;
 
                         if (e['type'] == "mp4") {
+                          debugPrint("It's a video");
                           media = SizedBox(
                               width: squareSize * e['width'] / 100,
                               height: squareSize * e['height'] / 100,
-                              child: VideoPlayerWidget(videoURL: e['url']));
+                              child: VideoPlayerWidget(
+                                  videoURL:
+                                      "gs://ivycollaborative-cebdc.appspot.com/zfklYh9M5eaSQd4fHiKx/LWLpdXH2KLbWT9soApCO.mp4"));
                           // have a blue container for debugging for now
                           /* media = Container(
                             height: 100,
                             width: 100,
                             color: Colors.blue,
-                          );*/
+                          ); */
                         } else if (e['type'] == "mp3") {
                           debugPrint("It's an audio file");
                           media = Container(
@@ -423,6 +426,7 @@ class _PostState extends State<Post> {
                     final url = await FirebaseStorage.instance
                         .ref('${widget.postId}/${fbDoc.id}.$type')
                         .getDownloadURL();
+                    debugPrint("\n This is the url: " + url);
                     // adding media to the post instance
                     fbDoc.update(
                       {
