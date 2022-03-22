@@ -276,7 +276,10 @@ class _PostState extends State<Post> {
                         Widget media;
 
                         if (e['type'] == "mp4") {
+<<<<<<< HEAD
                           debugPrint("It's a video");
+=======
+>>>>>>> fe6bcd18b11bac81355066d606f2bb5eb5cf561a
                           media = SizedBox(
                               width: squareSize * e['width'] / 100,
                               height: squareSize * e['height'] / 100,
@@ -288,7 +291,11 @@ class _PostState extends State<Post> {
                             height: 100,
                             width: 100,
                             color: Colors.blue,
+<<<<<<< HEAD
                           ); */
+=======
+                          );*/
+>>>>>>> fe6bcd18b11bac81355066d606f2bb5eb5cf561a
                         } else if (e['type'] == "mp3") {
                           debugPrint("It's an audio file");
                           media = Container(
@@ -326,7 +333,7 @@ class _PostState extends State<Post> {
                                   squareSize *
                                   100;
                               // update storage with position
-                              await FirebaseFirestore.instance
+                              FirebaseFirestore.instance
                                   .collection('posts')
                                   .doc(widget.postId)
                                   .collection('media')
@@ -428,7 +435,7 @@ class _PostState extends State<Post> {
                         .getDownloadURL();
                     debugPrint("\n This is the url: " + url);
                     // adding media to the post instance
-                    await fbDoc.update(
+                    fbDoc.update(
                       {
                         'url': url,
                       },
@@ -520,7 +527,6 @@ class _PostState extends State<Post> {
 
   displayMediaType(QueryDocumentSnapshot media) {
     var mediaType = media['type'];
-
     if (mediaType == 'jpg' || mediaType == 'png') {
       return CachedNetworkImage(
         imageUrl: media['url'],
