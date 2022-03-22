@@ -311,7 +311,7 @@ class _PostState extends State<Post> {
                             feedback: media,
                             child: media,
                             childWhenDragging: Container(),
-                            onDragEnd: (dragDetails) {
+                            onDragEnd: (dragDetails) async {
                               final RenderBox renderBox =
                                   _canvasKey.currentContext?.findRenderObject()
                                       as RenderBox;
@@ -324,7 +324,7 @@ class _PostState extends State<Post> {
                                   squareSize *
                                   100;
                               // update storage with position
-                              FirebaseFirestore.instance
+                              await FirebaseFirestore.instance
                                   .collection('posts')
                                   .doc(widget.postId)
                                   .collection('media')
@@ -567,17 +567,17 @@ class _PostState extends State<Post> {
         _descController.text = data['description'];
 
         bool perms = userPermissions.contains(currentUser!.uid);
-        // Boolean for determining if user is admin, well let them delete posts
-        bool adminBool = false;
-        // admin check
-        // code for checking if the user is an admin
-        FirebaseFirestore.instance
-            .collection("users")
-            .doc(currentUser!.uid)
-            .get()
-            .then((value) {
-          adminBool = value.data()!["admin"];
-        });
+        // // Boolean for determining if user is admin, well let them delete posts
+        // bool adminBool = false;
+        // // admin check
+        // // code for checking if the user is an admin
+        // FirebaseFirestore.instance
+        //     .collection("users")
+        //     .doc(currentUser!.uid)
+        //     .get()
+        //     .then((value) {
+        //   adminBool = value.data()!["admin"];
+        // });
 
         // listener for media pop-up
         return Listener(
@@ -760,9 +760,9 @@ class _PostState extends State<Post> {
                       ),
                       PopupMenuItem(
                         // Allows deletion if the owner is viewing it or a platform administrator
-                        enabled:
-                            (data["ownerId"] == currentUser!.uid || adminBool),
-                        //enabled:
+                        enabled: (data["ownerId"] == currentUser!.uid
+                            // || adminBool
+                            ),
                         child: Row(children: const <Widget>[
                           Icon(
                             Icons.delete_forever,
