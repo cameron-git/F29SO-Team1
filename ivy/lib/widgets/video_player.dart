@@ -2,26 +2,25 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/material.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
+  const VideoPlayerWidget({
+    Key? key,
+    required this.videoURL,
+    required this.playing,
+  }) : super(key: key);
+
   final String videoURL;
   final bool playing;
 
-  const VideoPlayerWidget({
-    Key? key,
-    this.videoURL = "",
-    this.playing = false,
-  }) : super(key: key);
-
   @override
-  VideoPlayerWidgetState createState() => VideoPlayerWidgetState();
+  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
 }
 
-class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late VideoPlayerController controller;
   late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
-    super.initState();
     controller = VideoPlayerController.network(widget.videoURL);
     controller.addListener(() {
       setState(() {});
@@ -30,6 +29,7 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     controller.setLooping(false);
     controller.setVolume(1);
     widget.playing ? play() : null;
+    super.initState();
   }
 
   @override

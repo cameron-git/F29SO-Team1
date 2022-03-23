@@ -33,22 +33,12 @@ class _PostState extends State<Post> {
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
   late final User currentUser;
-  List<String> audioUrls = [];
-  AudioPlayerWrapper? audioPlayer;
   bool playing = false;
   double aspectRatio = 1; // to get the aspect ratio of the screen
 
   @override
   void initState() {
     currentUser = context.read<AuthService>().currentUser!;
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      if (audioUrls.isNotEmpty) {
-        debugPrint('yay');
-        setState(() {
-          audioPlayer = AudioPlayerWrapper(audioUrls);
-        });
-      }
-    });
     super.initState();
   }
 
@@ -281,9 +271,7 @@ class _PostState extends State<Post> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  List<Widget> stackChildren = snapshot.data!.docs
-                      .where((element) => element['type'] != 'mp3')
-                      .map(
+                  List<Widget> stackChildren = snapshot.data!.docs.map(
                     (e) {
                       Widget media;
 
@@ -296,6 +284,15 @@ class _PostState extends State<Post> {
                             playing: playing,
                           ),
                         );
+                      } else if (e['type'] == 'mp3') {
+                        print('mp3');
+
+                        media = playing
+                            ? AudioPlayerWidget(
+                                url: e['url'],
+                                playing: playing,
+                              )
+                            : Container();
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                         media = CachedNetworkImage(
                           imageUrl: e['url'],
@@ -344,13 +341,6 @@ class _PostState extends State<Post> {
                       );
                     },
                   ).toList();
-
-                  snapshot.data!.docs
-                      .where((element) => element['type'] == 'mp3')
-                      .forEach((e) {
-                    debugPrint('22');
-                    audioUrls.add(e['url']);
-                  });
 
                   return Stack(
                     key: _canvasKey,
