@@ -15,6 +15,7 @@ import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:video_player/video_player.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -35,6 +36,7 @@ class _PostState extends State<Post> {
   late final User currentUser;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
+  late VideoPlayerWidget video;
 
   @override
   void initState() {
@@ -274,43 +276,42 @@ class _PostState extends State<Post> {
                     key: _canvasKey,
                     children: snapshot.data!.docs.map<Positioned>(
                       (e) {
-                        Widget media;
+                        video = VideoPlayerWidget(
+                            videoURL:
+                                "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4");
+                        Widget media =
+                            SizedBox(width: 100, height: 100, child: video);
+                        video.videoState.play();
 
-                        if (e['type'] == 'mp4') {
-                          media = SizedBox(
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            child: VideoPlayerWidget(
-                              e['url'],
-                            ),
-                          );
-                          // have a blue container for debugging for now
-                          /* media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.blue,
-                          ); */
-                        } else if (e['type'] == 'mp3') {
-                          debugPrint("It's an audio file");
-                          media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.green,
-                          );
-                        } else if (e['type'] == 'jpg' || e['type'] == 'png') {
-                          media = CachedNetworkImage(
-                            imageUrl: e['url'],
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            fit: BoxFit.cover,
-                          );
-                        } else {
-                          media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.green,
-                          );
-                        }
+                        // if (e['type'] == 'mp4') {
+                        //   media = SizedBox(
+                        //     width: squareSize * e['width'] / 100,
+                        //     height: squareSize * e['height'] / 100,
+                        //     child: VideoPlayerWidget(
+                        //       e['url'],
+                        //     ),
+                        //   );
+                        // } else if (e['type'] == 'mp3') {
+                        //   debugPrint("It's an audio file");
+                        //   media = Container(
+                        //     height: 100,
+                        //     width: 100,
+                        //     color: Colors.green,
+                        //   );
+                        // } else if (e['type'] == 'jpg' || e['type'] == 'png') {
+                        //   media = CachedNetworkImage(
+                        //     imageUrl: e['url'],
+                        //     width: squareSize * e['width'] / 100,
+                        //     height: squareSize * e['height'] / 100,
+                        //     fit: BoxFit.cover,
+                        //   );
+                        // } else {
+                        //   media = Container(
+                        //     height: 100,
+                        //     width: 100,
+                        //     color: Colors.green,
+                        //   );
+                        // }
 
                         return Positioned(
                           left: squareSize * e['left'] / 100,
