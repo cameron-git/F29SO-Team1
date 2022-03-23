@@ -8,20 +8,25 @@ async function server(){
 
     io.on('connection', (socket) => {
         console.log('connection');
-       socket.on('join', () =>{
-           console.log('joined');
-         socket.join(roomId);
-         socket.to(roomId).emit('joined');
+       socket.on('join', (data) =>{
+           console.log('joined '+ data.roomId);
+         socket.join(data.roomId);
+         socket.to(data.roomId).emit('joined');
        });
-       socket.on('offer', (offer) => {
-           console.log('offer');
-           socket.to(roomId).emit('offer', offer);
+       socket.on('offer', (data) => {
+           console.log('offer ' + data.roomId);
+           console.log(data.offer);
+           socket.to(data.roomId).emit('offer', data.offer);
         });
-        socket.on('answer', (answer) => {
-            socket.to(roomId).emit('answer', answer);
+        socket.on('answer', (data) => {
+            console.log('answer ' + data.roomId);
+           console.log(data.answer);
+            socket.to(data.roomId).emit('answer', data.answer);
         });
-        socket.on('ice', (ice) => {
-            socket.to(roomId).emit('ice', ice);
+        socket.on('ice', (data) => {
+            console.log('ice ' + data.roomId);
+           console.log(data.ice);
+            socket.to(data.roomId).emit('ice', data.ice);
         });
 
     });

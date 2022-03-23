@@ -57,19 +57,9 @@ class _VoiceCallIconState extends State<VoiceCallIcon> {
   };
   late final IO.Socket socket;
   final _localRenderer = RTCVideoRenderer();
-  List<RTCVideoRenderer> _remoteRenderers = <RTCVideoRenderer>[];
+  final List<RTCVideoRenderer> _remoteRenderers = <RTCVideoRenderer>[];
   MediaStream? _localStream;
   List<RTCPeerConnection?>? pc = <RTCPeerConnection>[];
-  @override
-  void dispose() {
-    for (var item in _remoteRenderers) {
-      item.dispose();
-    }
-    for (var item in pc!) {
-      item?.dispose();
-    }
-    super.dispose();
-  }
 
   @override
   void initState() {
@@ -89,7 +79,7 @@ class _VoiceCallIconState extends State<VoiceCallIcon> {
       'http://localhost:3000',
       IO.OptionBuilder().setTransports(['websocket']).build(),
     );
-    socket.onConnect((data) => print('Connected to socket'));
+    socket.onConnect((data) => debugPrint('Connected to socket'));
 
     socket.on('joined', (data) {
       debugPrint('Someone joined');
@@ -128,7 +118,9 @@ class _VoiceCallIconState extends State<VoiceCallIcon> {
     _localRenderer.srcObject = _localStream;
 
     debugPrint('emit join');
-    socket.emit('join');
+    socket.emit('join', {
+      'roomId': roomId,
+    });
   }
 
   Future _sendOffer() async {
@@ -151,10 +143,10 @@ class _VoiceCallIconState extends State<VoiceCallIcon> {
 
     var offer = await pc!.last!.createOffer();
     pc!.last!.setLocalDescription(offer);
-    socket.emit(
-      'offer',
-      jsonEncode(offer.toMap()),
-    );
+    socket.emit('offer', {
+      'roomId': roomId,
+      'offer': jsonEncode(offer.toMap()),
+    });
   }
 
   Future _gotOffer(RTCSessionDescription offer) async {
@@ -179,31 +171,45 @@ class _VoiceCallIconState extends State<VoiceCallIcon> {
   }
 
   Future _sendAnswer() async {
-    print('send answer');
+    debugPrint('send answer');
     var answer = await pc!.last!.createAnswer();
     pc!.last!.setLocalDescription(answer);
-    socket.emit(
-      'answer',
-      jsonEncode(answer.toMap()),
-    );
+    socket.emit('answer', {
+      'roomId': roomId,
+      'answer': jsonEncode(answer.toMap()),
+    });
   }
 
   Future _gotAnswer(RTCSessionDescription answer) async {
-    print('got answer');
+    debugPrint('got answer');
     pc!.last!.setRemoteDescription(answer);
   }
 
   Future _sendIce(RTCIceCandidate ice) async {
     debugPrint('send ice');
-    socket.emit(
-      'ice',
-      jsonEncode(ice.toMap()),
-    );
+    socket.emit('ice', {
+      'roomId': roomId,
+      'ice': jsonEncode(ice.toMap()),
+    });
   }
 
   Future _gotIce(RTCIceCandidate ice) async {
     debugPrint('got ice');
     pc!.last!.addCandidate(ice);
+  }
+
+  @override
+  void dispose() {
+    for (var item in pc!) {
+      item?.dispose();
+    }
+    pc = null;
+    for (var item in _remoteRenderers) {
+      item.dispose();
+    }
+    _localRenderer.dispose();
+    _localStream?.dispose();
+    super.dispose();
   }
 
   @override
