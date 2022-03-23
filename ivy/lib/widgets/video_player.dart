@@ -29,7 +29,7 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _initializeVideoPlayerFuture = controller.initialize();
     controller.setLooping(false);
     controller.setVolume(1);
-    widget.playing ? play() : stop();
+    widget.playing ? play() : null;
   }
 
   @override
@@ -58,11 +58,5 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   void play() {
     debugPrint('play2');
     controller.play();
-  }
-
-  void stop() {
-    controller
-      ..pause()
-      ..seekTo(Duration.zero);
   }
 }
