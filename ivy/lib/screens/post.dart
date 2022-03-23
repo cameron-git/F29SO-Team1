@@ -17,7 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
-final GlobalKey _videoKey = GlobalKey();
+final GlobalKey<VideoPlayerWidgetState> _videoKey = GlobalKey();
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -300,7 +300,7 @@ class _PostState extends State<Post> {
                             height: squareSize * e['height'] / 100,
                             child: video);
 
-                        _videoKey.currentContext.play();
+                        _videoKey.currentState?.play();
 
                         videoList.add(video);
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
