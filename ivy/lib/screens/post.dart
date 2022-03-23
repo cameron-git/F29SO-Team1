@@ -33,7 +33,9 @@ class _PostState extends State<Post> {
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
   late final User currentUser;
-  final AudioPlayerWrapper audioPlayer = AudioPlayerWrapper(['']);
+  List<String> audioUrls = [];
+  late AudioPlayerWrapper audioPlayer;
+  bool playing = false;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
 
@@ -271,78 +273,89 @@ class _PostState extends State<Post> {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  return Stack(
-                    key: _canvasKey,
-                    children: snapshot.data!.docs.map(
-                      (e) {
-                        Widget media;
 
-                        if (e['type'] == 'mp4') {
-                          media = SizedBox(
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            child: VideoPlayerWidget(
-                              e['url'],
-                            ),
-                          );
-                          // have a blue container for debugging for now
-                          /* media = Container(
+                  List<Widget> stackChildren = snapshot.data!.docs
+                      .where((element) => element['type'] != 'mp3')
+                      .map(
+                    (e) {
+                      Widget media;
+
+                      if (e['type'] == 'mp4') {
+                        media = SizedBox(
+                          width: squareSize * e['width'] / 100,
+                          height: squareSize * e['height'] / 100,
+                          child: VideoPlayerWidget(
+                            e['url'],
+                          ),
+                        );
+                        // have a blue container for debugging for now
+                        /* media = Container(
                             height: 100,
                             width: 100,
                             color: Colors.blue,
                           ); */
-                        } else if (e['type'] == 'mp3') {
-                          debugPrint("It's an audio file");
-                          setState(() {});
-                          return null;
-                        } else if (e['type'] == 'jpg' || e['type'] == 'png') {
-                          media = CachedNetworkImage(
-                            imageUrl: e['url'],
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            fit: BoxFit.cover,
-                          );
-                        } else {
-                          return null;
-                        }
-
-                        return Positioned(
-                          left: squareSize * e['left'] / 100,
-                          top: squareSize * e['top'] / 100,
-                          // ability to drag the media
-                          child: Draggable(
-                            feedback: media,
-                            child: media,
-                            childWhenDragging: Container(),
-                            onDragEnd: (dragDetails) async {
-                              final RenderBox renderBox =
-                                  _canvasKey.currentContext?.findRenderObject()
-                                      as RenderBox;
-                              final Offset offset =
-                                  renderBox.localToGlobal(Offset.zero);
-                              final x = (dragDetails.offset.dx - offset.dx) /
-                                  squareSize *
-                                  100;
-                              final y = (dragDetails.offset.dy - offset.dy) /
-                                  squareSize *
-                                  100;
-                              // update storage with position
-                              FirebaseFirestore.instance
-                                  .collection('posts')
-                                  .doc(widget.postId)
-                                  .collection('media')
-                                  .doc(e.id)
-                                  .update(
-                                {
-                                  'left': x.clamp(-100, 100),
-                                  'top': y.clamp(-100, 100),
-                                },
-                              );
-                            },
-                          ),
+                      } else if (e['type'] == 'jpg' || e['type'] == 'png') {
+                        media = CachedNetworkImage(
+                          imageUrl: e['url'],
+                          width: squareSize * e['width'] / 100,
+                          height: squareSize * e['height'] / 100,
+                          fit: BoxFit.cover,
                         );
-                      },
-                    ).toList() as List<Widget>,
+                      } else {
+                        media = const Placeholder();
+                      }
+
+                      snapshot.data!.docs
+                          .where((element) => element['type'] == 'mp3')
+                          .forEach((element) {
+                        audioUrls.add(e['url']);
+                      });
+                      if (audioUrls.isNotEmpty) {
+                        setState(() {
+                          audioPlayer = AudioPlayerWrapper(audioUrls);
+                        });
+                      }
+
+                      return Positioned(
+                        left: squareSize * e['left'] / 100,
+                        top: squareSize * e['top'] / 100,
+                        // ability to drag the media
+                        child: Draggable(
+                          feedback: media,
+                          child: media,
+                          childWhenDragging: Container(),
+                          onDragEnd: (dragDetails) async {
+                            final RenderBox renderBox =
+                                _canvasKey.currentContext?.findRenderObject()
+                                    as RenderBox;
+                            final Offset offset =
+                                renderBox.localToGlobal(Offset.zero);
+                            final x = (dragDetails.offset.dx - offset.dx) /
+                                squareSize *
+                                100;
+                            final y = (dragDetails.offset.dy - offset.dy) /
+                                squareSize *
+                                100;
+                            // update storage with position
+                            FirebaseFirestore.instance
+                                .collection('posts')
+                                .doc(widget.postId)
+                                .collection('media')
+                                .doc(e.id)
+                                .update(
+                              {
+                                'left': x.clamp(-100, 100),
+                                'top': y.clamp(-100, 100),
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ).toList();
+                  return Stack(
+                    key: _canvasKey,
+                    children: stackChildren,
                   );
                 },
               ),
@@ -649,9 +662,15 @@ class _PostState extends State<Post> {
                       tooltip: "Open Chat",
                     ),
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.play_arrow),
-                    tooltip: "Play Media",
+                    onPressed: () {
+                      setState(() {
+                        playing = !playing;
+                      });
+                    },
+                    icon: Icon(playing ? Icons.stop : Icons.play_arrow),
+                    tooltip: playing
+                        ? 'Stop media playback'
+                        : 'Start media playback',
                   ),
                   PopupMenuButton(
                     onSelected: (value) {
