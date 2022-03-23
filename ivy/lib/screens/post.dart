@@ -8,11 +8,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -30,9 +33,15 @@ class _PostState extends State<Post> {
   final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  //List<dynamic> db = FirebaseFirestore.instance.collection("posts")
+  late final User currentUser;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
+
+  @override
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser!;
+    super.initState();
+  }
 
   // drawer pop up to select the media on the post
   void mediaPopUp() {
@@ -128,8 +137,7 @@ class _PostState extends State<Post> {
                                   ? ' year ago'
                                   : ' years ago';
                             }
-                            bool myPost = e['uid'] ==
-                                FirebaseAuth.instance.currentUser?.uid;
+                            bool myPost = e['uid'] == currentUser.uid;
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Card(
@@ -192,7 +200,7 @@ class _PostState extends State<Post> {
                             .add(
                           {
                             'timestamp': DateTime.now().millisecondsSinceEpoch,
-                            'uid': FirebaseAuth.instance.currentUser!.uid,
+                            'uid': currentUser.uid,
                             'message': _messageController.text.trimRight(),
                           },
                         );
@@ -213,7 +221,7 @@ class _PostState extends State<Post> {
                               {
                                 'timestamp':
                                     DateTime.now().millisecondsSinceEpoch,
-                                'uid': FirebaseAuth.instance.currentUser!.uid,
+                                'uid': currentUser.uid,
                                 'message': _messageController.text.trimRight(),
                               },
                             );
@@ -269,19 +277,22 @@ class _PostState extends State<Post> {
                       (e) {
                         Widget media;
 
-                        if (e['type'] == "videos") {
+                        if (e['type'] == "mp4") {
                           debugPrint("It's a video");
                           media = SizedBox(
-                              width: squareSize * e['width'] / 100,
-                              height: squareSize * e['height'] / 100,
-                              child: VideoPlayerWidget(videoURL: e['url']));
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            child: VideoPlayerWidget(
+                              videoURL: e['url'],
+                            ),
+                          );
                           // have a blue container for debugging for now
                           /* media = Container(
                             height: 100,
                             width: 100,
                             color: Colors.blue,
-                          );*/
-                        } else if (e['type'] == "audio") {
+                          ); */
+                        } else if (e['type'] == "mp3") {
                           debugPrint("It's an audio file");
                           media = Container(
                             height: 100,
@@ -305,7 +316,7 @@ class _PostState extends State<Post> {
                             feedback: media,
                             child: media,
                             childWhenDragging: Container(),
-                            onDragEnd: (dragDetails) {
+                            onDragEnd: (dragDetails) async {
                               final RenderBox renderBox =
                                   _canvasKey.currentContext?.findRenderObject()
                                       as RenderBox;
@@ -418,6 +429,7 @@ class _PostState extends State<Post> {
                     final url = await FirebaseStorage.instance
                         .ref('${widget.postId}/${fbDoc.id}.$type')
                         .getDownloadURL();
+                    debugPrint("\n This is the url: " + url);
                     // adding media to the post instance
                     fbDoc.update(
                       {
@@ -456,10 +468,29 @@ class _PostState extends State<Post> {
                           displayMediaType(e),
                           Container(
                             color: Theme.of(context).colorScheme.background,
-                            child: Icon(
-                              Icons.image,
-                              color: Theme.of(context).colorScheme.onBackground,
-                            ),
+                            child: Builder(builder: (context) {
+                              IconData i;
+                              switch (e['type']) {
+                                case 'jpg':
+
+                                case 'png':
+                                  i = Icons.image;
+                                  break;
+                                case 'mp4':
+                                  i = Icons.video_camera_back;
+                                  break;
+                                case 'mp3':
+                                  i = Icons.music_video_rounded;
+                                  break;
+                                default:
+                                  i = Icons.error_outline;
+                              }
+                              return Icon(
+                                i,
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              );
+                            }),
                           ),
                         ],
                       ),
@@ -511,24 +542,23 @@ class _PostState extends State<Post> {
 
   displayMediaType(QueryDocumentSnapshot media) {
     var mediaType = media['type'];
-
     if (mediaType == 'jpg' || mediaType == 'png') {
       return CachedNetworkImage(
         imageUrl: media['url'],
         width: 500,
         fit: BoxFit.cover,
       );
-    } else if (mediaType == "audio") {
+    } else if (mediaType == "mp3") {
       return Container(
         height: 200,
         width: 50,
-        color: Colors.green,
+        color: Colors.grey,
       );
-    } else if (mediaType == "videos") {
+    } else if (mediaType == "mp4") {
       return Container(
         height: 200,
         width: 50,
-        color: Colors.blue,
+        color: Colors.grey,
       );
     }
   }
@@ -559,21 +589,20 @@ class _PostState extends State<Post> {
         _tagsController.text = tags.join(' ') + ' ';
         _titleController.text = data['title'];
         _descController.text = data['description'];
-        User? currentUser = FirebaseAuth.instance.currentUser;
+        User currentUser = FirebaseAuth.instance.currentUser!;
 
-        bool perms =
-            userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
-        // Boolean for determining if user is admin, well let them delete posts
-        bool adminBool = false;
-        // admin check
-        // code for checking if the user is an admin
-        FirebaseFirestore.instance
-            .collection("users")
-            .doc(currentUser!.uid)
-            .get()
-            .then((value) {
-          adminBool = value.data()!["admin"];
-        });
+        bool perms = userPermissions.contains(currentUser.uid);
+        // // Boolean for determining if user is admin, well let them delete posts
+        // bool adminBool = false;
+        // // admin check
+        // // code for checking if the user is an admin
+        // FirebaseFirestore.instance
+        //     .collection("users")
+        //     .doc(currentUser!.uid)
+        //     .get()
+        //     .then((value) {
+        //   adminBool = value.data()!["admin"];
+        // });
 
         // listener for media pop-up
         return Listener(
@@ -738,8 +767,7 @@ class _PostState extends State<Post> {
                       ),
                       PopupMenuItem(
                         // Checks whether or not the post owner is the current user, if so, disables them from reporting their own post
-                        enabled: (data["ownerId"] !=
-                            FirebaseAuth.instance.currentUser?.uid),
+                        enabled: (data["ownerId"] != currentUser.uid),
                         child: Row(
                           children: const <Widget>[
                             Icon(
@@ -757,10 +785,9 @@ class _PostState extends State<Post> {
                       ),
                       PopupMenuItem(
                         // Allows deletion if the owner is viewing it or a platform administrator
-                        enabled: (data["ownerId"] ==
-                                FirebaseAuth.instance.currentUser?.uid ||
-                            adminBool),
-                        //enabled:
+                        enabled: (data["ownerId"] == currentUser.uid
+                            // || adminBool
+                            ),
                         child: Row(children: const <Widget>[
                           Icon(
                             Icons.delete_forever,
@@ -880,6 +907,13 @@ class _NewPostState extends State<NewPost> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
+  late final User currentUser;
+
+  @override
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser!;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -924,10 +958,8 @@ class _NewPostState extends State<NewPost> {
                   FirebaseFirestore.instance.collection('posts').add(
                     <String, dynamic>{
                       'timestamp': DateTime.now().millisecondsSinceEpoch,
-                      'ownerId': FirebaseAuth.instance.currentUser!.uid,
-                      'userPermissions': [
-                        FirebaseAuth.instance.currentUser!.uid
-                      ],
+                      'ownerId': currentUser.uid,
+                      'userPermissions': [currentUser.uid],
                       'title': _titleController.text,
                       'description': _descController.text,
                       'tags':
@@ -1127,6 +1159,13 @@ class ReportDialog extends StatefulWidget {
 class _ReportDialogState extends State<ReportDialog> {
   String dropdownValue = "Sexual Content";
   final TextEditingController _reportReasonController = TextEditingController();
+  late final User currentUser;
+
+  @override
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser!;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1198,7 +1237,7 @@ class _ReportDialogState extends State<ReportDialog> {
                     "reason": dropdownValue.toString(),
                     "description": _reportReasonController.text,
                     "timestamp": DateTime.now().millisecondsSinceEpoch,
-                    "submittedBy": FirebaseAuth.instance.currentUser!.uid,
+                    "submittedBy": currentUser.uid,
                   },
                 );
                 Navigator.pop(context);

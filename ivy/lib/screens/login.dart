@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ivy/auth.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +13,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool reg = false;
   bool peekPw = false;
+  bool submitError = false;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -23,6 +23,31 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormFieldState> _passwordKey = GlobalKey<FormFieldState>();
   final GlobalKey<FormFieldState> _repasswordKey = GlobalKey<FormFieldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (reg) {
+      await context.read<AuthService>().signUp(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+      final user = context.read<AuthService>().currentUser;
+      await FirebaseFirestore.instance.collection('users').doc(user?.uid).set(
+        {
+          'name': nameController.text.trim(),
+          'email': emailController.text.trim(),
+          'photoURL': null,
+          'admin': false,
+        },
+      );
+      await user?.updateDisplayName(nameController.text.trim());
+    } else {
+      await context.read<AuthService>().signIn(
+            email: emailController.text,
+            password: passwordController.text,
+          );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,12 +195,16 @@ class _LoginPageState extends State<LoginPage> {
                   onChanged: (_) {
                     _passwordKey.currentState!.validate();
                   },
+                  onFieldSubmitted: (_) {
+                    !reg ? submit() : null;
+                  },
                   controller: passwordController,
                   maxLength: 127,
                   obscureText: !peekPw,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     counterText: '',
+                    errorText: (submitError) ? 'Wrong Email or Password' : null,
                     suffixIcon: reg
                         ? null
                         : IconButton(
@@ -204,6 +233,9 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         onChanged: (_) {
                           _repasswordKey.currentState!.validate();
+                        },
+                        onFieldSubmitted: (_) {
+                          submit();
                         },
                         controller: repasswordController,
                         maxLength: 127,
@@ -238,31 +270,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   onPressed: () async {
-                    if (!_formKey.currentState!.validate()) return;
-                    if (reg) {
-                      await context.read<AuthService>().signUp(
-                            email: emailController.text.trim(),
-                            password: passwordController.text.trim(),
-                          );
-                      final user = context.read<AuthService>().currentUser;
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(user?.uid)
-                          .set(
-                        {
-                          'name': nameController.text.trim(),
-                          'email': emailController.text.trim(),
-                          'photoURL': null,
-                          'admin': false,
-                        },
-                      );
-                      await user?.updateDisplayName(nameController.text.trim());
-                    } else {
-                      await context.read<AuthService>().signIn(
-                            email: emailController.text,
-                            password: passwordController.text,
-                          );
-                    }
+                    submit();
                   },
                   child: SizedBox(
                     width: 500,
