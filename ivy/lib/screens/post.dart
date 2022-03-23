@@ -11,10 +11,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ivy/widgets/audio_player.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:audioplayers/audioplayers.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -33,6 +33,7 @@ class _PostState extends State<Post> {
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
   late final User currentUser;
+  final AudioPlayerWrapper audioPlayer = AudioPlayerWrapper(['']);
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
 
@@ -272,7 +273,7 @@ class _PostState extends State<Post> {
                   }
                   return Stack(
                     key: _canvasKey,
-                    children: snapshot.data!.docs.map<Positioned>(
+                    children: snapshot.data!.docs.map(
                       (e) {
                         Widget media;
 
@@ -292,11 +293,8 @@ class _PostState extends State<Post> {
                           ); */
                         } else if (e['type'] == 'mp3') {
                           debugPrint("It's an audio file");
-                          media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.green,
-                          );
+                          setState(() {});
+                          return null;
                         } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                           media = CachedNetworkImage(
                             imageUrl: e['url'],
@@ -305,11 +303,7 @@ class _PostState extends State<Post> {
                             fit: BoxFit.cover,
                           );
                         } else {
-                          media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.green,
-                          );
+                          return null;
                         }
 
                         return Positioned(
@@ -348,7 +342,7 @@ class _PostState extends State<Post> {
                           ),
                         );
                       },
-                    ).toList(),
+                    ).toList() as List<Widget>,
                   );
                 },
               ),
