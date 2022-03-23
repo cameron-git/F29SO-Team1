@@ -17,7 +17,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
-final GlobalKey<VideoPlayerWidgetState> _videoKey = GlobalKey();
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -37,9 +36,7 @@ class _PostState extends State<Post> {
   List<String> audioUrls = [];
   AudioPlayerWrapper? audioPlayer;
   bool playing = false;
-
   double aspectRatio = 1; // to get the aspect ratio of the screen
-  List<VideoPlayerWidget> videoList = [];
 
   @override
   void initState() {
@@ -291,16 +288,14 @@ class _PostState extends State<Post> {
                       Widget media;
 
                       if (e['type'] == 'mp4') {
-                        final video = VideoPlayerWidget(
-                          key: _videoKey,
-                          videoURL: e['url'],
-                          playing: playing,
-                        );
                         media = SizedBox(
-                            width: squareSize * e['width'] / 100,
-                            height: squareSize * e['height'] / 100,
-                            child: video);
-                        videoList.add(video);
+                          width: squareSize * e['width'] / 100,
+                          height: squareSize * e['height'] / 100,
+                          child: VideoPlayerWidget(
+                            videoURL: e['url'],
+                            playing: playing,
+                          ),
+                        );
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                         media = CachedNetworkImage(
                           imageUrl: e['url'],
