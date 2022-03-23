@@ -15,6 +15,8 @@ import 'package:ivy/widgets/audio_player.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:video_player/video_player.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -38,6 +40,7 @@ class _PostState extends State<Post> {
   bool playing = false;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
+  late VideoPlayerWidget video;
 
   @override
   void initState() {
