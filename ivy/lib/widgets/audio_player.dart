@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
 
 class AudioPlayerWrapper {
   AudioPlayerWrapper(this.urlList) {
@@ -12,6 +13,7 @@ class AudioPlayerWrapper {
 
   play() {
     for (var audioPlayer in _audioPlayers) {
+      debugPrint('play audio');
       audioPlayer.resume();
     }
   }

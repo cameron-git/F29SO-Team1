@@ -36,7 +36,7 @@ class _PostState extends State<Post> {
   final _scrollController = ScrollController();
   late final User currentUser;
   List<String> audioUrls = [];
-  late AudioPlayerWrapper audioPlayer;
+  AudioPlayerWrapper? audioPlayer;
   bool playing = false;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
@@ -45,6 +45,14 @@ class _PostState extends State<Post> {
   @override
   void initState() {
     currentUser = context.read<AuthService>().currentUser!;
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      if (audioUrls.isNotEmpty) {
+        debugPrint('yay');
+        setState(() {
+          audioPlayer = AudioPlayerWrapper(audioUrls);
+        });
+      }
+    });
     super.initState();
   }
 
@@ -308,17 +316,6 @@ class _PostState extends State<Post> {
                         media = const Placeholder();
                       }
 
-                      snapshot.data!.docs
-                          .where((element) => element['type'] == 'mp3')
-                          .forEach((element) {
-                        audioUrls.add(e['url']);
-                      });
-                      if (audioUrls.isNotEmpty) {
-                        setState(() {
-                          audioPlayer = AudioPlayerWrapper(audioUrls);
-                        });
-                      }
-
                       return Positioned(
                         left: squareSize * e['left'] / 100,
                         top: squareSize * e['top'] / 100,
@@ -356,6 +353,14 @@ class _PostState extends State<Post> {
                       );
                     },
                   ).toList();
+
+                  snapshot.data!.docs
+                      .where((element) => element['type'] == 'mp3')
+                      .forEach((e) {
+                    debugPrint('22');
+                    audioUrls.add(e['url']);
+                  });
+
                   return Stack(
                     key: _canvasKey,
                     children: stackChildren,
@@ -565,13 +570,13 @@ class _PostState extends State<Post> {
     } else if (mediaType == "mp3") {
       return Container(
         height: 200,
-        width: 50,
+        width: 500,
         color: Colors.grey,
       );
     } else if (mediaType == "mp4") {
       return Container(
         height: 200,
-        width: 50,
+        width: 500,
         color: Colors.grey,
       );
     }
@@ -666,6 +671,16 @@ class _PostState extends State<Post> {
                     ),
                   IconButton(
                     onPressed: () {
+                      if (audioPlayer != null) {
+                        if (playing) {
+                          audioPlayer!.stop();
+                        } else {
+                          audioPlayer!.play();
+                        }
+                      } else {
+                        debugPrint('audioPlayer is null');
+                      }
+
                       setState(() {
                         playing = !playing;
                       });
