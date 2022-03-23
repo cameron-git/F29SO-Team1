@@ -6,10 +6,12 @@ class VideoPlayerWidget extends StatefulWidget {
     Key? key,
     required this.videoURL,
     required this.playing,
+    required this.isVideo,
   }) : super(key: key);
 
   final String videoURL;
   final bool playing;
+  final bool isVideo;
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -27,8 +29,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     });
     _initializeVideoPlayerFuture = controller.initialize();
     controller.setLooping(false);
-    controller.setVolume(1);
-    widget.playing ? play() : null;
+    controller.setVolume(0.1);
+    widget.playing ? play() : stop();
     super.initState();
   }
 
@@ -43,7 +45,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             child: VideoPlayer(controller),
           );
         } else {
-          return const Center(child: CircularProgressIndicator());
+          return widget.isVideo
+              ? const Center(child: CircularProgressIndicator())
+              : Container();
         }
       },
     );
@@ -55,8 +59,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     super.dispose();
   }
 
-  void play() {
-    debugPrint('play2');
-    controller.play();
+  Future<void> play() async {
+    await controller.play();
+  }
+
+  Future<void> stop() async {
+    await controller.pause();
+    await controller.seekTo(Duration.zero);
   }
 }

@@ -11,7 +11,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:ivy/widgets/audio_player.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -275,24 +274,24 @@ class _PostState extends State<Post> {
                     (e) {
                       Widget media;
 
-                      if (e['type'] == 'mp4') {
+                      if (e['type'] == 'mp4' || e['type'] == 'mp3') {
                         media = SizedBox(
                           width: squareSize * e['width'] / 100,
                           height: squareSize * e['height'] / 100,
                           child: VideoPlayerWidget(
                             videoURL: e['url'],
                             playing: playing,
+                            isVideo: (e['type'] == 'mp4'),
                           ),
                         );
-                      } else if (e['type'] == 'mp3') {
-                        print('mp3');
+                        // } else if (e['type'] == 'mp3') {
 
-                        media = playing
-                            ? AudioPlayerWidget(
-                                url: e['url'],
-                                playing: playing,
-                              )
-                            : Container();
+                        //   media = playing
+                        //       ? AudioPlayerWidget(
+                        //           url: e['url'],
+                        //           playing: playing,
+                        //         )
+                        //       : Container();
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                         media = CachedNetworkImage(
                           imageUrl: e['url'],
