@@ -668,6 +668,8 @@ class _PostState extends State<Post> {
                   // button to play all media on the canvas
                   IconButton(
                     onPressed: () {
+                      _videoKey.currentState?.play();
+
                       if (audioPlayer != null) {
                         if (playing) {
                           audioPlayer!.stop();
