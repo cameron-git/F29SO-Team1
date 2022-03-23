@@ -293,8 +293,7 @@ class _PostState extends State<Post> {
                       if (e['type'] == 'mp4') {
                         final video = VideoPlayerWidget(
                           key: _videoKey,
-                          videoURL:
-                              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                          videoURL: e['url'],
                           playing: playing,
                         );
                         media = SizedBox(
