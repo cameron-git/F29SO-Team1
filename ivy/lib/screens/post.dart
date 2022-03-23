@@ -272,7 +272,7 @@ class _PostState extends State<Post> {
                   }
                   return Stack(
                     key: _canvasKey,
-                    children: snapshot.data!.docs.map(
+                    children: snapshot.data!.docs.map<Positioned>(
                       (e) {
                         Widget media;
 
@@ -292,7 +292,11 @@ class _PostState extends State<Post> {
                           ); */
                         } else if (e['type'] == 'mp3') {
                           debugPrint("It's an audio file");
-                          return null;
+                          media = Container(
+                            height: 100,
+                            width: 100,
+                            color: Colors.green,
+                          );
                         } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                           media = CachedNetworkImage(
                             imageUrl: e['url'],
@@ -301,7 +305,11 @@ class _PostState extends State<Post> {
                             fit: BoxFit.cover,
                           );
                         } else {
-                          return null;
+                          media = Container(
+                            height: 100,
+                            width: 100,
+                            color: Colors.green,
+                          );
                         }
 
                         return Positioned(
@@ -340,7 +348,7 @@ class _PostState extends State<Post> {
                           ),
                         );
                       },
-                    ).toList() as List<Widget>,
+                    ).toList(),
                   );
                 },
               ),
