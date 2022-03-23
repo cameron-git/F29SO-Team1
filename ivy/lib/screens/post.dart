@@ -292,15 +292,15 @@ class _PostState extends State<Post> {
 
                       if (e['type'] == 'mp4') {
                         final video = VideoPlayerWidget(
-                            key: _videoKey,
-                            videoURL:
-                                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+                          key: _videoKey,
+                          videoURL:
+                              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                          playing: playing,
+                        );
                         media = SizedBox(
                             width: squareSize * e['width'] / 100,
                             height: squareSize * e['height'] / 100,
                             child: video);
-
-                        _videoKey.currentState?.play();
 
                         videoList.add(video);
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
@@ -669,16 +669,6 @@ class _PostState extends State<Post> {
                     ),
                   IconButton(
                     onPressed: () {
-                      if (audioPlayer != null) {
-                        if (playing) {
-                          audioPlayer!.stop();
-                        } else {
-                          audioPlayer!.play();
-                        }
-                      } else {
-                        debugPrint('audioPlayer is null');
-                      }
-
                       setState(() {
                         playing = !playing;
                       });

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
   final String videoURL;
+  final bool playing;
 
-  VideoPlayerWidget({
+  const VideoPlayerWidget({
     Key? key,
     this.videoURL = "",
+    this.playing = false,
   }) : super(key: key);
-
-  VideoPlayerWidgetState videoState = VideoPlayerWidgetState();
 
   @override
   VideoPlayerWidgetState createState() => VideoPlayerWidgetState();
@@ -27,8 +27,9 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       setState(() {});
     });
     _initializeVideoPlayerFuture = controller.initialize();
-    controller.setLooping(true);
+    controller.setLooping(false);
     controller.setVolume(1);
+    widget.playing ? play() : stop();
   }
 
   @override
@@ -55,10 +56,13 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   void play() {
+    debugPrint('play2');
     controller.play();
   }
 
-  void pause() {
-    controller.pause();
+  void stop() {
+    controller
+      ..pause()
+      ..seekTo(Duration.zero);
   }
 }
