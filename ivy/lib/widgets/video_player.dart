@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 class VideoPlayerWidget extends StatefulWidget {
   final String videoURL;
 
-  const VideoPlayerWidget({
+  const VideoPlayerWidget(
+    this.videoURL, {
     Key? key,
-    this.videoURL = "",
   }) : super(key: key);
 
   @override

@@ -14,7 +14,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
@@ -277,13 +276,12 @@ class _PostState extends State<Post> {
                       (e) {
                         Widget media;
 
-                        if (e['type'] == "mp4") {
-                          debugPrint("It's a video");
+                        if (e['type'] == 'mp4') {
                           media = SizedBox(
                             width: squareSize * e['width'] / 100,
                             height: squareSize * e['height'] / 100,
                             child: VideoPlayerWidget(
-                              videoURL: e['url'],
+                              e['url'],
                             ),
                           );
                           // have a blue container for debugging for now
@@ -292,20 +290,18 @@ class _PostState extends State<Post> {
                             width: 100,
                             color: Colors.blue,
                           ); */
-                        } else if (e['type'] == "mp3") {
+                        } else if (e['type'] == 'mp3') {
                           debugPrint("It's an audio file");
-                          media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.green,
-                          );
-                        } else {
+                          return null;
+                        } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                           media = CachedNetworkImage(
                             imageUrl: e['url'],
                             width: squareSize * e['width'] / 100,
                             height: squareSize * e['height'] / 100,
                             fit: BoxFit.cover,
                           );
+                        } else {
+                          return null;
                         }
 
                         return Positioned(
@@ -344,7 +340,7 @@ class _PostState extends State<Post> {
                           ),
                         );
                       },
-                    ).toList(),
+                    ).toList() as List<Widget>,
                   );
                 },
               ),
