@@ -4,29 +4,31 @@ import 'package:flutter/material.dart';
 class VideoPlayerWidget extends StatefulWidget {
   final String videoURL;
 
-  const VideoPlayerWidget(
-    this.videoURL, {
+  VideoPlayerWidget({
     Key? key,
+    this.videoURL = "",
   }) : super(key: key);
 
+  VideoPlayerWidgetState videoState = VideoPlayerWidgetState();
+
   @override
-  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+  VideoPlayerWidgetState createState() => VideoPlayerWidgetState();
 }
 
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _controller;
+class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController controller;
   late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoURL);
-    _controller.addListener(() {
+    controller = VideoPlayerController.network(widget.videoURL);
+    controller.addListener(() {
       setState(() {});
     });
-    _initializeVideoPlayerFuture = _controller.initialize();
-    _controller.setLooping(true);
-    _controller.setVolume(1);
+    _initializeVideoPlayerFuture = controller.initialize();
+    controller.setLooping(true);
+    controller.setVolume(1);
   }
 
   @override
@@ -36,8 +38,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
+            aspectRatio: controller.value.aspectRatio,
+            child: VideoPlayer(controller),
           );
         } else {
           return const Center(child: CircularProgressIndicator());
@@ -48,15 +50,15 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    controller.dispose();
     super.dispose();
   }
 
   void play() {
-    _controller.play();
+    controller.play();
   }
 
   void pause() {
-    _controller.pause();
+    controller.pause();
   }
 }

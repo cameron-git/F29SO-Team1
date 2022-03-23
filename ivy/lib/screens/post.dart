@@ -15,10 +15,9 @@ import 'package:ivy/widgets/audio_player.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:video_player/video_player.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
+final GlobalKey _videoKey = GlobalKey();
 
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
@@ -40,7 +39,7 @@ class _PostState extends State<Post> {
   bool playing = false;
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
-  late VideoPlayerWidget video;
+  List<VideoPlayerWidget> videoList = [];
 
   @override
   void initState() {
@@ -292,19 +291,18 @@ class _PostState extends State<Post> {
                       Widget media;
 
                       if (e['type'] == 'mp4') {
+                        final video = VideoPlayerWidget(
+                            key: _videoKey,
+                            videoURL:
+                                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
                         media = SizedBox(
-                          width: squareSize * e['width'] / 100,
-                          height: squareSize * e['height'] / 100,
-                          child: VideoPlayerWidget(
-                            e['url'],
-                          ),
-                        );
-                        // have a blue container for debugging for now
-                        /* media = Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.blue,
-                          ); */
+                            width: squareSize * e['width'] / 100,
+                            height: squareSize * e['height'] / 100,
+                            child: video);
+
+                        _videoKey.currentContext.play();
+
+                        videoList.add(video);
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                         media = CachedNetworkImage(
                           imageUrl: e['url'],
