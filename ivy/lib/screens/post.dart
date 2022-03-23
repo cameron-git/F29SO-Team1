@@ -8,12 +8,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -560,6 +559,7 @@ class _PostState extends State<Post> {
         _tagsController.text = tags.join(' ') + ' ';
         _titleController.text = data['title'];
         _descController.text = data['description'];
+        User? currentUser = FirebaseAuth.instance.currentUser;
 
         bool perms =
             userPermissions.contains(FirebaseAuth.instance.currentUser?.uid);
@@ -569,7 +569,7 @@ class _PostState extends State<Post> {
         // code for checking if the user is an admin
         FirebaseFirestore.instance
             .collection("users")
-            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .doc(currentUser!.uid)
             .get()
             .then((value) {
           adminBool = value.data()!["admin"];
@@ -1204,5 +1204,29 @@ class _ReportDialogState extends State<ReportDialog> {
                 Navigator.pop(context);
               })
         ]);
+  }
+}
+
+class VoiceChatButton extends StatefulWidget {
+  const VoiceChatButton({Key? key}) : super(key: key);
+
+  @override
+  State<VoiceChatButton> createState() => _VoiceChatButtonState();
+}
+
+class _VoiceChatButtonState extends State<VoiceChatButton> {
+  Map<String, dynamic> servers = {
+    'iceServers': [
+      {
+        'urls': [
+          'stun:stun1.l.google.com:19302',
+          'stun:stun2.l.google.com:19302'
+        ]
+      }
+    ]
+  };
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
