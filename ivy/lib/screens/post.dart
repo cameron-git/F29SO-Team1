@@ -12,6 +12,7 @@ import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ivy/widgets/video_player.dart';
+import 'package:ivy/widgets/voice_call.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -632,6 +633,18 @@ class _PostState extends State<Post> {
                   data['title'],
                 ),
                 actions: [
+                  // button to play all media on the canvas
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        playing = !playing;
+                      });
+                    },
+                    icon: Icon(playing ? Icons.stop : Icons.play_arrow),
+                    tooltip: playing
+                        ? 'Stop media playback'
+                        : 'Start media playback',
+                  ),
                   if (aspectRatio <= 1.2)
                     IconButton(
                       onPressed: () {
@@ -649,19 +662,7 @@ class _PostState extends State<Post> {
                       icon: const Icon(Icons.message),
                       tooltip: "Open Chat",
                     ),
-
-                  // button to play all media on the canvas
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        playing = !playing;
-                      });
-                    },
-                    icon: Icon(playing ? Icons.stop : Icons.play_arrow),
-                    tooltip: playing
-                        ? 'Stop media playback'
-                        : 'Start media playback',
-                  ),
+                  const VoiceCallButton(),
                   PopupMenuButton(
                     onSelected: (value) {
                       switch (value) {
@@ -1250,29 +1251,5 @@ class _ReportDialogState extends State<ReportDialog> {
                 Navigator.pop(context);
               })
         ]);
-  }
-}
-
-class VoiceChatButton extends StatefulWidget {
-  const VoiceChatButton({Key? key}) : super(key: key);
-
-  @override
-  State<VoiceChatButton> createState() => _VoiceChatButtonState();
-}
-
-class _VoiceChatButtonState extends State<VoiceChatButton> {
-  Map<String, dynamic> servers = {
-    'iceServers': [
-      {
-        'urls': [
-          'stun:stun1.l.google.com:19302',
-          'stun:stun2.l.google.com:19302'
-        ]
-      }
-    ]
-  };
-  @override
-  Widget build(BuildContext context) {
-    return Container();
   }
 }
