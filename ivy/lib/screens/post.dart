@@ -301,7 +301,6 @@ class _PostState extends State<Post> {
                             width: squareSize * e['width'] / 100,
                             height: squareSize * e['height'] / 100,
                             child: video);
-
                         videoList.add(video);
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                         media = CachedNetworkImage(
@@ -667,6 +666,8 @@ class _PostState extends State<Post> {
                       icon: const Icon(Icons.message),
                       tooltip: "Open Chat",
                     ),
+
+                  // button to play all media on the canvas
                   IconButton(
                     onPressed: () {
                       setState(() {
