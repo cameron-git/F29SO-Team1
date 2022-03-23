@@ -1,16 +1,24 @@
-import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 
-class AudioPlayer extends StatefulWidget {
-  const AudioPlayer(this.urlList, {Key? key}) : super(key: key);
+class AudioPlayerWrapper {
+  AudioPlayerWrapper(this.urlList) {
+    _audioPlayers = List<AudioPlayer>.filled(urlList.length, AudioPlayer());
+    for (var i = 0; i < urlList.length; i++) {
+      _audioPlayers.elementAt(i).setUrl(urlList.elementAt(i));
+    }
+  }
   final List<String> urlList;
+  late List<AudioPlayer> _audioPlayers;
 
-  @override
-  State<AudioPlayer> createState() => _AudioPlayerState();
-}
+  play() {
+    for (var audioPlayer in _audioPlayers) {
+      audioPlayer.resume();
+    }
+  }
 
-class _AudioPlayerState extends State<AudioPlayer> {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
+  stop() {
+    for (var audioPlayer in _audioPlayers) {
+      audioPlayer.stop();
+    }
   }
 }

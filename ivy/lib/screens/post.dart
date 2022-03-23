@@ -11,6 +11,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ivy/widgets/audio_player.dart';
 import 'package:ivy/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,6 +35,7 @@ class _PostState extends State<Post> {
   final TextEditingController _messageController = TextEditingController();
   final _scrollController = ScrollController();
   late final User currentUser;
+  final AudioPlayerWrapper audioPlayer = AudioPlayerWrapper(['']);
 
   double aspectRatio = 1; // to get the aspect ratio of the screen
   late VideoPlayerWidget video;
@@ -274,7 +276,7 @@ class _PostState extends State<Post> {
                   }
                   return Stack(
                     key: _canvasKey,
-                    children: snapshot.data!.docs.map<Positioned>(
+                    children: snapshot.data!.docs.map(
                       (e) {
                         video = VideoPlayerWidget(
                             videoURL:
