@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final pageController = PageController();
   int pageIndex = 0;
-  bool adminBool = false;
+  bool adminBool = true;
   String check = " NOPE";
   String thisUser = FirebaseAuth.instance.currentUser!.uid.toString();
   late final User currentUser;
@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
       /*.then((value){
         check = "not this";
       });*/
-      
+
     //final Stream<DocumentSnapshot> _checkStream=
       /*FirebaseFirestore.instance
       .collection("users")
