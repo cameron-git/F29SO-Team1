@@ -783,7 +783,7 @@ class _PostState extends State<Post> {
                               color: Color.fromARGB(255, 0, 0, 0),
                             ),
                             Tooltip(
-                              message: "Report other user's post",
+                              message: "Report another user's post",
                               child: Text("  Report Post"),
                             ),
                           ],
@@ -1236,6 +1236,7 @@ class _ReportDialogState extends State<ReportDialog> {
           ElevatedButton(
               child: const Text("Submit Report"),
               onPressed: () {
+                // Inserts report into post document's collection of reports
                 FirebaseFirestore.instance
                     .collection("posts")
                     .doc(widget.postId)
@@ -1248,8 +1249,23 @@ class _ReportDialogState extends State<ReportDialog> {
                     "submittedBy": currentUser.uid,
                   },
                 );
+                // Inserts report into general collection of reports
+                FirebaseFirestore.instance
+                  .collection("reports")
+                  .add(
+                    {
+                      // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
+                      "post": widget.postId, 
+                      "reason": dropdownValue.toString(),
+                      "description": _reportReasonController.text,
+                      "timestamp": DateTime.now().millisecondsSinceEpoch,
+                      "submittedBy": currentUser.uid,
+                    }
+                  )
+                ;
                 Navigator.pop(context);
-              })
+              }
+            )
         ]);
   }
 }

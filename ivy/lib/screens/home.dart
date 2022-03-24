@@ -1,8 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:ivy/auth.dart';
+import 'package:ivy/screens/admin.dart';
 import 'package:ivy/screens/profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:provider/provider.dart';
 import 'post.dart';
+
+
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,6 +20,57 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final pageController = PageController();
   int pageIndex = 0;
+  bool adminBool = true;
+  String check = " NOPE";
+  String thisUser = FirebaseAuth.instance.currentUser!.uid.toString();
+  late final User currentUser;
+  var thisThing = null;
+  
+  
+  void initState() {
+    currentUser = context.read<AuthService>().currentUser!;
+    thisThing = FirebaseFirestore.instance
+        .collection("posts")
+        .doc("2FfE7iypRHL3DtsYhvlS")
+        .get();
+      //.then((value) {
+     // adminBool = true;
+    
+
+    //thisThing = FirebaseFirestore.instance
+    ///  .collection("users")
+   //   .doc(currentUser.uid)
+   //   .get();
+      /*.then((value){
+        check = "not this";
+      });*/
+
+    //final Stream<DocumentSnapshot> _checkStream=
+      /*FirebaseFirestore.instance
+      .collection("users")
+      .doc(currentUser.uid)
+      .get()
+      .then((value){
+        check = "not this";
+      });*/
+
+
+      /*check = "this";
+      //FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .get()
+        .then((value){
+          check = "not this";
+        });
+
+*/
+
+    super.initState();
+
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +87,32 @@ class _HomePageState extends State<HomePage> {
           tooltip: 'Profile',
         ),
         title: const Text('Ivy'),
+        // Displays button to admin page at top right along the app bar
+
+        actions: [
+          Text(thisThing.toString()),
+          //Text("       "+currentUser.uid),
+          Text(check.toString()),
+          Container(
+            // If adminBool is true, creates icon button
+            child: adminBool?
+              IconButton(
+                // Change this to whatever you want
+                icon: Image.asset("assets/admin.png"),
+                iconSize: 50,
+                color: Colors.black,
+                onPressed:(){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AdminUI()),
+                    );
+                },
+              )
+              : // Ternary operator, if user isn't admin, showes second option (nothing)
+              Text("")
+          )
+        ]
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -40,6 +123,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
 
 class Feed extends StatelessWidget {
   const Feed({Key? key}) : super(key: key);
