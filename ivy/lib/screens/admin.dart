@@ -61,7 +61,11 @@ class _AdminUIState extends State<AdminUI> {
                   ),
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+/* 
+Use an alertDialog like used in Post() to show a popup with the data from the Requirements
+ */
+              },
             ),
             IconButton(
               icon: const Icon(Icons.logout),
@@ -82,10 +86,12 @@ class _AdminUIState extends State<AdminUI> {
 
 /* This Widget should create a streambuilder list of posts like how Feed does
 however should use a seperate collection to store which postId are reported and
-why and by who.
+why and by who. For the 'reportedPosts' collection you can use the same uid as
+the orginal post when making the documents.
 
 Dont bother changing Post.dart functionality. Just add admin functionality to
-the buttons
+the buttons. One of the buttons should tell the admin howmany times/why the post
+was reported
 */
 class ReportedPostList extends StatefulWidget {
   const ReportedPostList({Key? key}) : super(key: key);
