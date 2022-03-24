@@ -54,7 +54,7 @@ class Feed extends StatelessWidget {
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData || snapshot.hasError) {
             return Container();
           }
           return ListView(

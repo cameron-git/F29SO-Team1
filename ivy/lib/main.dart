@@ -17,6 +17,7 @@ App structure:
 
 // imports core flutter libraries
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -25,6 +26,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:ivy/firebase_options.dart';
 
 import 'package:ivy/auth.dart';
+import 'package:ivy/screens/admin.dart';
 import 'package:ivy/screens/login.dart';
 import 'package:ivy/screens/home.dart';
 import 'package:ivy/theme/theme_service.dart';
@@ -167,7 +169,33 @@ class AuthWrapper extends StatelessWidget {
     if (firebaseUser == null) {
       return const LoginPage();
     } else {
-      return const HomePage();
+      return const HopePageWrapper();
     }
+  }
+}
+
+class HopePageWrapper extends StatelessWidget {
+  const HopePageWrapper({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(context.watch<AuthService>().currentUser!.uid)
+          .snapshots(),
+      builder: (context,
+          AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+        if (!snapshot.hasData || snapshot.hasError) {
+          return Container();
+        }
+        debugPrint(snapshot.data!.get('admin').toString());
+        if (snapshot.data!.get('admin')) {
+          return const AdminUI();
+        } else {
+          return const HomePage();
+        }
+      },
+    );
   }
 }

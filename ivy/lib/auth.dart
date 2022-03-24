@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class AuthService {
   AuthService(this._firebaseAuth);
@@ -14,12 +15,11 @@ class AuthService {
 
   Future<bool> signIn({required String email, required String password}) async {
     try {
-      print('try');
       await _firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
       return true;
     } on FirebaseAuthException catch (e) {
-      print('oof');
+      debugPrint(e.toString());
       return false;
     }
   }
@@ -30,6 +30,7 @@ class AuthService {
           email: email, password: password);
       return true;
     } on FirebaseAuthException catch (e) {
+      debugPrint(e.toString());
       return false;
     }
   }
