@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:ivy/screens/profile.dart';
+import 'package:provider/provider.dart';
+import '../auth.dart';
 import 'post.dart';
 
 class HomePage extends StatelessWidget {
@@ -219,9 +223,36 @@ class _SearchState extends State<Search> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(e['name']),
-                                            Text(e['email']),
+                                            // Do we want to show emails 🤔
+                                            //Text(e['email']),
                                           ],
                                         ),
+                                        // PLACEHOLDER ICON BUTTON
+                                        // Depending where we get to with profiles, was thinking
+                                        // that if you pressed the user card it'll take you to a
+                                        // dialogue screen but have this iconButton for the time
+                                        // being as a placeholder, the widget dialogue can be
+                                        // copied over for any profile screen
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                          child: IconButton(
+                                            tooltip: "Report user for improper behaviour",
+                                            icon: const Icon(
+                                              Icons.report, 
+                                              color: Color.fromARGB(150, 255, 0, 0),
+                                            ),
+                                            onPressed: (){
+                                              showDialog(
+                                                context: context,
+                                                builder: (BuildContext context){
+                                                  return ReportUserDialog(e.id);
+                                                }
+                                              );
+
+                                            },
+                                          )
+                                        )
+
                                       ],
                                     ),
                                   ),
@@ -280,6 +311,122 @@ class _SearchState extends State<Search> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ReportUserDialog extends StatefulWidget{
+  const ReportUserDialog(this.userId, {Key? key}) : super (key: key);
+  final String userId;
+
+
+
+  @override
+  State<ReportUserDialog> createState() => _ReportUserDialogState();
+}
+
+class _ReportUserDialogState extends State<ReportUserDialog>{
+  String dropdownValue = "Spam";
+  final TextEditingController _reportUserReasonController = TextEditingController();
+  late final User currentUser;
+
+  @override
+  void initState(){
+    currentUser = context.read<AuthService>().currentUser!;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return AlertDialog(
+      title: const Text("Report User",
+              style: TextStyle(fontWeight: FontWeight.bold)
+      ),
+      scrollable: true,
+      content: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Form(
+          child: Column(children: <Widget> [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(0, 0, 55, 0),
+              child: Text("Select reason for user report:"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              // Drop down button to select one of the reasons 
+              // why they're reporting the user
+              child: DropdownButton<String>(
+                value: dropdownValue,
+                icon: const Icon(Icons.expand_more),
+                onChanged: (String? newValue){
+                  dropdownValue = newValue!;
+                  setState((){});
+                },
+                // List of all the options available in the drop down menu
+                items: <String>[
+                  "Spam",
+                  "It appears their account is hacked", 
+                  "They're pretending to be me or someone else",
+                  "Their profile includes abusive or hateful content",
+                  "Their messages are abusive or hateful",
+                  "They're expressing intention of suicide or self-injury",
+                  "They're sharing explicit content",
+                  "Other"
+                ].map<DropdownMenuItem<String>>((String value){
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+             )
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: TextFormField(
+                controller: _reportUserReasonController,
+                decoration: const InputDecoration(
+                  labelText: "Further detail",
+                )
+              )
+            )
+          ]
+          )
+        )
+      ),
+      actions: [
+        TextButton(
+          onPressed:()=>Navigator.pop(context),
+          child: const Text("Cancel",
+            style: TextStyle(color: Color.fromARGB(200, 0, 0, 0)),
+          )
+        ),
+        ElevatedButton(
+          child: const Text("Submit User Report"),
+          onPressed: (){
+            FirebaseFirestore.instance
+            .collection("users")
+            .doc(widget.userId)
+            .collection("reports")
+            .add({
+              "reason": dropdownValue.toString(),
+              "description": _reportUserReasonController.text,
+              "timestamp": DateTime.now().millisecondsSinceEpoch,
+              "submittedBy": currentUser.uid
+            });
+            FirebaseFirestore.instance
+            .collection("userReports")
+            .doc(widget.userId)
+            .collection("cases")
+            .add({
+              "reason": dropdownValue.toString(),
+              "description": _reportUserReasonController.text,
+              "timestamp": DateTime.now().millisecondsSinceEpoch,
+              "submittedBy": currentUser.uid
+            });
+            Navigator.pop(context);
+          }
+        ),
+      ],
     );
   }
 }

@@ -592,17 +592,6 @@ class _PostState extends State<Post> {
         User currentUser = FirebaseAuth.instance.currentUser!;
 
         bool perms = userPermissions.contains(currentUser.uid);
-        // // Boolean for determining if user is admin, well let them delete posts
-        // bool adminBool = false;
-        // // admin check
-        // // code for checking if the user is an admin
-        // FirebaseFirestore.instance
-        //     .collection("users")
-        //     .doc(currentUser!.uid)
-        //     .get()
-        //     .then((value) {
-        //   adminBool = value.data()!["admin"];
-        // });
 
         // listener for media pop-up
         return Listener(
@@ -1206,21 +1195,28 @@ class _ReportDialogState extends State<ReportDialog> {
                       'Violent or repulsive content',
                       'Hateful or abusive content',
                       'Harmful or dangerous acts',
+                      'Other'
                     ].map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
                       );
                     }).toList(),
-                  )),
+                  )
+              ),
               Padding(
                   padding: const EdgeInsets.all(8),
                   child: TextFormField(
                       controller: _reportReasonController,
                       decoration: const InputDecoration(
                         labelText: "Further Detail",
-                      )))
-            ]))),
+                      )
+                    )
+                  )
+            ]
+            )
+            )
+          ),
         actions: [
           // Text Button cancel which even though you cane exit the alert popup
           // by clicking anywhere else, just makes it a clear exit option
@@ -1251,7 +1247,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 );
                 // Inserts report into general collection of reports
                 FirebaseFirestore.instance
-                    .collection("reports")
+                    .collection("postReports")
                     .doc(widget.postId)
                     .collection('cases')
                     .add({
@@ -1263,6 +1259,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 });
                 Navigator.pop(context);
               })
-        ]);
+          ]
+        );
   }
 }
