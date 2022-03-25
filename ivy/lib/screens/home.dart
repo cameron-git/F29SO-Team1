@@ -329,6 +329,7 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
   String dropdownValue = "Spam";
   final TextEditingController _reportUserReasonController = TextEditingController();
   late final User currentUser;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState(){
@@ -346,9 +347,10 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
       content: Padding(
         padding: const EdgeInsets.all(8),
         child: Form(
+          key: _formKey,
           child: Column(children: <Widget> [
             const Padding(
-              padding: EdgeInsets.fromLTRB(0, 0, 55, 0),
+              padding: EdgeInsets.fromLTRB(0, 0, 184, 0),
               child: Text("Select reason for user report:"),
             ),
             Padding(
@@ -378,7 +380,7 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
                     child: Text(value),
                   );
                 }).toList(),
-             )
+              )
             ),
             Padding(
               padding: const EdgeInsets.all(8),
@@ -386,7 +388,13 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
                 controller: _reportUserReasonController,
                 decoration: const InputDecoration(
                   labelText: "Further detail",
-                )
+                ),
+                validator: (value){
+                  if(value == null || value.isEmpty){
+                    return "Please describe your reason for reporting";
+                  }
+                  return null;
+                },
               )
             )
           ]
@@ -403,27 +411,32 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
         ElevatedButton(
           child: const Text("Submit User Report"),
           onPressed: (){
-            FirebaseFirestore.instance
-            .collection("users")
-            .doc(widget.userId)
-            .collection("reports")
-            .add({
-              "reason": dropdownValue.toString(),
-              "description": _reportUserReasonController.text,
-              "timestamp": DateTime.now().millisecondsSinceEpoch,
-              "submittedBy": currentUser.uid
-            });
-            FirebaseFirestore.instance
-            .collection("userReports")
-            .doc(widget.userId)
-            .collection("cases")
-            .add({
-              "reason": dropdownValue.toString(),
-              "description": _reportUserReasonController.text,
-              "timestamp": DateTime.now().millisecondsSinceEpoch,
-              "submittedBy": currentUser.uid
-            });
-            Navigator.pop(context);
+            // If statement that ensures the user has inputted
+            // why they're reporting
+            if(_formKey.currentState!.validate()){
+              FirebaseFirestore.instance
+              .collection("users")
+              .doc(widget.userId)
+              .collection("reports")
+              .add({
+                "reason": dropdownValue.toString(),
+                "description": _reportUserReasonController.text,
+                "timestamp": DateTime.now().millisecondsSinceEpoch,
+                "submittedBy": currentUser.uid
+              });
+              FirebaseFirestore.instance
+              .collection("userReports")
+              .doc(widget.userId)
+              .collection("cases")
+              .add({
+                "reason": dropdownValue.toString(),
+                "description": _reportUserReasonController.text,
+                "timestamp": DateTime.now().millisecondsSinceEpoch,
+                "submittedBy": currentUser.uid
+              });
+              Navigator.pop(context);
+           }
+            
           }
         ),
       ],
