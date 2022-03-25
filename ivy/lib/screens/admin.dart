@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart ';
 import 'package:ivy/auth.dart';
+import 'package:ivy/constants.dart';
 import 'package:ivy/screens/post.dart';
 import 'package:provider/provider.dart';
 
@@ -105,9 +106,6 @@ class _StatDialogState extends State<StatDialog> {
                   padding: EdgeInsets.zero,
                   child: Text("Total number of posts: "),
                 ),
-                //
-                // THEN THIS BIT
-                //
                 FutureBuilder(
                   future: FirebaseFirestore.instance.collection("posts").get(),
                   builder: (BuildContext context,
@@ -123,26 +121,32 @@ class _StatDialogState extends State<StatDialog> {
                 ),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.zero,
-              child: Text("Total number of users:"),
-            ),
-            Padding(
-              padding: EdgeInsets.zero,
-              child: FutureBuilder(
-                future: FirebaseFirestore.instance.collection("users").get(),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                        snapshot) {
-                  if (snapshot.hasError || !snapshot.hasData) {
-                    return Container();
-                  }
-                  return Text(
-                    snapshot.data!.size.toString(),
-                  );
-                },
-              ),
-            ),
+            Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.zero,
+                  child: Text("Total number of users: "),
+                ),
+                Padding(
+                  padding: EdgeInsets.zero,
+                  child: FutureBuilder(
+                    future: FirebaseFirestore.instance.collection("users").get(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                            snapshot) {
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return Container();
+                      }
+                      return SelectableText(
+                        snapshot.data!.size.toString(),
+                      );
+                    },
+                  ),
+                ),
+              ]
+            )
+
+
             
             // For within a timeframe use same as above but with this future
             //FirebaseFirestore.instance.collection("posts").where(timestamp greater than 1 week ago)
@@ -280,31 +284,35 @@ class ReportedUserList extends StatelessWidget {
                             padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
-                                Text("Report for:"),
+                                const Text("Report for:"),
                                 Text(e['reportee']),
                                 Text("\nReason: " + e['reason'],
                                     style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Text("\nReport description:"),
+                                        const TextStyle(fontWeight: FontWeight.bold)),
+                                const Text("\nReport description:"),
                                 Text(e['description']),
                                 Text("\nReported by: " + e['submittedBy']),
                                 Padding(
-                                  padding: EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(8),
                                   child: ElevatedButton(
                                     onPressed:(){
                                       showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
-                                          title: Text("Ban user"),
+                                          title: const Text("Ban user"),
                                           scrollable: true,
                                           content: Padding(
                                             padding: const EdgeInsets.all(8),
-                                            
                                             child: Column(
                                               children: [
-                                                Text("Confirm you wish to delete user under ID:"),
-                                                Text(e.id),
-                                                Text(""),
+                                                const Text("Confirm the action you wish to take for this report"),
+                                                const Text("for user under ID: "),
+                                                Text(e.id, 
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold
+                                                    )
+                                                  ),
+                                                const Text(""),
                                                 Row(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children:[
@@ -312,7 +320,17 @@ class ReportedUserList extends StatelessWidget {
                                                       onPressed:(){
                                                         Navigator.pop(context);
                                                       },
-                                                      child: Text("Cancel"),
+                                                      child: const Text("Cancel"),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: (){
+                                                        FirebaseFirestore.instance
+                                                        .collection("userReports")
+                                                        .doc(e.id)
+                                                        .delete();
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: const Text("Dismiss Report")
                                                     ),
                                                     ElevatedButton(
                                                       onPressed: (){
@@ -326,7 +344,10 @@ class ReportedUserList extends StatelessWidget {
                                                         .delete();
                                                         Navigator.pop(context);
                                                       },
-                                                      child: Text("Yes I do"),
+                                                      child: const Text("Ban User"),
+                                                      style: ButtonStyle(
+                                                        backgroundColor: MaterialStateProperty.all(Colors.red)
+                                                      )
                                                     )
                                                   ]
                                                 ),
@@ -338,7 +359,7 @@ class ReportedUserList extends StatelessWidget {
                                       );
                                     },
 
-                                    child:  Text("Take action"),
+                                    child: const Text("Take action"),
                                   )
                                 )
                               ],
