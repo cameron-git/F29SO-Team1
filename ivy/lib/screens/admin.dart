@@ -43,7 +43,7 @@ class _AdminUIState extends State<AdminUI> {
                   */
                   showDialog(
                     context: context,
-                    builder: (BuildContext context){
+                    builder: (BuildContext context) {
                       return StatDialog();
                     },
                   );
@@ -83,89 +83,72 @@ class _AdminUIState extends State<AdminUI> {
   }
 }
 
-class StatDialog extends StatefulWidget{
-  const StatDialog({Key? key}) :super(key:key);
+class StatDialog extends StatefulWidget {
+  const StatDialog({Key? key}) : super(key: key);
   //final String postId;
 
   @override
   State<StatDialog> createState() => _StatDialogState();
 }
 
-class _StatDialogState extends State<StatDialog>{
-  FirebaseFirestore db1 = FirebaseFirestore.instance;
-  int size = 0;
-
-  
+class _StatDialogState extends State<StatDialog> {
   @override
-  void initState(){
-    size = 2; // Just to see that it was possible to change the value from initState()
-    //
-    // The troublemaker ⏬
-    //
-    db1.collection("posts").get().then((querySnapshot){
-      size = querySnapshot.size;
-    });
-    super.initState();
-  }
-  
-  @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return AlertDialog(
-      title: 
-        const Text("Ivy Platform Statistics ",
+      title: const Text(
+        "Ivy Platform Statistics ",
         //style: TextStyle(decoration:TextDecoration.underline),
-        ),
+      ),
       scrollable: true,
       content: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Form(
-          child: Column(children: <Widget>[
+          padding: const EdgeInsets.all(8),
+          child: Form(
+              child: Column(children: <Widget>[
             const Padding(
               padding: EdgeInsets.zero,
               child: Text("Total number of posts:"),
             ),
-            // 
+            //
             // THEN THIS BIT
             //
             Padding(
               padding: EdgeInsets.zero,
-              child: Text(
-                size.toString()
+              child: FutureBuilder(
+                future: FirebaseFirestore.instance.collection("posts").get(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return Container();
+                  }
+                  return Text(
+                    snapshot.data!.size.toString(),
+                  );
+                },
               ),
             ),
             // Hope to have a drop down menu of timeframes
             // So 1 hour, 1 day, 1 week that will get the number of posts
             // in that timeframe that have been created
             Padding(
-              padding: EdgeInsets.all(8),
-              child: Row(
-                children: const [
-                  Text("test"), Text("    this"),
-                ],
-              )
-            )
-          ]
-          )
-        )
-        
-      ),
-
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: const [
+                    Text("test"),
+                    Text("    this"),
+                  ],
+                ))
+          ]))),
       actions: [
         TextButton(
-          child: const Text("Exit"),
-          onPressed:(){
-            Navigator.pop(context);
-            
-          }
-        )
+            child: const Text("Exit"),
+            onPressed: () {
+              Navigator.pop(context);
+            })
       ],
-
-      
-
     );
   }
 }
-
 
 /* This Widget should create a streambuilder list of posts like how Feed does
 however should use a seperate collection to store which postId are reported and
@@ -253,60 +236,57 @@ class ReportedUserList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: StreamBuilder(
-        stream: FirebaseFirestore.instance
-          //.collection('posts')
-          .collection('userReports')
-          
-          .orderBy('timestamp', descending: false) // descending is false so the oldest reported users are at the top
-          .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
-          if(!snapshot.hasData || snapshot.hasError){
-            return Container();
-          }
-          return ListView(
-            children: snapshot.data!.docs.map(
-              (e){
-                return Padding(
-                  padding: (MediaQuery.of(context).size.width/
-                              MediaQuery.of(context).size.height < 15 / 9)
-                              ? const EdgeInsets.all(8)
-                              : EdgeInsets.fromLTRB(
-                                MediaQuery.of(context).size.width / 3, 
-                                8, 
-                                MediaQuery.of(context).size.width / 3,
-                                8),
-                              
-                  child: InkWell(
-                    borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    // ontap
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(30),
-                        child: Column(
-                          children: [
-                            Text("Report for:"),
-                            Text(e['reportee']),
-                            Text("\nReason: " + e['reason'], style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text("\nReport description:"),
-                            Text(e['description']),
-                            Text("\nReported by: " + e['submittedBy'])
-                          ],
+        child: StreamBuilder(
+            stream: FirebaseFirestore.instance
+                //.collection('posts')
+                .collection('userReports')
+                .orderBy('timestamp',
+                    descending:
+                        false) // descending is false so the oldest reported users are at the top
+                .snapshots(),
+            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (!snapshot.hasData || snapshot.hasError) {
+                return Container();
+              }
+              return ListView(
+                children: snapshot.data!.docs.map(
+                  (e) {
+                    return Padding(
+                      padding: (MediaQuery.of(context).size.width /
+                                  MediaQuery.of(context).size.height <
+                              15 / 9)
+                          ? const EdgeInsets.all(8)
+                          : EdgeInsets.fromLTRB(
+                              MediaQuery.of(context).size.width / 3,
+                              8,
+                              MediaQuery.of(context).size.width / 3,
+                              8),
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
+                        // ontap
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
+                              children: [
+                                Text("Report for:"),
+                                Text(e['reportee']),
+                                Text("\nReason: " + e['reason'],
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                Text("\nReport description:"),
+                                Text(e['description']),
+                                Text("\nReported by: " + e['submittedBy'])
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    
-                  ),
-                  
-                );
-                
-              },
-            ).toList(),
-          );
-        }
-      )
-    );
+                    );
+                  },
+                ).toList(),
+              );
+            }));
   }
 }
-
-
