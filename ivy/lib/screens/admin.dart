@@ -37,9 +37,6 @@ class _AdminUIState extends State<AdminUI> {
 Use an alertDialog like used in Post() to show a popup with the data from the Requirements
  */
                   break;
-                case 3:
-                  context.read<AuthService>().signOut();
-                  break;
                 default:
               }
             },
@@ -59,13 +56,13 @@ Use an alertDialog like used in Post() to show a popup with the data from the Re
                   ),
                   value: 2,
                 ),
-                const PopupMenuItem(
-                  child: Text(
-                    'Sign out',
-                  ),
-                  value: 3,
-                ),
               ];
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              context.read<AuthService>().signOut();
             },
           ),
         ],
