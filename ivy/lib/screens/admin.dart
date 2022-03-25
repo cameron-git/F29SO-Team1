@@ -94,31 +94,28 @@ class StatDialog extends StatefulWidget{
 class _StatDialogState extends State<StatDialog>{
   FirebaseFirestore db1 = FirebaseFirestore.instance;
   int size = 0;
-  int x = 5;
+
   
   @override
   void initState(){
-    /*db1.collection("posts").get().then((querySnapshot){
+    size = 2; // Just to see that it was possible to change the value from initState()
+    //
+    // The troublemaker ⏬
+    //
+    db1.collection("posts").get().then((querySnapshot){
       size = querySnapshot.size;
-      size = x;
     });
-    */
     super.initState();
-    
   }
   
-
   @override
   Widget build(BuildContext context){
-    
     return AlertDialog(
-      
       title: 
         const Text("Ivy Platform Statistics ",
         //style: TextStyle(decoration:TextDecoration.underline),
         ),
       scrollable: true,
-      
       content: Padding(
         padding: const EdgeInsets.all(8),
         child: Form(
@@ -127,18 +124,19 @@ class _StatDialogState extends State<StatDialog>{
               padding: EdgeInsets.zero,
               child: Text("Total number of posts:"),
             ),
-            
+            // 
+            // THEN THIS BIT
+            //
             Padding(
               padding: EdgeInsets.zero,
-              
               child: Text(
-                "size of querysnapshot"
+                size.toString()
               ),
             ),
             Padding(
               padding: EdgeInsets.all(8),
               child: Row(
-                children: [
+                children: const [
                   Text("test"), Text("    this"),
                 ],
               )
