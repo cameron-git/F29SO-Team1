@@ -44,7 +44,7 @@ class _AdminUIState extends State<AdminUI> {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return StatDialog();
+                      return const StatDialog();
                     },
                   );
                   break;
@@ -97,35 +97,35 @@ class _StatDialogState extends State<StatDialog> {
     return AlertDialog(
       title: const Text(
         "Ivy Platform Statistics ",
-        //style: TextStyle(decoration:TextDecoration.underline),
       ),
       scrollable: true,
       content: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.zero,
-              child: Text("Total number of posts:"),
-            ),
-            //
-            // THEN THIS BIT
-            //
-            Padding(
-              padding: EdgeInsets.zero,
-              child: FutureBuilder(
-                future: FirebaseFirestore.instance.collection("posts").get(),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                        snapshot) {
-                  if (snapshot.hasError || !snapshot.hasData) {
-                    return Container();
-                  }
-                  return Text(
-                    snapshot.data!.size.toString(),
-                  );
-                },
-              ),
+            Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.zero,
+                  child: Text("Total number of posts: "),
+                ),
+                //
+                // THEN THIS BIT
+                //
+                FutureBuilder(
+                  future: FirebaseFirestore.instance.collection("posts").get(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                          snapshot) {
+                    if (snapshot.hasError || !snapshot.hasData) {
+                      return Container();
+                    }
+                    return SelectableText(
+                      snapshot.data!.size.toString(),
+                    );
+                  },
+                ),
+              ],
             ),
 
             // For within a timeframe use same as above but with this future
