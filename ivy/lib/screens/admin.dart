@@ -129,7 +129,7 @@ class _StatDialogState extends State<StatDialog> {
             ),
 
             // For within a timeframe use same as above but with this future
-            //FirebaseFirestore.instance.collection("posts").where(timestamp is less than 1 week ago)
+            //FirebaseFirestore.instance.collection("posts").where(timestamp greater than 1 week ago)
           ],
         ),
       ),
