@@ -414,7 +414,7 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
             // If statement that ensures the user has inputted
             // why they're reporting
             if(_formKey.currentState!.validate()){
-              FirebaseFirestore.instance
+              /*FirebaseFirestore.instance
               .collection("users")
               .doc(widget.userId)
               .collection("reports")
@@ -427,11 +427,23 @@ class _ReportUserDialogState extends State<ReportUserDialog>{
               FirebaseFirestore.instance
               .collection("userReports")
               .doc(widget.userId)
+              
               .collection("cases")
               .add({
                 "reason": dropdownValue.toString(),
                 "description": _reportUserReasonController.text,
                 "timestamp": DateTime.now().millisecondsSinceEpoch,
+                "submittedBy": currentUser.uid
+              });*/
+              // Thinking of switching it to very wide userReports collection
+              // rather than having the cases to group them together
+              FirebaseFirestore.instance
+              .collection("userReports")
+              .add({
+                "reportee": widget.userId,
+                "reason": dropdownValue.toString(),
+                "description": _reportUserReasonController.text,
+                "timestamp": DateTime.now().microsecondsSinceEpoch,
                 "submittedBy": currentUser.uid
               });
               Navigator.pop(context);
