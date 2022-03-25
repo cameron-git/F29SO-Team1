@@ -20,66 +20,56 @@ class _AdminUIState extends State<AdminUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.deepOrange,
-          title: const Text('Ivy - Admin Panel'),
-          // Displays button to admin page at top right along the app bar
-          actions: [
-            TextButton(
-              child: Container(
-                color: Colors.black12,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+        backgroundColor: Colors.deepOrange,
+        title: const Text('Ivy - Admin Panel'),
+        // Displays button to admin page at top right along the app bar
+        actions: [
+          PopupMenuButton(
+            onSelected: (value) {
+              switch (value) {
+                case 1:
+                  setState(() {
+                    viewPosts = !viewPosts;
+                  });
+                  break;
+                case 2:
+                  /* 
+Use an alertDialog like used in Post() to show a popup with the data from the Requirements
+ */
+                  break;
+                case 3:
+                  context.read<AuthService>().signOut();
+                  break;
+                default:
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem(
                   child: Text(
                     viewPosts
                         ? 'Click to view Reported Users'
                         : 'Click to view Reported Posts',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
+                  value: 1,
                 ),
-              ),
-              onPressed: () {
-                setState(() {
-                  viewPosts = !viewPosts;
-                });
-              },
-            ),
-            TextButton(
-              child: Container(
-                color: Colors.black12,
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
+                const PopupMenuItem(
                   child: Text(
-                    'View Ivy Statistics',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    'Click to view Ivy Statistics',
                   ),
+                  value: 2,
                 ),
-              ),
-              onPressed: () {
-/* 
-Use an alertDialog like used in Post() to show a popup with the data from the Requirements
- */
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                context.read<AuthService>().signOut();
-              },
-            ),
-            /*IconButton(
-            icon: Image.asset("assets/admin.png"),
-            iconSize: 50,
-            onPressed: (){},
-            */
-          ]),
+                const PopupMenuItem(
+                  child: Text(
+                    'Sign out',
+                  ),
+                  value: 3,
+                ),
+              ];
+            },
+          ),
+        ],
+      ),
       body: viewPosts ? const ReportedPostList() : const ReportedUserList(),
     );
   }

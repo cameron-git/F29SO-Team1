@@ -189,7 +189,6 @@ class HopePageWrapper extends StatelessWidget {
         if (!snapshot.hasData || snapshot.hasError) {
           return Container();
         }
-        debugPrint(snapshot.data!.get('admin').toString());
         if (snapshot.data!.get('admin')) {
           return const AdminUI();
         } else {
