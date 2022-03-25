@@ -101,9 +101,9 @@ class _StatDialogState extends State<StatDialog> {
       ),
       scrollable: true,
       content: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Form(
-              child: Column(children: <Widget>[
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: <Widget>[
             const Padding(
               padding: EdgeInsets.zero,
               child: Text("Total number of posts:"),
@@ -127,18 +127,12 @@ class _StatDialogState extends State<StatDialog> {
                 },
               ),
             ),
-            // Hope to have a drop down menu of timeframes
-            // So 1 hour, 1 day, 1 week that will get the number of posts
-            // in that timeframe that have been created
-            Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: const [
-                    Text("test"),
-                    Text("    this"),
-                  ],
-                ))
-          ]))),
+
+            // For within a timeframe use same as above but with this future
+            //FirebaseFirestore.instance.collection("posts").where(timestamp is less than 1 week ago)
+          ],
+        ),
+      ),
       actions: [
         TextButton(
             child: const Text("Exit"),
