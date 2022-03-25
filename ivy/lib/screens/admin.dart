@@ -133,6 +133,9 @@ class _StatDialogState extends State<StatDialog>{
                 size.toString()
               ),
             ),
+            // Hope to have a drop down menu of timeframes
+            // So 1 hour, 1 day, 1 week that will get the number of posts
+            // in that timeframe that have been created
             Padding(
               padding: EdgeInsets.all(8),
               child: Row(
@@ -146,17 +149,12 @@ class _StatDialogState extends State<StatDialog>{
         )
         
       ),
+
       actions: [
         TextButton(
-          child: const Text("hello"),
+          child: const Text("Exit"),
           onPressed:(){
-            FirebaseFirestore.instance
-            .collection("thisWorks")
-            .add(
-              {
-                "tada": "this",
-              }
-            );
+            Navigator.pop(context);
             
           }
         )
@@ -254,7 +252,60 @@ class ReportedUserList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Center(
+      child: StreamBuilder(
+        stream: FirebaseFirestore.instance
+          //.collection('posts')
+          .collection('userReports')
+          
+          .orderBy('timestamp', descending: false) // descending is false so the oldest reported users are at the top
+          .snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
+          if(!snapshot.hasData || snapshot.hasError){
+            return Container();
+          }
+          return ListView(
+            children: snapshot.data!.docs.map(
+              (e){
+                return Padding(
+                  padding: (MediaQuery.of(context).size.width/
+                              MediaQuery.of(context).size.height < 15 / 9)
+                              ? const EdgeInsets.all(8)
+                              : EdgeInsets.fromLTRB(
+                                MediaQuery.of(context).size.width / 3, 
+                                8, 
+                                MediaQuery.of(context).size.width / 3,
+                                8),
+                              
+                  child: InkWell(
+                    borderRadius: const BorderRadius.all(Radius.circular(4)),
+                    // ontap
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(30),
+                        child: Column(
+                          children: [
+                            Text("Report for:"),
+                            Text(e['reportee']),
+                            Text("\nReason: " + e['reason'], style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text("\nReport description:"),
+                            Text(e['description']),
+                            Text("\nReported by: " + e['submittedBy'])
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                  ),
+                  
+                );
+                
+              },
+            ).toList(),
+          );
+        }
+      )
+    );
   }
 }
 
