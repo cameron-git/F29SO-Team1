@@ -1,3 +1,7 @@
+import 'dart:html';
+import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart ';
 import 'package:ivy/auth.dart';
 import 'package:ivy/screens/post.dart';
@@ -34,8 +38,15 @@ class _AdminUIState extends State<AdminUI> {
                   break;
                 case 2:
                   /* 
-Use an alertDialog like used in Post() to show a popup with the data from the Requirements
- */
+                    Use an alertDialog like used in Post() 
+                    to show a popup with the data from the Requirements
+                  */
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context){
+                      return StatDialog();
+                    },
+                  );
                   break;
                 default:
               }
@@ -71,6 +82,94 @@ Use an alertDialog like used in Post() to show a popup with the data from the Re
     );
   }
 }
+
+class StatDialog extends StatefulWidget{
+  const StatDialog({Key? key}) :super(key:key);
+  //final String postId;
+
+  @override
+  State<StatDialog> createState() => _StatDialogState();
+}
+
+class _StatDialogState extends State<StatDialog>{
+  FirebaseFirestore db1 = FirebaseFirestore.instance;
+  int size = 0;
+  int x = 5;
+  
+  @override
+  void initState(){
+    /*db1.collection("posts").get().then((querySnapshot){
+      size = querySnapshot.size;
+      size = x;
+    });
+    */
+    super.initState();
+    
+  }
+  
+
+  @override
+  Widget build(BuildContext context){
+    
+    return AlertDialog(
+      
+      title: 
+        const Text("Ivy Platform Statistics ",
+        //style: TextStyle(decoration:TextDecoration.underline),
+        ),
+      scrollable: true,
+      
+      content: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Form(
+          child: Column(children: <Widget>[
+            const Padding(
+              padding: EdgeInsets.zero,
+              child: Text("Total number of posts:"),
+            ),
+            
+            Padding(
+              padding: EdgeInsets.zero,
+              
+              child: Text(
+                "size of querysnapshot"
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Text("test"), Text("    this"),
+                ],
+              )
+            )
+          ]
+          )
+        )
+        
+      ),
+      actions: [
+        TextButton(
+          child: const Text("hello"),
+          onPressed:(){
+            FirebaseFirestore.instance
+            .collection("thisWorks")
+            .add(
+              {
+                "tada": "this",
+              }
+            );
+            
+          }
+        )
+      ],
+
+      
+
+    );
+  }
+}
+
 
 /* This Widget should create a streambuilder list of posts like how Feed does
 however should use a seperate collection to store which postId are reported and
@@ -160,3 +259,5 @@ class ReportedUserList extends StatelessWidget {
     return Container();
   }
 }
+
+
