@@ -44,7 +44,7 @@ class _AdminUIState extends State<AdminUI> {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return StatDialog();
+                      return const StatDialog();
                     },
                   );
                   break;
@@ -127,7 +127,27 @@ class _StatDialogState extends State<StatDialog> {
                 },
               ),
             ),
-
+            const Padding(
+              padding: EdgeInsets.zero,
+              child: Text("Total number of users:"),
+            ),
+            Padding(
+              padding: EdgeInsets.zero,
+              child: FutureBuilder(
+                future: FirebaseFirestore.instance.collection("users").get(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return Container();
+                  }
+                  return Text(
+                    snapshot.data!.size.toString(),
+                  );
+                },
+              ),
+            ),
+            
             // For within a timeframe use same as above but with this future
             //FirebaseFirestore.instance.collection("posts").where(timestamp greater than 1 week ago)
           ],
@@ -261,7 +281,7 @@ class ReportedUserList extends StatelessWidget {
                         // ontap
                         child: Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(30),
+                            padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
                                 Text("Report for:"),
@@ -271,10 +291,64 @@ class ReportedUserList extends StatelessWidget {
                                         TextStyle(fontWeight: FontWeight.bold)),
                                 Text("\nReport description:"),
                                 Text(e['description']),
-                                Text("\nReported by: " + e['submittedBy'])
+                                Text("\nReported by: " + e['submittedBy']),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: ElevatedButton(
+                                    onPressed:(){
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text("Ban user"),
+                                          scrollable: true,
+                                          content: Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            
+                                            child: Column(
+                                              children: [
+                                                Text("Confirm you wish to delete user under ID:"),
+                                                Text(e.id),
+                                                Text(""),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children:[
+                                                    TextButton(
+                                                      onPressed:(){
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Text("Cancel"),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: (){
+                                                        FirebaseFirestore.instance
+                                                        .collection("users")
+                                                        .doc(e['reportee'])
+                                                        .delete();
+                                                        FirebaseFirestore.instance
+                                                        .collection("userReports")
+                                                        .doc(e.id)
+                                                        .delete();
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Text("Yes I do"),
+                                                    )
+                                                  ]
+                                                ),
+                                              ]
+                                            )
+                                          ),
+
+                                        )
+                                      );
+                                    },
+
+                                    child:  Text("Take action"),
+                                  )
+                                )
                               ],
                             ),
                           ),
+                          
                         ),
                       ),
                     );
