@@ -43,7 +43,7 @@ class _PostState extends State<Post> {
   }
 
   // drawer pop up to select the media on the post
-  void mediaPopUp() {
+  void mediaPopUp(perms) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -63,7 +63,7 @@ class _PostState extends State<Post> {
                 if (details.primaryDelta! > 1) Navigator.of(context).pop();
               }
             },
-            child: mediaList(), // display the media list in the the drawer
+            child: mediaList(perms), // display the media list in the the drawer
           ),
         );
       },
@@ -356,7 +356,7 @@ class _PostState extends State<Post> {
   }
 
   // widget containing all the media in a post
-  Widget mediaList() {
+  Widget mediaList(bool perms) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection('posts')
@@ -370,81 +370,83 @@ class _PostState extends State<Post> {
         }
         // list of all the items displayed in the media list
         List<Widget> items = {
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              height: 100,
-              child: Material(
-                color: const Color.fromRGBO(127, 127, 127, 0.1),
-                // button with + sign
-                child: InkWell(
-                  hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
-                  // when you tap on it, open local phone file storage
-                  onTap: () async {
-                    final results = await FilePicker.platform.pickFiles(
-                      allowMultiple: false,
-                      type: FileType.custom,
-                      allowedExtensions: ['png', 'jpg', 'mp4', 'mp3'],
-                    );
-                    // if no file was chosen, tell the user
-                    if (results == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('No file selected.'),
-                        ),
-                      );
-                      return;
-                    }
-                    var type = results.files.single.extension;
-                    DocumentReference fbDoc = await FirebaseFirestore.instance
-                        .collection('posts')
-                        .doc(widget.postId)
-                        .collection('media')
-                        .add({
-                      'url': '',
-                      'left': 0,
-                      'top': 0,
-                      'width': 20,
-                      'height': 20,
-                      'type': type,
-                      'layer': 1,
-                    });
-                    // if the app is running on the web
-                    if (kIsWeb) {
-                      final bytes =
-                          results.files.single.bytes!; // get the selected file
-                      // upload the image to firebase storage
-                      await FirebaseStorage.instance
-                          .ref('${widget.postId}/${fbDoc.id}.$type')
-                          .putData(bytes);
+          if (perms)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                height: 100,
+                child: Material(
+                  color: const Color.fromRGBO(127, 127, 127, 0.1),
+                  child: Row(),
+                  // button with + sign
+                  // child: InkWell(
+                  //   hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
+                  //   // when you tap on it, open local phone file storage
+                  //   onTap: () async {
+                  //     final results = await FilePicker.platform.pickFiles(
+                  //       allowMultiple: false,
+                  //       type: FileType.custom,
+                  //       allowedExtensions: ['png', 'jpg', 'mp4', 'mp3'],
+                  //     );
+                  //     // if no file was chosen, tell the user
+                  //     if (results == null) {
+                  //       ScaffoldMessenger.of(context).showSnackBar(
+                  //         const SnackBar(
+                  //           content: Text('No file selected.'),
+                  //         ),
+                  //       );
+                  //       return;
+                  //     }
+                  //     var type = results.files.single.extension;
+                  //     DocumentReference fbDoc = await FirebaseFirestore.instance
+                  //         .collection('posts')
+                  //         .doc(widget.postId)
+                  //         .collection('media')
+                  //         .add({
+                  //       'url': '',
+                  //       'left': 0,
+                  //       'top': 0,
+                  //       'width': 20,
+                  //       'height': 20,
+                  //       'type': type,
+                  //       'layer': 1,
+                  //     });
+                  //     // if the app is running on the web
+                  //     if (kIsWeb) {
+                  //       final bytes =
+                  //           results.files.single.bytes!; // get the selected file
+                  //       // upload the image to firebase storage
+                  //       await FirebaseStorage.instance
+                  //           .ref('${widget.postId}/${fbDoc.id}.$type')
+                  //           .putData(bytes);
 
-                      // if the app is hosted on a mobile device
-                    } else {
-                      final path = results.files.single.path!;
-                      // upload the image to firebase storage
-                      await FirebaseStorage.instance
-                          .ref('${widget.postId}/${fbDoc.id}.$type')
-                          .putFile(File(path));
-                    }
-                    final url = await FirebaseStorage.instance
-                        .ref('${widget.postId}/${fbDoc.id}.$type')
-                        .getDownloadURL();
-                    debugPrint("\n This is the url: " + url);
-                    // adding media to the post instance
-                    fbDoc.update(
-                      {
-                        'url': url,
-                      },
-                    );
-                  },
-                  // add-button to add more media
-                  child: const SizedBox(
-                    child: Icon(Icons.add),
-                  ),
+                  //       // if the app is hosted on a mobile device
+                  //     } else {
+                  //       final path = results.files.single.path!;
+                  //       // upload the image to firebase storage
+                  //       await FirebaseStorage.instance
+                  //           .ref('${widget.postId}/${fbDoc.id}.$type')
+                  //           .putFile(File(path));
+                  //     }
+                  //     final url = await FirebaseStorage.instance
+                  //         .ref('${widget.postId}/${fbDoc.id}.$type')
+                  //         .getDownloadURL();
+                  //     debugPrint("\n This is the url: " + url);
+                  //     // adding media to the post instance
+                  //     fbDoc.update(
+                  //       {
+                  //         'url': url,
+                  //       },
+                  //     );
+                  //   },
+                  //   // add-button to add more media
+                  //   child: const SizedBox(
+                  //     child: Icon(Icons.add),
+                  //   ),
+                  // ),
                 ),
               ),
             ),
-          ),
         }.toList(); // put all the items into a list and display below the add button
 
         items += snapshot.data!.docs.map(
@@ -511,20 +513,21 @@ class _PostState extends State<Post> {
                       ),
                       splashRadius: Material.defaultSplashRadius / 2,
                     ),
-                    IconButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              EditDialog(e, widget.postId),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.edit,
-                        color: Theme.of(context).colorScheme.onBackground,
+                    if (perms)
+                      IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                EditDialog(e, widget.postId),
+                          );
+                        },
+                        icon: Icon(
+                          Icons.edit,
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
+                        splashRadius: Material.defaultSplashRadius / 2,
                       ),
-                      splashRadius: Material.defaultSplashRadius / 2,
-                    ),
                   ],
                 ),
               ),
@@ -568,10 +571,9 @@ class _PostState extends State<Post> {
     final postId = widget.postId;
     final Stream<DocumentSnapshot> _postStream =
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
-
+    final User currentUser = FirebaseAuth.instance.currentUser!;
     aspectRatio =
         MediaQuery.of(context).size.width / MediaQuery.of(context).size.height;
-
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     return StreamBuilder<DocumentSnapshot>(
@@ -589,8 +591,7 @@ class _PostState extends State<Post> {
         _tagsController.text = tags.join(' ') + ' ';
         _titleController.text = data['title'];
         _descController.text = data['description'];
-        User currentUser = FirebaseAuth.instance.currentUser!;
-
+        bool owner = data['ownerId'] == currentUser.uid;
         bool perms = userPermissions.contains(currentUser.uid);
 
         // listener for media pop-up
@@ -600,14 +601,14 @@ class _PostState extends State<Post> {
             if (event is PointerScrollEvent &&
                 event.scrollDelta.dy > 10 &&
                 aspectRatio < 1.2) {
-              mediaPopUp();
+              mediaPopUp(perms);
             }
           },
           // on swipe-up open up the media pop-up
           child: GestureDetector(
             onVerticalDragUpdate: (details) {
               if (details.primaryDelta! < -1 && aspectRatio < 1.2) {
-                mediaPopUp();
+                mediaPopUp(perms);
               }
             },
             child: Scaffold(
@@ -634,7 +635,7 @@ class _PostState extends State<Post> {
                         ? 'Stop media playback'
                         : 'Start media playback',
                   ),
-                  if (aspectRatio <= 1.2)
+                  if (aspectRatio <= 1.2 && perms)
                     IconButton(
                       onPressed: () {
                         Navigator.of(context).push(
@@ -651,11 +652,19 @@ class _PostState extends State<Post> {
                       icon: const Icon(Icons.message),
                       tooltip: "Open Chat",
                     ),
-                  const VoiceCallButton(),
+                  if (perms) const VoiceCallButton(),
                   PopupMenuButton(
                     onSelected: (value) {
                       switch (value) {
                         case 1:
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return ManageUserDialog(postId);
+                            },
+                          );
+                          break;
+                        case 2:
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -708,6 +717,8 @@ class _PostState extends State<Post> {
                                           .set(
                                         <String, dynamic>{
                                           'title': _titleController.text,
+                                          'titleSearch': _tagsController.text
+                                              .toUpperCase(),
                                           'description': _descController.text,
                                           'tags': _tagsController.text
                                               .toUpperCase()
@@ -724,7 +735,7 @@ class _PostState extends State<Post> {
                             },
                           );
                           break;
-                        case 2:
+                        case 3:
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -732,7 +743,7 @@ class _PostState extends State<Post> {
                             },
                           );
                           break;
-                        case 3:
+                        case 4:
                           FirebaseFirestore.instance
                               .collection('posts')
                               .doc(postId)
@@ -745,6 +756,23 @@ class _PostState extends State<Post> {
                       }
                     },
                     itemBuilder: (context) => [
+                      PopupMenuItem(
+                        enabled: owner,
+                        // Set them up as rows instead, which lets for the icon widget alongside the tooltip
+                        child: Row(children: const <Widget>[
+                          // Thought adding icons would be good as a UI thing
+                          // Twitter, Facebook, Youtube all use something similar for their menus
+                          Icon(
+                            Icons.person_add,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                          Tooltip(
+                            message: "Need to be owner",
+                            child: Text("  Manage Users"),
+                          ),
+                        ]),
+                        value: 1,
+                      ),
                       PopupMenuItem(
                         enabled: perms,
                         // Set them up as rows instead, which lets for the icon widget alongside the tooltip
@@ -760,11 +788,9 @@ class _PostState extends State<Post> {
                             child: Text("  Edit Post"),
                           ),
                         ]),
-                        value: 1,
+                        value: 2,
                       ),
                       PopupMenuItem(
-                        // Checks whether or not the post owner is the current user, if so, disables them from reporting their own post
-                        enabled: (data["ownerId"] != currentUser.uid),
                         child: Row(
                           children: const <Widget>[
                             Icon(
@@ -777,14 +803,12 @@ class _PostState extends State<Post> {
                             ),
                           ],
                         ),
-                        value: 2,
+                        value: 3,
                         //value: 2,
                       ),
                       PopupMenuItem(
                         // Allows deletion if the owner is viewing it or a platform administrator
-                        enabled: (data["ownerId"] == currentUser.uid
-                            // || adminBool
-                            ),
+                        enabled: owner,
                         child: Row(children: const <Widget>[
                           Icon(
                             Icons.delete_forever,
@@ -796,7 +820,7 @@ class _PostState extends State<Post> {
                                 "  Delete Post",
                               ))
                         ]),
-                        value: 3,
+                        value: 4,
                       ),
                     ],
                   ),
@@ -821,7 +845,7 @@ class _PostState extends State<Post> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (aspectRatio > 1.2)
+                        if (aspectRatio > 1.2 && perms)
                           Expanded(
                             child: messageBoard(),
                           ),
@@ -831,7 +855,7 @@ class _PostState extends State<Post> {
                         ),
                         if (aspectRatio > 1.2)
                           Expanded(
-                            child: mediaList(),
+                            child: mediaList(perms),
                           )
                       ],
                     ),
@@ -839,7 +863,7 @@ class _PostState extends State<Post> {
                   if (aspectRatio < 1.2)
                     IconButton(
                       onPressed: () {
-                        mediaPopUp();
+                        mediaPopUp(perms);
                       },
                       icon: const Icon(
                         Icons.arrow_drop_up,
@@ -958,6 +982,7 @@ class _NewPostState extends State<NewPost> {
                       'ownerId': currentUser.uid,
                       'userPermissions': [currentUser.uid],
                       'title': _titleController.text,
+                      'titleSearch': _titleController.text.toUpperCase(),
                       'description': _descController.text,
                       'tags':
                           _tagController.text.toUpperCase().trim().split(' '),
@@ -1173,104 +1198,257 @@ class _ReportDialogState extends State<ReportDialog> {
         content: Padding(
             padding: const EdgeInsets.all(8),
             child: Form(
-              key: _formKey,
-              child: Column(children: <Widget>[
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
-                  child: Text("Select reason for report:",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  // Drop down button to select one of the reaosns why they're reporting the post
-                  child: DropdownButton<String>(
-                    value: dropdownValue,
-                    icon: const Icon(Icons.expand_more),
-                    onChanged: (String? newValue) {
-                      dropdownValue = newValue!;
-                      setState(() {});
-                    },
-                    // List of all the options available in the drop down menu
-                    items: <String>[
-                      'Sexual Content',
-                      'Violent or repulsive content',
-                      'Hateful or abusive content',
-                      'Harmful or dangerous acts',
-                      'Other'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  )
+                key: _formKey,
+                child: Column(children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
+                    child: Text("Select reason for report:",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: TextFormField(
-                      controller: _reportReasonController,
-                      decoration: const InputDecoration(
-                        labelText: "Further Detail",
-                      ),
-                      validator: (value){
-                        if(value == null || value.isEmpty){
-                          return "Please describe your reason \nfor reporting";
-                        }
-                        return null;
-                      },
-                    )
-                  )
-                ]
-              )
-            )
-          ),
-          actions: [
-            // Text Button cancel which even though you cane exit the alert popup
-            // by clicking anywhere else, just makes it a clear exit option
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Color.fromARGB(200, 0, 0, 0)),
-              ),
+                  Padding(
+                      padding: const EdgeInsets.all(8),
+                      // Drop down button to select one of the reaosns why they're reporting the post
+                      child: DropdownButton<String>(
+                        value: dropdownValue,
+                        icon: const Icon(Icons.expand_more),
+                        onChanged: (String? newValue) {
+                          dropdownValue = newValue!;
+                          setState(() {});
+                        },
+                        // List of all the options available in the drop down menu
+                        items: <String>[
+                          'Sexual Content',
+                          'Violent or repulsive content',
+                          'Hateful or abusive content',
+                          'Harmful or dangerous acts',
+                          'Other'
+                        ].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      )),
+                  Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: TextFormField(
+                        controller: _reportReasonController,
+                        decoration: const InputDecoration(
+                          labelText: "Further Detail",
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Please describe your reason \nfor reporting";
+                          }
+                          return null;
+                        },
+                      ))
+                ]))),
+        actions: [
+          // Text Button cancel which even though you cane exit the alert popup
+          // by clicking anywhere else, just makes it a clear exit option
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Color.fromARGB(200, 0, 0, 0)),
             ),
-            // Button that will submit the selected reason and any further detail
-            // to a collection within the post inside the firebase database
-            ElevatedButton(
-                child: const Text("Submit Report"),
-                onPressed: () {
-                  // Inserts report into post document's collection of reports
-                  // IF statement that ensures the user has inputted 
-                  // a description on why they're reporting
-                  if(_formKey.currentState!.validate()){
-                    FirebaseFirestore.instance
-                        .collection("posts")
-                        .doc(widget.postId)
-                        .collection("reports")
-                        .add(
-                      {
-                        "reason": dropdownValue.toString(),
-                        "description": _reportReasonController.text,
-                        "timestamp": DateTime.now().millisecondsSinceEpoch,
-                        "submittedBy": currentUser.uid,
-                      },
-                    );
-                    // Inserts report into general collection of reports
-                    FirebaseFirestore.instance
-                        .collection("postReports")
-                        .doc(widget.postId)
-                        .collection('cases')
-                        .add({
-                      // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
+          ),
+          // Button that will submit the selected reason and any further detail
+          // to a collection within the post inside the firebase database
+          ElevatedButton(
+              child: const Text("Submit Report"),
+              onPressed: () {
+                // Inserts report into post document's collection of reports
+                // IF statement that ensures the user has inputted
+                // a description on why they're reporting
+                if (_formKey.currentState!.validate()) {
+                  FirebaseFirestore.instance
+                      .collection("posts")
+                      .doc(widget.postId)
+                      .collection("reports")
+                      .add(
+                    {
                       "reason": dropdownValue.toString(),
                       "description": _reportReasonController.text,
                       "timestamp": DateTime.now().millisecondsSinceEpoch,
                       "submittedBy": currentUser.uid,
-                    });
-                    Navigator.pop(context);
+                    },
+                  );
+                  // Inserts report into general collection of reports
+                  FirebaseFirestore.instance
+                      .collection("postReports")
+                      .doc(widget.postId)
+                      .collection('cases')
+                      .add({
+                    // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
+                    "reason": dropdownValue.toString(),
+                    "description": _reportReasonController.text,
+                    "timestamp": DateTime.now().millisecondsSinceEpoch,
+                    "submittedBy": currentUser.uid,
+                  });
+                  Navigator.pop(context);
+                }
+              })
+        ]);
+  }
+}
+
+class ManageUserDialog extends StatefulWidget {
+  const ManageUserDialog(this.postId, {Key? key}) : super(key: key);
+  final String postId;
+
+  @override
+  State<ManageUserDialog> createState() => _ManageUserDialogState();
+}
+
+class _ManageUserDialogState extends State<ManageUserDialog> {
+  final TextEditingController _searchBoxController = TextEditingController();
+  String? error;
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _searchBoxController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      scrollable: true,
+      title: const Text('Add users to post'),
+      content: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchBoxController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: ' Type User ID here',
+                    errorText: error,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () async {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(_searchBoxController.text)
+                      .get()
+                      .then((value) async {
+                    if (value.exists) {
+                      await FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc(widget.postId)
+                          .update({
+                        'userPermissions':
+                            FieldValue.arrayUnion([_searchBoxController.text])
+                      });
+                      setState(() {
+                        error = null;
+                      });
+                    } else {
+                      setState(() {
+                        error = 'No user with this ID';
+                      });
+                    }
+                  });
+                },
+                icon: const Icon(Icons.person_add),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          SizedBox.fromSize(
+            size: MediaQuery.of(context).size / 2,
+            child: FutureBuilder(
+                future: FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .get(),
+                builder: (context,
+                    AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return Container();
                   }
-                })
-            ]
-          );
+                  List<dynamic> userIds = snapshot.data!.get('userPermissions');
+                  List<Widget> listChildren = [];
+                  for (var item in userIds) {
+                    listChildren.add(
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              FutureBuilder(
+                                  future: FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(item)
+                                      .get(),
+                                  builder: (context,
+                                      AsyncSnapshot<
+                                              DocumentSnapshot<
+                                                  Map<String, dynamic>>>
+                                          nameSnap) {
+                                    if (nameSnap.hasError ||
+                                        !nameSnap.hasData) {
+                                      return Container();
+                                    }
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(nameSnap.data!.get('name')),
+                                        Text(
+                                          item.toString(),
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                              (item !=
+                                      context
+                                          .read<AuthService>()
+                                          .currentUser!
+                                          .uid)
+                                  ? IconButton(
+                                      onPressed: () async {
+                                        await FirebaseFirestore.instance
+                                            .collection('posts')
+                                            .doc(widget.postId)
+                                            .update({
+                                          'userPermissions':
+                                              FieldValue.arrayRemove([item])
+                                        });
+                                        setState(() {});
+                                      },
+                                      icon: const Icon(
+                                          Icons.remove_circle_outline),
+                                    )
+                                  : Container(),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          )
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView(
+                    children: listChildren,
+                  );
+                }),
+          )
+        ],
+      ),
+    );
   }
 }

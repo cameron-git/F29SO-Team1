@@ -27,10 +27,14 @@ class _LoginPageState extends State<LoginPage> {
   submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (reg) {
-      await context.read<AuthService>().signUp(
+      submitError = !await context.read<AuthService>().signUp(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
+      if (submitError) {
+        setState(() {});
+        return;
+      }
       final user = context.read<AuthService>().currentUser;
       await FirebaseFirestore.instance.collection('users').doc(user?.uid).set(
         {
@@ -147,9 +151,12 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     controller: emailController,
                     maxLength: 127,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Email',
                       counterText: '',
+                      errorText: (submitError && reg)
+                          ? 'The email address is already in use by another account'
+                          : null,
                     ),
                   ),
                 ),
@@ -219,8 +226,9 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: InputDecoration(
                       labelText: 'Password',
                       counterText: '',
-                      errorText:
-                          (submitError) ? 'Wrong Email or Password' : null,
+                      errorText: (submitError && !reg)
+                          ? 'Wrong Email or Password'
+                          : null,
                       suffixIcon: reg
                           ? null
                           : IconButton(

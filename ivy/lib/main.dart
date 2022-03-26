@@ -116,6 +116,8 @@ class _IvyAppState extends State<IvyApp> {
           ),
         ),
         darkTheme: ThemeData(
+          snackBarTheme: const SnackBarThemeData(
+              contentTextStyle: TextStyle(color: Colors.white)),
           textTheme: const TextTheme(
             bodyText1: TextStyle(),
             bodyText2: TextStyle(),
