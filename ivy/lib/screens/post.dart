@@ -627,7 +627,8 @@ class _PostState extends State<Post> {
             media['url'],
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color:
+                  Theme.of(context).colorScheme.onBackground.withOpacity(0.8),
               fontFamily: (fontFam == 'Serif') ? 'Bitter' : null,
             ),
           ),
@@ -732,64 +733,68 @@ class _PostState extends State<Post> {
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.arrow_back),
                 ),
-                title: Row(
-                  children: [
-                    Text(
-                      data['title'],
-                    ),
-                    IconButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              List<Widget> chips = [];
-                              for (var tag in tags) {
-                                chips.add(Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: Chip(label: Text(tag)),
-                                ));
-                              }
-                              return AlertDialog(
-                                scrollable: true,
-                                title: const Text('Description:'),
-                                content: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(data['description'].toString()),
-                                    const Divider(),
-                                    const Text('Tags:'),
-                                    if (tags.length > 1)
-                                      SizedBox(
-                                        height: 50,
-                                        width: 1000,
-                                        child: ListView(
-                                          shrinkWrap: true,
-                                          physics: const ScrollPhysics(),
-                                          scrollDirection: Axis.horizontal,
-                                          children: chips,
-                                        ),
-                                      )
-                                    else
-                                      const Text('There are no tags'),
-                                  ],
-                                ),
-                                actions: [
-                                  ElevatedButton(
-                                    child: const Text("Ok"),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
+                title: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      Text(
+                        data['title'],
+                      ),
+                      IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                List<Widget> chips = [];
+                                for (var tag in tags) {
+                                  chips.add(Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Chip(label: Text(tag)),
+                                  ));
+                                }
+                                return AlertDialog(
+                                  scrollable: true,
+                                  title: const Text('Description:'),
+                                  content: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(data['description'].toString()),
+                                      const Divider(),
+                                      const Text('Tags:'),
+                                      if (tags.length > 1)
+                                        SizedBox(
+                                          height: 50,
+                                          width: 1000,
+                                          child: ListView(
+                                            shrinkWrap: true,
+                                            physics: const ScrollPhysics(),
+                                            scrollDirection: Axis.horizontal,
+                                            children: chips,
+                                          ),
+                                        )
+                                      else
+                                        const Text('There are no tags'),
+                                    ],
                                   ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.info_outline,
-                          size: 18,
-                        ))
-                  ],
+                                  actions: [
+                                    ElevatedButton(
+                                      child: const Text("Ok"),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.info_outline,
+                            size: 18,
+                          ))
+                    ],
+                  ),
                 ),
                 actions: [
                   // button to play all media on the canvas
@@ -1921,6 +1926,7 @@ class AddURLDialog extends StatefulWidget {
 class _AddURLDialogState extends State<AddURLDialog> {
   final TextEditingController _addUSLController = TextEditingController();
   final TextEditingController _typeController = TextEditingController();
+  String? errorText;
 
   @override
   void dispose() {
@@ -1939,7 +1945,8 @@ class _AddURLDialogState extends State<AddURLDialog> {
           children: [
             TextField(
               controller: _addUSLController,
-              decoration: const InputDecoration(labelText: 'URL'),
+              decoration:
+                  InputDecoration(labelText: 'URL', errorText: errorText),
             ),
             const SizedBox(
               height: 8,
@@ -1964,6 +1971,15 @@ class _AddURLDialogState extends State<AddURLDialog> {
                   _addUSLController.text.isEmpty) {
                 return;
               }
+              if (!_addUSLController.text.startsWith('https://')) {
+                setState(() {
+                  errorText = 'URLs must start with "https://"';
+                });
+                return;
+              }
+              setState(() {
+                errorText = null;
+              });
               await FirebaseFirestore.instance
                   .collection('posts')
                   .doc(widget.postId)

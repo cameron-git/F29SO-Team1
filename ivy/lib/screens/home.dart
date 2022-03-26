@@ -189,58 +189,57 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
       title: const Text("Report User",
           style: TextStyle(fontWeight: FontWeight.bold)),
       scrollable: true,
-      content: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Form(
-              key: _formKey,
-              child: Column(children: <Widget>[
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 184, 0),
-                  child: Text("Select reason for user report:"),
+      content: Form(
+          key: _formKey,
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text("Select reason for user report:"),
+                const SizedBox(
+                  height: 8,
                 ),
-                Padding(
-                    padding: const EdgeInsets.all(8),
-                    // Drop down button to select one of the reasons
-                    // why they're reporting the user
-                    child: DropdownButton<String>(
-                      value: dropdownValue,
-                      icon: const Icon(Icons.expand_more),
-                      onChanged: (String? newValue) {
-                        dropdownValue = newValue!;
-                        setState(() {});
-                      },
-                      // List of all the options available in the drop down menu
-                      items: <String>[
-                        "Spam",
-                        "It appears their account is hacked",
-                        "They're pretending to be me or someone else",
-                        "Their profile includes abusive or hateful content",
-                        "Their messages are abusive or hateful",
-                        "They're expressing intention of suicide or self-injury",
-                        "They're sharing explicit content",
-                        "Other"
-                      ].map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    )),
-                Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: TextFormField(
-                      controller: _reportUserReasonController,
-                      decoration: const InputDecoration(
-                        labelText: "Further detail",
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Please describe your reason for reporting";
-                        }
-                        return null;
-                      },
-                    ))
-              ]))),
+                DropdownButton<String>(
+                  itemHeight: 50,
+                  isExpanded: true,
+                  value: dropdownValue,
+                  icon: const Icon(Icons.expand_more),
+                  onChanged: (String? newValue) {
+                    dropdownValue = newValue!;
+                    setState(() {});
+                  },
+                  // List of all the options available in the drop down menu
+                  items: <String>[
+                    "Spam",
+                    "It appears their account is hacked",
+                    "They're pretending to be me or someone else",
+                    "Their profile includes abusive or hateful content",
+                    "Their messages are abusive or hateful",
+                    "They're expressing intention of suicide or self-injury",
+                    "They're sharing explicit content",
+                    "Other"
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                TextFormField(
+                  controller: _reportUserReasonController,
+                  decoration: const InputDecoration(
+                    labelText: "Further detail",
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please describe your reason for reporting";
+                    }
+                    return null;
+                  },
+                )
+              ])),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
@@ -563,46 +562,43 @@ class UserNameList extends StatelessWidget {
                             width: 8,
                           ),
                           Expanded(
-                            child: Container(),
-                          ),
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  e['name'],
-                                  style: Theme.of(context).textTheme.headline5,
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text(e.id),
-                                    IconButton(
-                                      onPressed: () {
-                                        Clipboard.setData(
-                                                ClipboardData(text: e.id))
-                                            .then((_) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content: Text(
-                                                      "User ID copied to clipboard")));
-                                        });
-                                      },
-                                      splashRadius:
-                                          Material.defaultSplashRadius / 2,
-                                      icon: const Icon(
-                                        Icons.copy,
-                                        size: 18,
+                            child: FittedBox(
+                              fit: BoxFit.fitWidth,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e['name'],
+                                    style:
+                                        Theme.of(context).textTheme.headline5,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(e.id),
+                                      IconButton(
+                                        onPressed: () {
+                                          Clipboard.setData(
+                                                  ClipboardData(text: e.id))
+                                              .then((_) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                                    content: Text(
+                                                        "User ID copied to clipboard")));
+                                          });
+                                        },
+                                        splashRadius:
+                                            Material.defaultSplashRadius / 2,
+                                        icon: const Icon(
+                                          Icons.copy,
+                                          size: 18,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: Container(),
                           ),
                           // PLACEHOLDER ICON BUTTON
                           // Depending where we get to with profiles, was thinking
@@ -610,22 +606,22 @@ class UserNameList extends StatelessWidget {
                           // dialogue screen but have this iconButton for the time
                           // being as a placeholder, the widget dialogue can be
                           // copied over for any profile screen
-                          Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                              child: IconButton(
-                                tooltip: "Report user for improper behaviour",
-                                icon: const Icon(
-                                  Icons.report,
-                                  color: Color.fromARGB(150, 255, 0, 0),
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return ReportUserDialog(e.id);
-                                      });
-                                },
-                              )),
+                          IconButton(
+                            tooltip: "Report user for improper behaviour",
+                            splashRadius: Material.defaultSplashRadius / 2,
+                            icon: const Icon(
+                              Icons.report,
+                              color: Color.fromARGB(150, 255, 0, 0),
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return ReportUserDialog(e.id);
+                                  });
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -690,73 +686,70 @@ class UserIDList extends StatelessWidget {
                         const SizedBox(
                           width: 8,
                         ),
+
                         Expanded(
-                          child: Container(),
-                        ),
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                snapshot.data!.get('name'),
-                                style: Theme.of(context).textTheme.headline5,
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(snapshot.data!.id),
-                                  IconButton(
-                                    onPressed: () {
-                                      Clipboard.setData(ClipboardData(
-                                              text: snapshot.data!.id))
-                                          .then(
-                                        (_) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content: Text(
-                                                      "User ID copied to clipboard")));
-                                        },
-                                      );
-                                    },
-                                    splashRadius:
-                                        Material.defaultSplashRadius / 2,
-                                    icon: const Icon(
-                                      Icons.copy,
-                                      size: 18,
+                          child: FittedBox(
+                            fit: BoxFit.fitWidth,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  snapshot.data!.get('name'),
+                                  style: Theme.of(context).textTheme.headline5,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(snapshot.data!.id),
+                                    IconButton(
+                                      onPressed: () {
+                                        Clipboard.setData(ClipboardData(
+                                                text: snapshot.data!.id))
+                                            .then(
+                                          (_) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                                    content: Text(
+                                                        "User ID copied to clipboard")));
+                                          },
+                                        );
+                                      },
+                                      splashRadius:
+                                          Material.defaultSplashRadius / 2,
+                                      icon: const Icon(
+                                        Icons.copy,
+                                        size: 18,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        Expanded(
-                          child: Container(),
-                        ),
+
                         // PLACEHOLDER ICON BUTTON
                         // Depending where we get to with profiles, was thinking
                         // that if you pressed the user card it'll take you to a
                         // dialogue screen but have this iconButton for the time
                         // being as a placeholder, the widget dialogue can be
                         // copied over for any profile screen
-                        Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                            child: IconButton(
-                              tooltip: "Report user for improper behaviour",
-                              icon: const Icon(
-                                Icons.report,
-                                color: Color.fromARGB(150, 255, 0, 0),
-                              ),
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return ReportUserDialog(
-                                          snapshot.data!.id);
-                                    });
-                              },
-                            )),
+                        IconButton(
+                          tooltip: "Report user for improper behaviour",
+                          splashRadius: Material.defaultSplashRadius / 2,
+                          icon: const Icon(
+                            Icons.report,
+                            color: Color.fromARGB(150, 255, 0, 0),
+                            size: 18,
+                          ),
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return ReportUserDialog(snapshot.data!.id);
+                                });
+                          },
+                        ),
                       ],
                     ),
                   ),
