@@ -1193,104 +1193,116 @@ class _ReportDialogState extends State<ReportDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text("Report Post"),
-        scrollable: true,
-        content: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Form(
-                key: _formKey,
-                child: Column(children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
-                    child: Text("Select reason for report:",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.all(8),
-                      // Drop down button to select one of the reaosns why they're reporting the post
-                      child: DropdownButton<String>(
-                        value: dropdownValue,
-                        icon: const Icon(Icons.expand_more),
-                        onChanged: (String? newValue) {
-                          dropdownValue = newValue!;
-                          setState(() {});
-                        },
-                        // List of all the options available in the drop down menu
-                        items: <String>[
-                          'Sexual Content',
-                          'Violent or repulsive content',
-                          'Hateful or abusive content',
-                          'Harmful or dangerous acts',
-                          'Other'
-                        ].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      )),
-                  Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: TextFormField(
-                        controller: _reportReasonController,
-                        decoration: const InputDecoration(
-                          labelText: "Further Detail",
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please describe your reason \nfor reporting";
-                          }
-                          return null;
-                        },
-                      ))
-                ]))),
-        actions: [
-          // Text Button cancel which even though you cane exit the alert popup
-          // by clicking anywhere else, just makes it a clear exit option
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: Color.fromARGB(200, 0, 0, 0)),
-            ),
+      title: const Text("Report Post"),
+      scrollable: true,
+      content: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Form(
+              key: _formKey,
+              child: Column(children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
+                  child: Text("Select reason for report:",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                Padding(
+                    padding: const EdgeInsets.all(8),
+                    // Drop down button to select one of the reaosns why they're reporting the post
+                    child: DropdownButton<String>(
+                      value: dropdownValue,
+                      icon: const Icon(Icons.expand_more),
+                      onChanged: (String? newValue) {
+                        dropdownValue = newValue!;
+                        setState(() {});
+                      },
+                      // List of all the options available in the drop down menu
+                      items: <String>[
+                        'Sexual Content',
+                        'Violent or repulsive content',
+                        'Hateful or abusive content',
+                        'Harmful or dangerous acts',
+                        'Other'
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    )),
+                Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: TextFormField(
+                      controller: _reportReasonController,
+                      decoration: const InputDecoration(
+                        labelText: "Further Detail",
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please describe your reason \nfor reporting";
+                        }
+                        return null;
+                      },
+                    ))
+              ]))),
+      actions: [
+        // Text Button cancel which even though you cane exit the alert popup
+        // by clicking anywhere else, just makes it a clear exit option
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            "Cancel",
+            style: TextStyle(color: Color.fromARGB(200, 0, 0, 0)),
           ),
-          // Button that will submit the selected reason and any further detail
-          // to a collection within the post inside the firebase database
-          ElevatedButton(
-              child: const Text("Submit Report"),
-              onPressed: () {
-                // Inserts report into post document's collection of reports
-                // IF statement that ensures the user has inputted
-                // a description on why they're reporting
-                if (_formKey.currentState!.validate()) {
-                  FirebaseFirestore.instance
-                      .collection("posts")
-                      .doc(widget.postId)
-                      .collection("reports")
-                      .add(
-                    {
-                      "reason": dropdownValue.toString(),
-                      "description": _reportReasonController.text,
-                      "timestamp": DateTime.now().millisecondsSinceEpoch,
-                      "submittedBy": currentUser.uid,
-                    },
-                  );
-                  // Inserts report into general collection of reports
-                  FirebaseFirestore.instance
-                      .collection("postReports")
-                      .doc(widget.postId)
-                      .collection('cases')
-                      .add({
-                    // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
-                    "reason": dropdownValue.toString(),
-                    "description": _reportReasonController.text,
-                    "timestamp": DateTime.now().millisecondsSinceEpoch,
-                    "submittedBy": currentUser.uid,
-                  });
-                  Navigator.pop(context);
-                }
-              })
-        ]);
+        ),
+        // Button that will submit the selected reason and any further detail
+        // to a collection within the post inside the firebase database
+        ElevatedButton(
+            child: const Text("Submit Report"),
+            onPressed: () {
+              // Inserts report into post document's collection of reports
+              // IF statement that ensures the user has inputted
+              // a description on why they're reporting
+              // if(_formKey.currentState!.validate()){
+              //   FirebaseFirestore.instance
+              //       .collection("posts")
+              //       .doc(widget.postId)
+              //       .collection("reports")
+              //       .add(
+              //     {
+              //       "reason": dropdownValue.toString(),
+              //       "description": _reportReasonController.text,
+              //       "timestamp": DateTime.now().millisecondsSinceEpoch,
+              //       "submittedBy": currentUser.uid,
+              //     },
+              //   );
+              // Inserts report into general collection of reports
+              //   FirebaseFirestore.instance
+              //       .collection("postReports")
+              //       .add({
+              //     // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
+              //     "postID": widget.postId,
+              //     "reason": dropdownValue.toString(),
+              //     "description": _reportReasonController.text,
+              //     "timestamp": DateTime.now().millisecondsSinceEpoch,
+              //     "submittedBy": currentUser.uid,
+              //   },
+              // );
+              // Inserts report into general collection of reports
+              FirebaseFirestore.instance
+                  .collection("postReports")
+                  .doc(widget.postId)
+                  .collection('cases')
+                  .add({
+                // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
+                "reason": dropdownValue.toString(),
+                "description": _reportReasonController.text,
+                "timestamp": DateTime.now().millisecondsSinceEpoch,
+                "submittedBy": currentUser.uid,
+              });
+              Navigator.pop(context);
+            }),
+      ],
+    );
   }
 }
 
