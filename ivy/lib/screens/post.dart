@@ -1,7 +1,6 @@
 // New comment
 // Should contain all post stuff and create new post widget
 import 'dart:io';
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -598,7 +597,7 @@ class _PostState extends State<Post> {
         width: 500,
         fit: BoxFit.cover,
       );
-    } else if (mediaType == 'txt' || mediaType == "mp3") {
+    } else if (mediaType == 'txt') {
       String fontFam;
       try {
         fontFam = media.get('font');
@@ -617,6 +616,27 @@ class _PostState extends State<Post> {
               fontFamily: (fontFam == 'Serif') ? 'Bitter' : null,
             ),
           ),
+        ),
+      );
+    } else if (mediaType == "mp3") {
+      return Container(
+        alignment: Alignment.center,
+        child: Container(
+          width: 500.0,
+          height: 200.0,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: NetworkImage(
+                  "https://images.pexels.com/photos/3784221/pexels-photo-3784221.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                ),
+                fit: BoxFit.cover,
+                opacity: 0.5),
+          ),
+          child: Center(
+              child: Text(
+            media['url'],
+            textAlign: TextAlign.center,
+          )),
         ),
       );
     } else if (mediaType == "mp4") {
