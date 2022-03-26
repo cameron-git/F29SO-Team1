@@ -462,72 +462,6 @@ class _PostState extends State<Post> {
                       ),
                     ],
                   ),
-                  // button with + sign
-                  // child: InkWell(
-                  //   hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
-                  //   // when you tap on it, open local phone file storage
-                  //   onTap: () async {
-                  //     final results = await FilePicker.platform.pickFiles(
-                  //       allowMultiple: false,
-                  //       type: FileType.custom,
-                  //       allowedExtensions: ['png', 'jpg', 'mp4', 'mp3'],
-                  //     );
-                  //     // if no file was chosen, tell the user
-                  //     if (results == null) {
-                  //       ScaffoldMessenger.of(context).showSnackBar(
-                  //         const SnackBar(
-                  //           content: Text('No file selected.'),
-                  //         ),
-                  //       );
-                  //       return;
-                  //     }
-                  //     var type = results.files.single.extension;
-                  //     DocumentReference fbDoc = await FirebaseFirestore.instance
-                  //         .collection('posts')
-                  //         .doc(widget.postId)
-                  //         .collection('media')
-                  //         .add({
-                  //       'url': '',
-                  //       'left': 0,
-                  //       'top': 0,
-                  //       'width': 20,
-                  //       'height': 20,
-                  //       'type': type,
-                  //       'layer': 1,
-                  //     });
-                  //     // if the app is running on the web
-                  //     if (kIsWeb) {
-                  //       final bytes =
-                  //           results.files.single.bytes!; // get the selected file
-                  //       // upload the image to firebase storage
-                  //       await FirebaseStorage.instance
-                  //           .ref('${widget.postId}/${fbDoc.id}.$type')
-                  //           .putData(bytes);
-
-                  //       // if the app is hosted on a mobile device
-                  //     } else {
-                  //       final path = results.files.single.path!;
-                  //       // upload the image to firebase storage
-                  //       await FirebaseStorage.instance
-                  //           .ref('${widget.postId}/${fbDoc.id}.$type')
-                  //           .putFile(File(path));
-                  //     }
-                  //     final url = await FirebaseStorage.instance
-                  //         .ref('${widget.postId}/${fbDoc.id}.$type')
-                  //         .getDownloadURL();
-                  //     debugPrint("\n This is the url: " + url);
-                  //     // adding media to the post instance
-                  //     fbDoc.update(
-                  //       {
-                  //         'url': url,
-                  //       },
-                  //     );
-                  //   },
-                  //   // add-button to add more media
-                  //   child: const SizedBox(
-                  //     child: Icon(Icons.add),
-                  //   ),
-                  // ),
                 ),
               ),
             ),
@@ -568,8 +502,11 @@ class _PostState extends State<Post> {
                                 case 'mp3':
                                   i = Icons.music_video_rounded;
                                   break;
+                                case 'txt':
+                                  i = Icons.text_format;
+                                  break;
                                 default:
-                                  i = Icons.error_outline;
+                                  i = Icons.file_present;
                               }
                               return Icon(
                                 i,
@@ -635,13 +572,19 @@ class _PostState extends State<Post> {
         width: 500,
         fit: BoxFit.cover,
       );
-    } else if (mediaType == "mp3") {
+    } else if (mediaType == 'txt' || mediaType == "mp4" || mediaType == "mp3") {
       return Container(
         height: 200,
         width: 500,
         color: Colors.grey,
+        child: Center(
+          child: Text(
+            media['url'],
+            style: const TextStyle(color: Colors.black),
+          ),
+        ),
       );
-    } else if (mediaType == "mp4") {
+    } else {
       return Container(
         height: 200,
         width: 500,
@@ -1250,8 +1193,78 @@ class _EditDialogState extends State<EditDialog> {
           ),
         ],
       );
+    } else if (widget.e['type'] == 'txt') {
+      return AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Edit'),
+            IconButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .collection('media')
+                    .doc(widget.e.id)
+                    .delete();
+
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.delete),
+              splashRadius: Material.defaultSplashRadius / 2,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ],
+        ),
+      );
+    } else if (widget.e['type'] == 'mp3') {
+      return AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Edit'),
+            IconButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .collection('media')
+                    .doc(widget.e.id)
+                    .delete();
+
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.delete),
+              splashRadius: Material.defaultSplashRadius / 2,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ],
+        ),
+      );
     } else {
-      return const AlertDialog();
+      return AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Edit'),
+            IconButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('posts')
+                    .doc(widget.postId)
+                    .collection('media')
+                    .doc(widget.e.id)
+                    .delete();
+
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.delete),
+              splashRadius: Material.defaultSplashRadius / 2,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ],
+        ),
+      );
     }
   }
 }
