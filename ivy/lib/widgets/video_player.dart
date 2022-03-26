@@ -7,11 +7,15 @@ class VideoPlayerWidget extends StatefulWidget {
     required this.videoURL,
     required this.playing,
     required this.isVideo,
+    this.inDrawerList = false,
+    this.audioOn = false,
   }) : super(key: key);
 
   final String videoURL;
   final bool playing;
   final bool isVideo;
+  final bool inDrawerList;
+  final bool audioOn;
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -29,7 +33,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     });
     _initializeVideoPlayerFuture = controller.initialize();
     controller.setLooping(false);
-    controller.setVolume(0.1);
+    widget.audioOn ? controller.setVolume(0.1) : controller.setVolume(0.0);
     widget.playing ? play() : stop();
     super.initState();
   }
@@ -40,10 +44,21 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       future: _initializeVideoPlayerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return AspectRatio(
-            aspectRatio: controller.value.aspectRatio,
-            child: VideoPlayer(controller),
-          );
+          if (widget.inDrawerList) {
+            return FittedBox(
+              fit: BoxFit.fill,
+              child: SizedBox(
+                height: controller.value.size.height,
+                width: controller.value.size.width,
+                child: VideoPlayer(controller),
+              ),
+            );
+          } else {
+            return AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: VideoPlayer(controller),
+            );
+          }
         } else {
           return widget.isVideo
               ? const Center(child: CircularProgressIndicator())
