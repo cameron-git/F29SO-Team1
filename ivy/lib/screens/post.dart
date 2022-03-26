@@ -511,34 +511,38 @@ class _PostState extends State<Post> {
                       child: Stack(
                         children: [
                           displayMediaType(e),
-                          Container(
-                            color: Theme.of(context).colorScheme.background,
-                            child: Builder(builder: (context) {
-                              IconData i;
-                              switch (e['type']) {
-                                case 'jpg':
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                              color: Theme.of(context).colorScheme.background,
+                              child: Builder(builder: (context) {
+                                IconData i;
+                                switch (e['type']) {
+                                  case 'jpg':
 
-                                case 'png':
-                                  i = Icons.image;
-                                  break;
-                                case 'mp4':
-                                  i = Icons.video_camera_back;
-                                  break;
-                                case 'mp3':
-                                  i = Icons.music_video_rounded;
-                                  break;
-                                case 'txt':
-                                  i = Icons.text_format;
-                                  break;
-                                default:
-                                  i = Icons.file_present;
-                              }
-                              return Icon(
-                                i,
-                                color:
-                                    Theme.of(context).colorScheme.onBackground,
-                              );
-                            }),
+                                  case 'png':
+                                    i = Icons.image;
+                                    break;
+                                  case 'mp4':
+                                    i = Icons.video_camera_back;
+                                    break;
+                                  case 'mp3':
+                                    i = Icons.music_video_rounded;
+                                    break;
+                                  case 'txt':
+                                    i = Icons.text_format;
+                                    break;
+                                  default:
+                                    i = Icons.file_present;
+                                }
+                                return Icon(
+                                  i,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground,
+                                );
+                              }),
+                            ),
                           ),
                         ],
                       ),
