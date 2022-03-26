@@ -620,24 +620,22 @@ class _PostState extends State<Post> {
       );
     } else if (mediaType == "mp3") {
       return Container(
+        width: 500.0,
+        height: 200.0,
         alignment: Alignment.center,
-        child: Container(
-          width: 500.0,
-          height: 200.0,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: NetworkImage(
-                  "https://images.pexels.com/photos/3784221/pexels-photo-3784221.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                ),
-                fit: BoxFit.cover,
-                opacity: 0.5),
-          ),
-          child: Center(
-              child: Text(
-            media['url'],
-            textAlign: TextAlign.center,
-          )),
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: NetworkImage(
+                "https://images.pexels.com/photos/3784221/pexels-photo-3784221.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+              ),
+              fit: BoxFit.cover,
+              opacity: 0.5),
         ),
+        child: Center(
+            child: Text(
+          media['url'],
+          textAlign: TextAlign.center,
+        )),
       );
     } else if (mediaType == "mp4") {
       return Container(
