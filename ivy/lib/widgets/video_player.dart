@@ -8,14 +8,12 @@ class VideoPlayerWidget extends StatefulWidget {
     required this.playing,
     required this.isVideo,
     this.inDrawerList = false,
-    this.audioOn = false,
   }) : super(key: key);
 
   final String videoURL;
   final bool playing;
   final bool isVideo;
   final bool inDrawerList;
-  final bool audioOn;
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -33,7 +31,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     });
     _initializeVideoPlayerFuture = controller.initialize();
     controller.setLooping(false);
-    widget.audioOn ? controller.setVolume(0.1) : controller.setVolume(0.0);
+    widget.inDrawerList ? controller.setVolume(0.0) : controller.setVolume(0.3);
     widget.playing ? play() : stop();
     super.initState();
   }
