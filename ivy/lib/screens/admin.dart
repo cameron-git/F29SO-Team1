@@ -212,6 +212,10 @@ class ReportedPostList extends StatelessWidget {
                   child: InkWell(
                     borderRadius:
                       const BorderRadius.all(Radius.circular(4)),
+                    // Issue with onTap, is that if the post has been deleted
+                    // The report case might still be present and will try to 
+                    // push onto a post that might no longer exist
+                    // and present the admin with a blank page
                     onTap:() => Navigator.push(
                       context, 
                       MaterialPageRoute(
