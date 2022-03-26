@@ -1,6 +1,7 @@
 // New comment
 // Should contain all post stuff and create new post widget
 import 'dart:io';
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -292,6 +293,30 @@ class _PostState extends State<Post> {
                           height: squareSize * e['height'] / 100,
                           fit: BoxFit.cover,
                         );
+                      } else if (e['type'] == 'txt') {
+                        String fontFam;
+                        try {
+                          fontFam = e['font'];
+                        } catch (e) {
+                          fontFam = 'Sans-serif';
+                        }
+                        media = SizedBox(
+                          width: squareSize * e['width'] / 100,
+                          height: squareSize * e['height'] / 100,
+                          child: FittedBox(
+                            fit: BoxFit.fill,
+                            child: Text(
+                              e['url'],
+                              style: TextStyle(
+                                fontFamily:
+                                    (fontFam == 'Serif') ? 'Bitter' : null,
+                                decoration: TextDecoration.none,
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
+                            ),
+                          ),
+                        );
                       } else {
                         return Container();
                       }
@@ -573,7 +598,13 @@ class _PostState extends State<Post> {
         width: 500,
         fit: BoxFit.cover,
       );
-    } else if (mediaType == 'txt' || mediaType == "mp4" || mediaType == "mp3") {
+    } else if (mediaType == 'txt' || mediaType == "mp3") {
+      String fontFam;
+      try {
+        fontFam = media.get('font');
+      } catch (e) {
+        fontFam = 'Sans-serif';
+      }
       return Container(
         height: 200,
         width: 500,
@@ -581,11 +612,14 @@ class _PostState extends State<Post> {
         child: Center(
           child: Text(
             media['url'],
-            style: const TextStyle(color: Colors.black),
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: (fontFam == 'Serif') ? 'Bitter' : null,
+            ),
           ),
         ),
       );
-    } else {
+    } else if (mediaType == "mp4") {
       return Container(
         height: 200,
         width: 500,
@@ -596,9 +630,18 @@ class _PostState extends State<Post> {
           videoURL: media['url'],
           inDrawerList: true,
         ),
-        // child: Center(
-        //   child: Text(media['url']),
-        // ),
+      );
+    } else {
+      return Container(
+        height: 200,
+        width: 500,
+        color: Colors.grey,
+        child: Center(
+          child: Text(
+            media['url'],
+            style: const TextStyle(color: Colors.black),
+          ),
+        ),
       );
     }
   }
@@ -1052,6 +1095,7 @@ class _EditDialogState extends State<EditDialog> {
   num width = 0;
   num height = 0;
   num layer = 5;
+  String dropdownValue = 'Sans-serif';
 
   @override
   void initState() {
@@ -1061,6 +1105,11 @@ class _EditDialogState extends State<EditDialog> {
     left = widget.e['left'] + width / 2;
     top = widget.e['top'] + height / 2;
     layer = widget.e['layer'];
+    try {
+      dropdownValue = widget.e.get('font');
+    } catch (e) {
+      dropdownValue = 'Sans-serif';
+    }
   }
 
   @override
@@ -1217,6 +1266,10 @@ class _EditDialogState extends State<EditDialog> {
                     .collection('media')
                     .doc(widget.e.id)
                     .delete();
+                await FirebaseStorage.instance
+                    .ref('${widget.postId}/${widget.e.id}.${widget.e['type']}')
+                    .delete()
+                    .onError((error, stackTrace) => null);
 
                 Navigator.of(context).pop();
               },
@@ -1226,6 +1279,135 @@ class _EditDialogState extends State<EditDialog> {
             ),
           ],
         ),
+        content: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: 800,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView(
+              children: [
+                Row(
+                  children: [
+                    Text('Layer ($layer of 5)'),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    Tooltip(
+                      message: '1 is the bottom layer and 5 is the top layer',
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    )
+                  ],
+                ),
+                Slider(
+                  value: layer.toDouble(),
+                  onChanged: (d) {
+                    layer = d;
+                    setState(() {});
+                  },
+                  min: 1,
+                  max: 5,
+                  divisions: 4,
+                ),
+                const Divider(),
+                Text(
+                    'Horizontal Position (${left.round()}% of width from left)'),
+                Slider(
+                  value: left.toDouble(),
+                  onChanged: (d) {
+                    left = d;
+                    setState(() {});
+                  },
+                  min: -50,
+                  max: 150,
+                ),
+                const Divider(),
+                Text('Vertical Position (${top.round()}% of height from top)'),
+                Slider(
+                  value: top.toDouble(),
+                  onChanged: (d) {
+                    top = d;
+                    setState(() {});
+                  },
+                  min: -50,
+                  max: 150,
+                ),
+                const Divider(),
+                Text('Width (${width.round()}% of width)'),
+                Slider(
+                  value: width.toDouble(),
+                  onChanged: (d) {
+                    width = d;
+                    setState(() {});
+                  },
+                  min: 1,
+                  max: 100,
+                ),
+                const Divider(),
+                Text('Height (${height.round()}% of height)'),
+                Slider(
+                  value: height.toDouble(),
+                  onChanged: (d) {
+                    height = d;
+                    setState(() {});
+                  },
+                  min: 1,
+                  max: 100,
+                ),
+                const Divider(),
+                Row(
+                  children: [
+                    const Text('Font Style: '),
+                    DropdownButton<String>(
+                      value: dropdownValue,
+                      icon: const Icon(Icons.expand_more),
+                      onChanged: (String? newValue) {
+                        dropdownValue = newValue!;
+                        setState(() {});
+                      },
+                      // List of all the options available in the drop down menu
+                      items: <String>['Sans-serif', 'Serif']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              FirebaseFirestore.instance
+                  .collection('posts')
+                  .doc(widget.postId)
+                  .collection('media')
+                  .doc(widget.e.id)
+                  .set({
+                'left': left - width / 2,
+                'top': top - height / 2,
+                'width': width,
+                'height': height,
+                'layer': layer,
+                'font': dropdownValue,
+              }, SetOptions(merge: true));
+              Navigator.pop(context, 'OK');
+            },
+            child: const Text('OK'),
+          ),
+        ],
       );
     } else if (widget.e['type'] == 'mp3') {
       return AlertDialog(
@@ -1241,6 +1423,10 @@ class _EditDialogState extends State<EditDialog> {
                     .collection('media')
                     .doc(widget.e.id)
                     .delete();
+                await FirebaseStorage.instance
+                    .ref('${widget.postId}/${widget.e.id}.${widget.e['type']}')
+                    .delete()
+                    .onError((error, stackTrace) => null);
 
                 Navigator.of(context).pop();
               },
@@ -1265,6 +1451,10 @@ class _EditDialogState extends State<EditDialog> {
                     .collection('media')
                     .doc(widget.e.id)
                     .delete();
+                await FirebaseStorage.instance
+                    .ref('${widget.postId}/${widget.e.id}.${widget.e['type']}')
+                    .delete()
+                    .onError((error, stackTrace) => null);
 
                 Navigator.of(context).pop();
               },
