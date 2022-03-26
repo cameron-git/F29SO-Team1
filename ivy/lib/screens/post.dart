@@ -611,26 +611,24 @@ class _PostState extends State<Post> {
         fontFam = 'Sans-serif';
       }
       return Container(
+        width: 500.0,
+        height: 200.0,
         alignment: Alignment.center,
-        child: Container(
-          width: 500.0,
-          height: 200.0,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: NetworkImage(
-                  "https://images.pexels.com/photos/261763/pexels-photo-261763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                ),
-                fit: BoxFit.cover,
-                opacity: 0.5),
-          ),
-          child: Center(
-            child: Text(
-              media['url'],
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontFamily: (fontFam == 'Serif') ? 'Bitter' : null,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: NetworkImage(
+                "https://images.pexels.com/photos/261763/pexels-photo-261763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
               ),
+              fit: BoxFit.cover,
+              opacity: 0.5),
+        ),
+        child: Center(
+          child: Text(
+            media['url'],
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: (fontFam == 'Serif') ? 'Bitter' : null,
             ),
           ),
         ),

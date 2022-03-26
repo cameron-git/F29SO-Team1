@@ -540,60 +540,70 @@ class UserNameList extends StatelessWidget {
                   onTap: () {},
                   child: Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(30),
+                      padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
                           (e['photoURL'] != null)
                               ? ClipOval(
                                   child: Image.network(
                                     e['photoURL'],
-                                    width: 128,
-                                    height: 128,
+                                    width: 80,
+                                    height: 80,
                                     fit: BoxFit.cover,
                                   ),
                                 )
                               : Icon(
                                   Icons.account_circle,
-                                  size: 128,
+                                  size: 80,
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onBackground,
                                 ),
                           const SizedBox(
-                            width: 16,
+                            width: 8,
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Divider(),
-                              Text(e['name']),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(e.id),
-                                  IconButton(
-                                    onPressed: () {
-                                      Clipboard.setData(
-                                              ClipboardData(text: e.id))
-                                          .then((_) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                                content: Text(
-                                                    "User ID copied to clipboard")));
-                                      });
-                                    },
-                                    splashRadius:
-                                        Material.defaultSplashRadius / 2,
-                                    icon: const Icon(
-                                      Icons.copy,
-                                      size: 18,
+                          Expanded(
+                            child: Container(),
+                          ),
+                          Expanded(
+                            flex: 5,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  e['name'],
+                                  style: Theme.of(context).textTheme.headline5,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(e.id),
+                                    IconButton(
+                                      onPressed: () {
+                                        Clipboard.setData(
+                                                ClipboardData(text: e.id))
+                                            .then((_) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      "User ID copied to clipboard")));
+                                        });
+                                      },
+                                      splashRadius:
+                                          Material.defaultSplashRadius / 2,
+                                      icon: const Icon(
+                                        Icons.copy,
+                                        size: 18,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                          const Spacer(),
+                          Expanded(
+                            child: Container(),
+                          ),
                           // PLACEHOLDER ICON BUTTON
                           // Depending where we get to with profiles, was thinking
                           // that if you pressed the user card it'll take you to a
@@ -659,61 +669,71 @@ class UserIDList extends StatelessWidget {
                 onTap: () {},
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(30),
+                    padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
                         (snapshot.data!.get('photoURL') != null)
                             ? ClipOval(
                                 child: Image.network(
                                   snapshot.data!.get('photoURL'),
-                                  width: 128,
-                                  height: 128,
+                                  width: 80,
+                                  height: 80,
                                   fit: BoxFit.cover,
                                 ),
                               )
                             : Icon(
                                 Icons.account_circle,
-                                size: 128,
+                                size: 80,
                                 color:
                                     Theme.of(context).colorScheme.onBackground,
                               ),
                         const SizedBox(
-                          width: 16,
+                          width: 8,
                         ),
-
-                        Column(
-                          children: [
-                            const Divider(),
-                            Text(snapshot.data!.get('name')),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(snapshot.data!.id),
-                                IconButton(
-                                  onPressed: () {
-                                    Clipboard.setData(ClipboardData(
-                                            text: snapshot.data!.id))
-                                        .then(
-                                      (_) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                                content: Text(
-                                                    "User ID copied to clipboard")));
-                                      },
-                                    );
-                                  },
-                                  splashRadius:
-                                      Material.defaultSplashRadius / 2,
-                                  icon: const Icon(
-                                    Icons.copy,
-                                    size: 18,
+                        Expanded(
+                          child: Container(),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                snapshot.data!.get('name'),
+                                style: Theme.of(context).textTheme.headline5,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(snapshot.data!.id),
+                                  IconButton(
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(
+                                              text: snapshot.data!.id))
+                                          .then(
+                                        (_) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      "User ID copied to clipboard")));
+                                        },
+                                      );
+                                    },
+                                    splashRadius:
+                                        Material.defaultSplashRadius / 2,
+                                    icon: const Icon(
+                                      Icons.copy,
+                                      size: 18,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        const Spacer(),
+                        Expanded(
+                          child: Container(),
+                        ),
                         // PLACEHOLDER ICON BUTTON
                         // Depending where we get to with profiles, was thinking
                         // that if you pressed the user card it'll take you to a
