@@ -1258,10 +1258,9 @@ class _ReportDialogState extends State<ReportDialog> {
                     // Inserts report into general collection of reports
                     FirebaseFirestore.instance
                         .collection("postReports")
-                        .doc(widget.postId)
-                        .collection('cases')
                         .add({
                       // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
+                      "postID": widget.postId,
                       "reason": dropdownValue.toString(),
                       "description": _reportReasonController.text,
                       "timestamp": DateTime.now().millisecondsSinceEpoch,

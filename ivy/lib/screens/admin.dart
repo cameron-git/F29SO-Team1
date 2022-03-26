@@ -1,3 +1,6 @@
+import 'dart:html';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart ';
 import 'package:ivy/auth.dart';
 import 'package:ivy/constants.dart';
@@ -186,7 +189,7 @@ class ReportedPostList extends StatelessWidget {
       child: StreamBuilder(
         // need to handle loading
         stream: FirebaseFirestore.instance
-            .collection('posts')
+            .collection('postReports')
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -207,30 +210,108 @@ class ReportedPostList extends StatelessWidget {
                           MediaQuery.of(context).size.width / 3,
                           8),
                   child: InkWell(
-                    borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    onTap: () => Navigator.push(
-                      context,
+                    borderRadius:
+                      const BorderRadius.all(Radius.circular(4)),
+                    onTap:() => Navigator.push(
+                      context, 
                       MaterialPageRoute(
-                        builder: (context) => Post(e.id),
+                        builder: (context) => Post(e['postID']),
                       ),
                     ),
                     child: Card(
                       child: Padding(
-                        padding: const EdgeInsets.all(30),
+                        padding: const EdgeInsets.all(5),
                         child: Column(
                           children: [
-                            Text(e['title']),
-                            Text(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                      e['timestamp'])
-                                  .toString()
-                                  .substring(0, 16),
+                            const Text("Report for post: "),
+                            Text(e['postID']),
+                            Text("\nReason: " + e['reason'],
+                              style: 
+                                const TextStyle(fontWeight: FontWeight.bold)
                             ),
+                            const Text("\nReport description: "),
+                            Text(e['description']),
+                            Text("\nReported by: " + e['submittedBy']),
+                            Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: ElevatedButton(
+                                onPressed:(){
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text("Delete Post"),
+                                      scrollable: true,
+                                      content: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          children: [
+                                            const Text("Confirm the action you wish to take for this report"),
+                                            const Text("for this post under ID: "),
+                                            Text(e.id,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold
+                                              )
+                                            ),
+                                            const Text(""),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children:[
+                                                // Left-most button that cancels alert window
+                                                TextButton(
+                                                  onPressed: (){
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text("Cancel  "),
+                                                ),
+                                                // Middle button if user wants to get rid of report
+                                                ElevatedButton(
+                                                  onPressed:(){
+                                                    FirebaseFirestore.instance
+                                                    .collection("postReports")
+                                                    .doc(e.id)
+                                                    .delete();
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text("Dismiss Report"),
+                                                ),
+                                                Text("  "), // This is cheap way of spacing buttons
+                                                // Right-most button if user wants to delete the post
+                                                // This will delete the post and the ONE case of the posts reports
+                                                // others will still be present
+                                                // Could be future iteration with case systems for each report
+                                                ElevatedButton(
+                                                  onPressed: (){
+                                                    FirebaseFirestore.instance
+                                                    .collection("posts")
+                                                    .doc(e['postID'])
+                                                    .delete();
+                                                    FirebaseFirestore.instance
+                                                    .collection("postReports")
+                                                    .doc(e.id)
+                                                    .delete();
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text("Delete Post"),
+                                                  style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.red)
+                                                  )
+                                                )
+                                              ]
+                                            )
+                                          ]
+                                        )
+                                      )
+                                    )
+                                  );
+                                },
+                                child: Text("Take action")
+                              )
+                            )
                           ],
-                        ),
-                      ),
-                    ),
-                  ),
+                        )
+                      )
+                    )
+                  )
                 );
               },
             ).toList(),
@@ -295,11 +376,15 @@ class ReportedUserList extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.all(8),
                                   child: ElevatedButton(
+                                    // For future development for maybe the report,
+                                    // could bring up that a further iteration would include
+                                    // having on press, a log of all the messages sent by that user
+                                    // to review content themselves
                                     onPressed:(){
                                       showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
-                                          title: const Text("Ban user"),
+                                          title: const Text("Ban User"),
                                           scrollable: true,
                                           content: Padding(
                                             padding: const EdgeInsets.all(8),
@@ -320,7 +405,7 @@ class ReportedUserList extends StatelessWidget {
                                                       onPressed:(){
                                                         Navigator.pop(context);
                                                       },
-                                                      child: const Text("Cancel"),
+                                                      child: const Text("Cancel  "),
                                                     ),
                                                     ElevatedButton(
                                                       onPressed: (){
@@ -332,6 +417,7 @@ class ReportedUserList extends StatelessWidget {
                                                       },
                                                       child: const Text("Dismiss Report")
                                                     ),
+                                                    Text("  "),
                                                     ElevatedButton(
                                                       onPressed: (){
                                                         FirebaseFirestore.instance
