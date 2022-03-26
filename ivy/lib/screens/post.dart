@@ -285,14 +285,6 @@ class _PostState extends State<Post> {
                             isVideo: (e['type'] == 'mp4'),
                           ),
                         );
-                        // } else if (e['type'] == 'mp3') {
-
-                        //   media = playing
-                        //       ? AudioPlayerWidget(
-                        //           url: e['url'],
-                        //           playing: playing,
-                        //         )
-                        //       : Container();
                       } else if (e['type'] == 'jpg' || e['type'] == 'png') {
                         media = CachedNetworkImage(
                           imageUrl: e['url'],
@@ -301,7 +293,7 @@ class _PostState extends State<Post> {
                           fit: BoxFit.cover,
                         );
                       } else {
-                        media = const Placeholder();
+                        return Container();
                       }
 
                       return Positioned(
