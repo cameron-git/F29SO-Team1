@@ -1138,7 +1138,9 @@ class _EditDialogState extends State<EditDialog> {
                     .delete();
                 await FirebaseStorage.instance
                     .ref('${widget.postId}/${widget.e.id}.${widget.e['type']}')
-                    .delete();
+                    .delete()
+                    .onError((error, stackTrace) => null);
+
                 Navigator.of(context).pop();
               },
               icon: const Icon(Icons.delete),
@@ -1603,6 +1605,7 @@ class _AddTextDialogState extends State<AddTextDialog> {
                 'type': 'txt',
                 'layer': 1,
               });
+              Navigator.of(context).pop();
             },
             child: const Text('Confirm'))
       ],
@@ -1632,21 +1635,25 @@ class _AddURLDialogState extends State<AddURLDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Add media from URL'),
-      content: Column(
-        children: [
-          TextField(
-            controller: _addUSLController,
-            decoration: const InputDecoration(labelText: 'URL'),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          TextField(
-            controller: _typeController,
-            decoration: const InputDecoration(
-                labelText: "File Extension (eg. 'jpg' or 'mp4')"),
-          ),
-        ],
+      content: SizedBox(
+        height: 150,
+        width: 500,
+        child: Column(
+          children: [
+            TextField(
+              controller: _addUSLController,
+              decoration: const InputDecoration(labelText: 'URL'),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            TextField(
+              controller: _typeController,
+              decoration: const InputDecoration(
+                  labelText: "File Extension (eg. 'jpg' or 'mp4')"),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -1669,6 +1676,7 @@ class _AddURLDialogState extends State<AddURLDialog> {
                 'type': _typeController.text,
                 'layer': 1,
               });
+              Navigator.of(context).pop();
             },
             child: const Text('Confirm'))
       ],
