@@ -365,6 +365,7 @@ class _PostState extends State<Post> {
           if (perms)
             Padding(
               padding: const EdgeInsets.all(8.0),
+              // first item is the box with the buttons to add more media
               child: SizedBox(
                 height: 100,
                 child: Material(
@@ -589,6 +590,15 @@ class _PostState extends State<Post> {
         height: 200,
         width: 500,
         color: Colors.grey,
+        child: VideoPlayerWidget(
+          isVideo: true,
+          playing: true,
+          videoURL: media['url'],
+          inDrawerList: true,
+        ),
+        // child: Center(
+        //   child: Text(media['url']),
+        // ),
       );
     }
   }
