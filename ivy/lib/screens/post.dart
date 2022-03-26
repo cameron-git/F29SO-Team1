@@ -1592,6 +1592,9 @@ class _AddTextDialogState extends State<AddTextDialog> {
             child: const Text('Cancel')),
         ElevatedButton(
             onPressed: () async {
+              if (_addTextController.text.isEmpty) {
+                return;
+              }
               await FirebaseFirestore.instance
                   .collection('posts')
                   .doc(widget.postId)
@@ -1663,6 +1666,10 @@ class _AddURLDialogState extends State<AddURLDialog> {
             child: const Text('Cancel')),
         ElevatedButton(
             onPressed: () async {
+              if (_typeController.text.isEmpty ||
+                  _addUSLController.text.isEmpty) {
+                return;
+              }
               await FirebaseFirestore.instance
                   .collection('posts')
                   .doc(widget.postId)
