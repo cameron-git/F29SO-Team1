@@ -310,8 +310,10 @@ class _PostState extends State<Post> {
                                 fontFamily:
                                     (fontFam == 'Serif') ? 'Bitter' : null,
                                 decoration: TextDecoration.none,
-                                color:
-                                    Theme.of(context).colorScheme.onBackground,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onBackground
+                                    .withOpacity(0.84),
                               ),
                             ),
                           ),
@@ -721,8 +723,64 @@ class _PostState extends State<Post> {
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.arrow_back),
                 ),
-                title: Text(
-                  data['title'],
+                title: Row(
+                  children: [
+                    Text(
+                      data['title'],
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              List<Widget> chips = [];
+                              for (var tag in tags) {
+                                chips.add(Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Chip(label: Text(tag)),
+                                ));
+                              }
+                              return AlertDialog(
+                                scrollable: true,
+                                title: const Text('Description:'),
+                                content: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(data['description'].toString()),
+                                    const Divider(),
+                                    const Text('Tags:'),
+                                    if (tags.length > 1)
+                                      SizedBox(
+                                        height: 50,
+                                        width: 1000,
+                                        child: ListView(
+                                          shrinkWrap: true,
+                                          physics: const ScrollPhysics(),
+                                          scrollDirection: Axis.horizontal,
+                                          children: chips,
+                                        ),
+                                      )
+                                    else
+                                      const Text('There are no tags'),
+                                  ],
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    child: const Text("Ok"),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.info_outline,
+                          size: 18,
+                        ))
+                  ],
                 ),
                 actions: [
                   // button to play all media on the canvas
