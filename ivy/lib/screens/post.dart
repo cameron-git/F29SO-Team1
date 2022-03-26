@@ -377,7 +377,99 @@ class _PostState extends State<Post> {
                 height: 100,
                 child: Material(
                   color: const Color.fromRGBO(127, 127, 127, 0.1),
-                  child: Row(),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Tooltip(
+                        message: 'Add text',
+                        child: IconButton(
+                          onPressed: () async {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AddTextDialog(widget.postId);
+                                });
+                          },
+                          icon: const Icon(Icons.text_format),
+                        ),
+                      ),
+                      Tooltip(
+                        message: 'Add media from URL',
+                        child: IconButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AddURLDialog(widget.postId);
+                                });
+                          },
+                          icon: const Icon(Icons.add_link),
+                        ),
+                      ),
+                      Tooltip(
+                        message: 'Upload media',
+                        child: IconButton(
+                          onPressed: () async {
+                            final results = await FilePicker.platform.pickFiles(
+                              allowMultiple: false,
+                            );
+                            // if no file was chosen, tell the user
+                            if (results == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No file selected.'),
+                                ),
+                              );
+                              return;
+                            }
+                            var type = results.files.single.extension;
+                            DocumentReference fbDoc = await FirebaseFirestore
+                                .instance
+                                .collection('posts')
+                                .doc(widget.postId)
+                                .collection('media')
+                                .add({
+                              'url': '',
+                              'left': 0,
+                              'top': 0,
+                              'width': 20,
+                              'height': 20,
+                              'type': type,
+                              'layer': 1,
+                            });
+                            // if the app is running on the web
+                            if (kIsWeb) {
+                              final bytes = results
+                                  .files.single.bytes!; // get the selected file
+                              // upload the image to firebase storage
+                              await FirebaseStorage.instance
+                                  .ref('${widget.postId}/${fbDoc.id}.$type')
+                                  .putData(bytes);
+
+                              // if the app is hosted on a mobile device
+                            } else {
+                              final path = results.files.single.path!;
+                              // upload the image to firebase storage
+                              await FirebaseStorage.instance
+                                  .ref('${widget.postId}/${fbDoc.id}.$type')
+                                  .putFile(File(path));
+                            }
+                            final url = await FirebaseStorage.instance
+                                .ref('${widget.postId}/${fbDoc.id}.$type')
+                                .getDownloadURL();
+                            debugPrint("\n This is the url: " + url);
+                            // adding media to the post instance
+                            fbDoc.update(
+                              {
+                                'url': url,
+                              },
+                            );
+                          },
+                          icon: const Icon(Icons.upload_file),
+                        ),
+                      ),
+                    ],
+                  ),
                   // button with + sign
                   // child: InkWell(
                   //   hoverColor: const Color.fromRGBO(127, 127, 127, 0.2),
@@ -1461,6 +1553,125 @@ class _ManageUserDialogState extends State<ManageUserDialog> {
           )
         ],
       ),
+    );
+  }
+}
+
+class AddTextDialog extends StatefulWidget {
+  const AddTextDialog(this.postId, {Key? key}) : super(key: key);
+  final String postId;
+
+  @override
+  State<AddTextDialog> createState() => _AddTextDialogState();
+}
+
+class _AddTextDialogState extends State<AddTextDialog> {
+  final TextEditingController _addTextController = TextEditingController();
+
+  @override
+  void dispose() {
+    _addTextController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add Text'),
+      content: TextField(
+        controller: _addTextController,
+        decoration: const InputDecoration(labelText: 'Text to add'),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel')),
+        ElevatedButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('posts')
+                  .doc(widget.postId)
+                  .collection('media')
+                  .add({
+                'url': _addTextController.text,
+                'left': 0,
+                'top': 0,
+                'width': 20,
+                'height': 20,
+                'type': 'txt',
+                'layer': 1,
+              });
+            },
+            child: const Text('Confirm'))
+      ],
+    );
+  }
+}
+
+class AddURLDialog extends StatefulWidget {
+  const AddURLDialog(this.postId, {Key? key}) : super(key: key);
+  final String postId;
+
+  @override
+  State<AddURLDialog> createState() => _AddURLDialogState();
+}
+
+class _AddURLDialogState extends State<AddURLDialog> {
+  final TextEditingController _addUSLController = TextEditingController();
+  final TextEditingController _typeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _addUSLController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add media from URL'),
+      content: Column(
+        children: [
+          TextField(
+            controller: _addUSLController,
+            decoration: const InputDecoration(labelText: 'URL'),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          TextField(
+            controller: _typeController,
+            decoration: const InputDecoration(
+                labelText: "File Extension (eg. 'jpg' or 'mp4')"),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel')),
+        ElevatedButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('posts')
+                  .doc(widget.postId)
+                  .collection('media')
+                  .add({
+                'url': _addUSLController.text,
+                'left': 0,
+                'top': 0,
+                'width': 20,
+                'height': 20,
+                'type': _typeController.text,
+                'layer': 1,
+              });
+            },
+            child: const Text('Confirm'))
+      ],
     );
   }
 }
