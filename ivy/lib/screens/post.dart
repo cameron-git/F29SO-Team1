@@ -1805,11 +1805,13 @@ class _ManageUserDialogState extends State<ManageUserDialog> {
                   for (var item in userIds) {
                     listChildren.add(
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              FutureBuilder(
+                              Expanded(
+                                child: FutureBuilder(
                                   future: FirebaseFirestore.instance
                                       .collection('users')
                                       .doc(item)
@@ -1834,7 +1836,9 @@ class _ManageUserDialogState extends State<ManageUserDialog> {
                                         ),
                                       ],
                                     );
-                                  }),
+                                  },
+                                ),
+                              ),
                               (item !=
                                       context
                                           .read<AuthService>()
