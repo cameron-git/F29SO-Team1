@@ -338,6 +338,9 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 12,
                         ),
                       )),
+                SizedBox(
+                  height: reg ? 16 : 8,
+                ),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(

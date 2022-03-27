@@ -300,26 +300,23 @@ class PostList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: snapshot.data!.docs.map(
-        (e) {
-          List<dynamic> tags = e['tags'];
-          List<Widget> chips = [];
-          for (var tag in tags) {
-            chips.add(Padding(
-              padding: const EdgeInsets.all(4),
-              child: Chip(label: Text(tag)),
-            ));
-          }
+    return SizedBox(
+      width: (MediaQuery.of(context).size.aspectRatio < 1)
+          ? MediaQuery.of(context).size.width
+          : MediaQuery.of(context).size.height,
+      child: ListView(
+        children: snapshot.data!.docs.map(
+          (e) {
+            List<dynamic> tags = e['tags'];
+            List<Widget> chips = [];
+            for (var tag in tags) {
+              chips.add(Padding(
+                padding: const EdgeInsets.all(4),
+                child: Chip(label: Text(tag)),
+              ));
+            }
 
-          return Padding(
-            padding: (MediaQuery.of(context).size.width /
-                        MediaQuery.of(context).size.height <
-                    15 / 9)
-                ? const EdgeInsets.all(8)
-                : EdgeInsets.fromLTRB(MediaQuery.of(context).size.width / 3, 8,
-                    MediaQuery.of(context).size.width / 3, 8),
-            child: InkWell(
+            return InkWell(
               borderRadius: const BorderRadius.all(Radius.circular(4)),
               onTap: () {
                 Navigator.push(
@@ -365,7 +362,7 @@ class PostList extends StatelessWidget {
                                 .toString()
                                 .substring(0, 16),
                       ),
-                      if (tags.length > 1)
+                      if (tags.isNotEmpty && tags.first != '')
                         SizedBox(
                           height: 50,
                           width: 500,
@@ -380,10 +377,10 @@ class PostList extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      ).toList(),
+            );
+          },
+        ).toList(),
+      ),
     );
   }
 }
@@ -447,16 +444,13 @@ class PostIDList extends StatelessWidget {
         if (!snapshot.hasData || snapshot.hasError || !snapshot.data!.exists) {
           return Container();
         }
-        return ListView(
-          children: [
-            Padding(
-              padding: (MediaQuery.of(context).size.width /
-                          MediaQuery.of(context).size.height <
-                      15 / 9)
-                  ? const EdgeInsets.all(8)
-                  : EdgeInsets.fromLTRB(MediaQuery.of(context).size.width / 3,
-                      8, MediaQuery.of(context).size.width / 3, 8),
-              child: InkWell(
+        return SizedBox(
+          width: (MediaQuery.of(context).size.aspectRatio < 1)
+              ? MediaQuery.of(context).size.width
+              : MediaQuery.of(context).size.height,
+          child: ListView(
+            children: [
+              InkWell(
                 borderRadius: const BorderRadius.all(Radius.circular(4)),
                 onTap: () => Navigator.push(
                   context,
@@ -506,8 +500,8 @@ class PostIDList extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -529,112 +523,127 @@ class UserNameList extends StatelessWidget {
         if (!snapshot.hasData || snapshot.hasError) {
           return Container();
         }
-        return ListView(
-          children: snapshot.data!.docs.map<Widget>(
-            (e) {
-              return Padding(
-                padding: (MediaQuery.of(context).size.width /
-                            MediaQuery.of(context).size.height <
-                        15 / 9)
-                    ? const EdgeInsets.fromLTRB(0, 8, 0, 8)
-                    : EdgeInsets.fromLTRB(MediaQuery.of(context).size.width / 3,
-                        8, MediaQuery.of(context).size.width / 3, 8),
-                child: InkWell(
+        return SizedBox(
+          width: (MediaQuery.of(context).size.aspectRatio < 1)
+              ? MediaQuery.of(context).size.width
+              : MediaQuery.of(context).size.height,
+          child: ListView(
+            children: snapshot.data!.docs.map<Widget>(
+              (e) {
+                return InkWell(
                   borderRadius: const BorderRadius.all(Radius.circular(4)),
                   onTap: () {},
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          (e['photoURL'] != null)
-                              ? ClipOval(
-                                  child: Image.network(
-                                    e['photoURL'],
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.account_circle,
-                                  size: 80,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onBackground,
-                                ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            child: FittedBox(
-                              fit: BoxFit.fitWidth,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    e['name'],
-                                    style:
-                                        Theme.of(context).textTheme.headline5,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(e.id),
-                                      IconButton(
-                                        onPressed: () {
-                                          Clipboard.setData(
-                                                  ClipboardData(text: e.id))
-                                              .then((_) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                                    content: Text(
-                                                        "User ID copied to clipboard")));
-                                          });
-                                        },
-                                        splashRadius:
-                                            Material.defaultSplashRadius / 2,
-                                        icon: const Icon(
-                                          Icons.copy,
-                                          size: 18,
+                      child: LayoutBuilder(
+                          builder: (context, BoxConstraints constraints) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            (e['photoURL'] != null)
+                                ? Expanded(
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: ClipOval(
+                                        child: Image.network(
+                                          e['photoURL'],
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  )
+                                : Expanded(
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: Icon(
+                                        Icons.account_circle,
+                                        size: 80,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onBackground,
+                                      ),
+                                    ),
                                   ),
-                                ],
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: FittedBox(
+                                fit: BoxFit.fitWidth,
+                                alignment: Alignment.centerLeft,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      e['name'],
+                                      style:
+                                          Theme.of(context).textTheme.headline5,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Text(e.id),
+                                        IconButton(
+                                          onPressed: () {
+                                            Clipboard.setData(
+                                                    ClipboardData(text: e.id))
+                                                .then((_) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(const SnackBar(
+                                                      content: Text(
+                                                          "User ID copied to clipboard")));
+                                            });
+                                          },
+                                          splashRadius:
+                                              Material.defaultSplashRadius / 2,
+                                          icon: const Icon(
+                                            Icons.copy,
+                                            size: 18,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          // PLACEHOLDER ICON BUTTON
-                          // Depending where we get to with profiles, was thinking
-                          // that if you pressed the user card it'll take you to a
-                          // dialogue screen but have this iconButton for the time
-                          // being as a placeholder, the widget dialogue can be
-                          // copied over for any profile screen
-                          IconButton(
-                            tooltip: "Report user for improper behaviour",
-                            splashRadius: Material.defaultSplashRadius / 2,
-                            icon: const Icon(
-                              Icons.report,
-                              color: Color.fromARGB(150, 255, 0, 0),
-                              size: 18,
+                            const Spacer(),
+                            // PLACEHOLDER ICON BUTTON
+                            // Depending where we get to with profiles, was thinking
+                            // that if you pressed the user card it'll take you to a
+                            // dialogue screen but have this iconButton for the time
+                            // being as a placeholder, the widget dialogue can be
+                            // copied over for any profile screen
+                            IconButton(
+                              tooltip: "Report user for improper behaviour",
+                              splashRadius: Material.defaultSplashRadius / 2,
+                              icon: const Icon(
+                                Icons.report,
+                                color: Color.fromARGB(150, 255, 0, 0),
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return ReportUserDialog(e.id);
+                                    });
+                              },
                             ),
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return ReportUserDialog(e.id);
-                                  });
-                            },
-                          ),
-                        ],
-                      ),
+                          ],
+                        );
+                      }),
                     ),
                   ),
-                ),
-              );
-            },
-          ).toList(),
+                );
+              },
+            ).toList(),
+          ),
         );
       },
     );
@@ -655,17 +664,13 @@ class UserIDList extends StatelessWidget {
         if (!snapshot.hasData || snapshot.hasError || !snapshot.data!.exists) {
           return Container();
         }
-
-        return ListView(
-          children: [
-            Padding(
-              padding: (MediaQuery.of(context).size.width /
-                          MediaQuery.of(context).size.height <
-                      15 / 9)
-                  ? const EdgeInsets.fromLTRB(0, 8, 0, 8)
-                  : EdgeInsets.fromLTRB(MediaQuery.of(context).size.width / 3,
-                      8, MediaQuery.of(context).size.width / 3, 8),
-              child: InkWell(
+        return SizedBox(
+          width: (MediaQuery.of(context).size.aspectRatio < 1)
+              ? MediaQuery.of(context).size.width
+              : MediaQuery.of(context).size.height,
+          child: ListView(
+            children: [
+              InkWell(
                 borderRadius: const BorderRadius.all(Radius.circular(4)),
                 onTap: () {},
                 child: Card(
@@ -674,19 +679,30 @@ class UserIDList extends StatelessWidget {
                     child: Row(
                       children: [
                         (snapshot.data!.get('photoURL') != null)
-                            ? ClipOval(
-                                child: Image.network(
-                                  snapshot.data!.get('photoURL'),
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
+                            ? Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      snapshot.data!.get('photoURL'),
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               )
-                            : Icon(
-                                Icons.account_circle,
-                                size: 80,
-                                color:
-                                    Theme.of(context).colorScheme.onBackground,
+                            : Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: Icon(
+                                    Icons.account_circle,
+                                    size: 80,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground,
+                                  ),
+                                ),
                               ),
                         const SizedBox(
                           width: 8,
@@ -732,7 +748,7 @@ class UserIDList extends StatelessWidget {
                             ),
                           ),
                         ),
-
+                        const Spacer(),
                         // PLACEHOLDER ICON BUTTON
                         // Depending where we get to with profiles, was thinking
                         // that if you pressed the user card it'll take you to a
@@ -760,8 +776,8 @@ class UserIDList extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

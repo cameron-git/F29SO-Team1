@@ -765,7 +765,7 @@ class _PostState extends State<Post> {
                                       Text(data['description'].toString()),
                                       const Divider(),
                                       const Text('Tags:'),
-                                      if (tags.length > 1)
+                                      if (tags.isNotEmpty && tags.first != '')
                                         SizedBox(
                                           height: 50,
                                           width: 1000,
