@@ -34,4 +34,14 @@ class AuthService {
       return false;
     }
   }
+
+  Future<bool> sendPasswordResetEmail({required String email}) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
+  }
 }

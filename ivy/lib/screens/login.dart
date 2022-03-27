@@ -306,9 +306,38 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       )
                     : Container(),
-                const SizedBox(
-                  height: 16,
-                ),
+                if (!reg)
+                  TextButton(
+                      onPressed: () async {
+                        await context
+                            .read<AuthService>()
+                            .sendPasswordResetEmail(
+                                email: emailController.text);
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title:
+                                    const Text('Password Reset Email Sent To:'),
+                                content: Text(emailController.text),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('Ok'),
+                                  ),
+                                ],
+                              );
+                            });
+                      },
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      )),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
