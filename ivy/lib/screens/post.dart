@@ -15,6 +15,7 @@ import 'package:ivy/widgets/video_player.dart';
 import 'package:ivy/widgets/voice_call.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:ivy/main.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
@@ -682,6 +683,8 @@ class _PostState extends State<Post> {
 
   @override
   Widget build(BuildContext context) {
+    firebaseAnalytics.setCurrentScreen(screenName: 'Post: ${widget.postId}');
+    firebaseAnalytics.logScreenView();
     final postId = widget.postId;
     final Stream<DocumentSnapshot> _postStream =
         FirebaseFirestore.instance.collection('posts').doc(postId).snapshots();
@@ -828,7 +831,7 @@ class _PostState extends State<Post> {
                     ),
                   if (perms) const VoiceCallButton(),
                   PopupMenuButton(
-                    onSelected: (value) {
+                    onSelected: (value) async {
                       switch (value) {
                         case 1:
                           showDialog(
@@ -918,12 +921,8 @@ class _PostState extends State<Post> {
                           );
                           break;
                         case 4:
-                          FirebaseFirestore.instance
-                              .collection('posts')
-                              .doc(postId)
-                              .delete();
+                          await deletePost(postId, currentUser.uid);
                           Navigator.pop(context);
-
                           break;
 
                         default:
@@ -1103,6 +1102,7 @@ class _NewPostState extends State<NewPost> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
   late final User currentUser;
+  String? _titleError;
 
   @override
   void initState() {
@@ -1149,8 +1149,16 @@ class _NewPostState extends State<NewPost> {
                 style: TextButton.styleFrom(
                   minimumSize: const Size(5, 60),
                 ),
-                onPressed: () {
-                  FirebaseFirestore.instance.collection('posts').add(
+                onPressed: () async {
+                  if (_titleController.text.length < 3) {
+                    setState(() {
+                      _titleError = 'Title must have at least 3 characters';
+                    });
+                    return;
+                  }
+                  _titleError = null;
+                  DocumentReference ref =
+                      await FirebaseFirestore.instance.collection('posts').add(
                     <String, dynamic>{
                       'timestamp': DateTime.now().millisecondsSinceEpoch,
                       'ownerId': currentUser.uid,
@@ -1161,6 +1169,15 @@ class _NewPostState extends State<NewPost> {
                       'tags':
                           _tagController.text.toUpperCase().trim().split(' '),
                     },
+                  );
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(currentUser.uid)
+                      .set(
+                    {
+                      'ownedPosts': FieldValue.arrayUnion([ref.id])
+                    },
+                    SetOptions(merge: true),
                   );
                   Navigator.pop(context);
                 },
@@ -1999,4 +2016,18 @@ class _AddURLDialogState extends State<AddURLDialog> {
       ],
     );
   }
+}
+
+Future<void> deletePost(String postId, String currentUserId) async {
+  await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+  await FirebaseFirestore.instance.collection('users').doc(currentUserId).set(
+    {
+      'ownedPosts': FieldValue.arrayRemove([postId])
+    },
+    SetOptions(merge: true),
+  );
+  await FirebaseStorage.instance
+      .ref(postId)
+      .delete()
+      .onError((error, stackTrace) => null);
 }

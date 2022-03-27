@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ivy/auth.dart';
+import 'package:ivy/main.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
 
   submit() async {
     if (!_formKey.currentState!.validate()) return;
+    User? user;
     if (reg) {
       submitError = !await context.read<AuthService>().signUp(
             email: emailController.text.trim(),
@@ -35,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {});
         return;
       }
-      final user = context.read<AuthService>().currentUser;
+      user = context.read<AuthService>().currentUser;
       await FirebaseFirestore.instance.collection('users').doc(user?.uid).set(
         {
           'name': nameController.text.trim(),
@@ -45,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
       await user?.updateDisplayName(nameController.text.trim());
+      await firebaseAnalytics.logSignUp(signUpMethod: 'signUpMethod');
     } else {
       submitError = !await context.read<AuthService>().signIn(
             email: emailController.text,
@@ -52,7 +56,19 @@ class _LoginPageState extends State<LoginPage> {
           );
       if (submitError) {
         setState(() {});
+        return;
       }
+      user = context.read<AuthService>().currentUser;
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .get()
+          .then((value) async {
+        if (!value.exists) {
+          await user?.delete();
+          await context.read<AuthService>().signOut();
+        }
+      });
     }
   }
 

@@ -276,15 +276,26 @@ class ReportedPostList extends StatelessWidget {
                                                                             child:
                                                                                 const Text("Dismiss Report"),
                                                                           ),
-                                                                          Text(
+                                                                          const Text(
                                                                               "  "), // This is cheap way of spacing buttons
                                                                           // Right-most button if user wants to delete the post
                                                                           // This will delete the post and the ONE case of the posts reports
                                                                           // others will still be present
                                                                           // Could be future iteration with case systems for each report
                                                                           ElevatedButton(
-                                                                              onPressed: () {
-                                                                                FirebaseFirestore.instance.collection("posts").doc(e['postID']).delete();
+                                                                              onPressed: () async {
+                                                                                // FirebaseFirestore.instance.collection("posts").doc(e['postID']).delete();
+                                                                                String postId = e.get('postId');
+                                                                                String? userId;
+                                                                                await FirebaseFirestore.instance.collection('posts').doc(postId).get().then((value) {
+                                                                                  userId = value.get('ownerId');
+                                                                                }).onError((object, stacktrace) {
+                                                                                  return;
+                                                                                });
+                                                                                if (userId == null) {
+                                                                                  return;
+                                                                                }
+                                                                                deletePost(postId, userId!);
                                                                                 FirebaseFirestore.instance.collection("postReports").doc(e.id).delete();
                                                                                 Navigator.pop(context);
                                                                               },
@@ -293,7 +304,7 @@ class ReportedPostList extends StatelessWidget {
                                                                         ])
                                                                   ]))));
                                             },
-                                            child: Text("Take action")))
+                                            child: const Text("Take action")))
                                   ],
                                 )))));
               },
@@ -412,7 +423,7 @@ class ReportedUserList extends StatelessWidget {
                                                                   },
                                                                   child: const Text(
                                                                       "Dismiss Report")),
-                                                              Text("  "),
+                                                              const Text("  "),
                                                               ElevatedButton(
                                                                   onPressed:
                                                                       () {

@@ -18,6 +18,7 @@ App structure:
 // imports core flutter libraries
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -33,6 +34,7 @@ import 'package:ivy/theme/theme_service.dart';
 import 'package:provider/provider.dart';
 
 var auth = FirebaseAuth.instance;
+var firebaseAnalytics = FirebaseAnalytics.instance;
 
 // Starting the app and firebase config
 void main() async {
@@ -41,6 +43,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  firebaseAnalytics.logAppOpen();
   runApp(const IvyApp());
 }
 
@@ -171,6 +174,7 @@ class AuthWrapper extends StatelessWidget {
     if (firebaseUser == null) {
       return const LoginPage();
     } else {
+      firebaseAnalytics.setUserId(id: firebaseUser.uid);
       return const HopePageWrapper();
     }
   }
@@ -190,6 +194,9 @@ class HopePageWrapper extends StatelessWidget {
           AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
         if (!snapshot.hasData || snapshot.hasError) {
           return Container();
+        }
+        if (!snapshot.data!.exists) {
+          return const LoginPage();
         }
         if (snapshot.data!.get('admin')) {
           return const AdminUI();

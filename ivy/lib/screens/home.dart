@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ivy/main.dart';
 import 'package:ivy/screens/profile.dart';
 import 'package:provider/provider.dart';
-import '../auth.dart';
+import 'package:ivy/auth.dart';
 import 'post.dart';
 import 'package:flutter/services.dart';
 
@@ -12,6 +13,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    firebaseAnalytics.setCurrentScreen(screenName: 'Home Page');
+    firebaseAnalytics.logScreenView();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -318,12 +321,14 @@ class PostList extends StatelessWidget {
                     MediaQuery.of(context).size.width / 3, 8),
             child: InkWell(
               borderRadius: const BorderRadius.all(Radius.circular(4)),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Post(e.id),
-                ),
-              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Post(e.id),
+                  ),
+                );
+              },
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(30),

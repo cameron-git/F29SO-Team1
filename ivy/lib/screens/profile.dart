@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:js';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:ivy/auth.dart';
 import 'package:ivy/main.dart';
+import 'package:ivy/screens/post.dart';
 import 'package:provider/provider.dart';
 
 // This Widget is adapted from the ProfileScreen Widget from the FlutterFire_UI package which is under the BSD-3-Clause license
@@ -22,7 +24,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    User user = context.watch<AuthService>().currentUser!;
+    firebaseAnalytics.setCurrentScreen(screenName: 'Profile Page');
+    firebaseAnalytics.logScreenView();
+    User user = context.read<AuthService>().currentUser!;
     late final usernameContoller =
         TextEditingController(text: user.displayName ?? '');
 
@@ -176,12 +180,11 @@ class _ProfilePageState extends State<ProfilePage> {
               side: const BorderSide(color: Colors.grey, width: 2),
             ),
             onPressed: () async {
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(user.uid)
-                  .delete();
-
-              await user.delete();
+              await deleteUser(user);
+              await context.read<AuthService>().signOut();
+              while (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,4 +246,23 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+}
+
+Future<void> deleteUser(User user) async {
+  debugPrint(user.uid);
+  List<dynamic> posts = [];
+  DocumentSnapshot userDoc =
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+  try {
+    posts = userDoc.get('ownedPosts');
+  } catch (e) {
+    debugPrint(e.toString());
+  }
+  debugPrint('Has ${posts.length} posts');
+
+  for (var post in posts) {
+    await deletePost(post.toString(), user.uid);
+  }
+  await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+  await user.delete();
 }
