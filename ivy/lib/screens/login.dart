@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
           'name': nameController.text.trim(),
           'email': emailController.text.trim(),
           'photoURL': null,
-          'admin': false,
+          'ownedPosts': ['']
         },
       );
       await user?.updateDisplayName(nameController.text.trim());

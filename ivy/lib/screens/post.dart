@@ -286,7 +286,9 @@ class _PostState extends State<Post> {
                             isVideo: (e['type'] == 'mp4'),
                           ),
                         );
-                      } else if (e['type'] == 'jpg' || e['type'] == 'png') {
+                      } else if (e['type'] == 'jpg' ||
+                          e['type'] == 'png' ||
+                          e['type'] == 'gif') {
                         media = CachedNetworkImage(
                           imageUrl: e['url'],
                           width: squareSize * e['width'] / 100,
@@ -523,6 +525,8 @@ class _PostState extends State<Post> {
                                 switch (e['type']) {
                                   case 'jpg':
 
+                                  case 'gif':
+
                                   case 'png':
                                     i = Icons.image;
                                     break;
@@ -598,7 +602,7 @@ class _PostState extends State<Post> {
 
   displayMediaType(QueryDocumentSnapshot media) {
     var mediaType = media['type'];
-    if (mediaType == 'jpg' || mediaType == 'png') {
+    if (mediaType == 'jpg' || mediaType == 'png' || mediaType == 'gif') {
       return CachedNetworkImage(
         imageUrl: media['url'],
         width: 500,
@@ -1227,6 +1231,7 @@ class _EditDialogState extends State<EditDialog> {
   Widget build(BuildContext context) {
     if (widget.e['type'] == 'jpg' ||
         widget.e['type'] == 'png' ||
+        widget.e['type'] == 'gif' ||
         widget.e['type'] == 'mp4') {
       return AlertDialog(
         title: Row(
@@ -1701,8 +1706,7 @@ class _ReportDialogState extends State<ReportDialog> {
               FirebaseFirestore.instance
                   .collection("postReports")
                   .doc(widget.postId)
-                  .collection('cases')
-                  .add({
+                  .set({
                 // Post so that when viewing the report, it'll allow us to retrieve postID so we can remove it
                 "reason": dropdownValue.toString(),
                 "description": _reportReasonController.text,

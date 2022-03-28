@@ -1,8 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+  	function isAdmin(userId) {
+  		return exists(/databases/$(database)/documents/admins/$(userId));
+		}
+    
     match /{document=**} {
-      allow read, write: if true;
+    	allow read, write: if isAdmin(request.auth.uid);
+    }
+    
+    match /admins/{document=**} {
+    allow read: if request.auth.uid != null;
+    }
+
+		match /postReports/{document=**} {
+    	allow read, create: if request.auth.uid != null;
+    }
+    
+    match /userReports/{document=**} {
+    	allow read, create: if request.auth.uid != null;
+    }
+  
+    match /users/{userId} {
+    	allow create, read: if true;
+    	allow write: if userId == request.auth.uid;
+    }
+    
+    match /posts/{postId} {
+    
+    function isOwner() {
+    	return request.auth.uid == get(/databases/$(database)/documents/posts/$(postId)).data.ownerId;
+    }
+    
+    function isPermitted() {
+    	return request.auth.uid in get(/databases/$(database)/documents/posts/$(postId)).data.userPermissions;
+    }
+    
+    allow read: if true;
+    allow create: if request.auth.uid != null;
+    allow update: if isPermitted();
+    allow delete: if isOwner();
+    
+    	match /{document=**}{
+      	allow read: if true;
+    		allow create: if request.auth.uid != null;
+   		 	allow write: if isPermitted();
+      }
+    
     }
   }
 }

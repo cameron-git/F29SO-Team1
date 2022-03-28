@@ -187,21 +187,19 @@ class HopePageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(context.watch<AuthService>().currentUser!.uid)
+          .collection('admins')
+          .doc(context.read<AuthService>().currentUser!.uid)
           .snapshots(),
       builder: (context,
           AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
         if (!snapshot.hasData || snapshot.hasError) {
+          debugPrint('hey');
           return Container();
         }
         if (!snapshot.data!.exists) {
-          return const LoginPage();
-        }
-        if (snapshot.data!.get('admin')) {
-          return const AdminUI();
-        } else {
           return const HomePage();
+        } else {
+          return const AdminUI();
         }
       },
     );

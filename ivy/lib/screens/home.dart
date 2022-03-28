@@ -279,7 +279,10 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
               });*/
                 // Thinking of switching it to very wide userReports collection
                 // rather than having the cases to group them together
-                FirebaseFirestore.instance.collection("userReports").add({
+                FirebaseFirestore.instance
+                    .collection("userReports")
+                    .doc(widget.userId)
+                    .set({
                   "reportee": widget.userId,
                   "reason": dropdownValue.toString(),
                   "description": _reportUserReasonController.text,

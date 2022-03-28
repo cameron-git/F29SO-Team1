@@ -128,6 +128,10 @@ class _ProfilePageState extends State<ProfilePage> {
             setState(() {});
           },
         ),
+        const SizedBox(
+          height: 8,
+        ),
+        SelectableText(user.uid),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -248,20 +252,26 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 Future<void> deleteUser(User user) async {
-  debugPrint(user.uid);
+  deleteUserID(user.uid);
+  await user.delete();
+}
+
+Future<void> deleteUserID(String user) async {
+  debugPrint(user);
   List<dynamic> posts = [];
   DocumentSnapshot userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      await FirebaseFirestore.instance.collection('users').doc(user).get();
   try {
     posts = userDoc.get('ownedPosts');
   } catch (e) {
     debugPrint(e.toString());
   }
-  debugPrint('Has ${posts.length} posts');
+  debugPrint('Has ${posts.length - 1} posts');
 
   for (var post in posts) {
-    await deletePost(post.toString(), user.uid);
+    if (post != '') {
+      await deletePost(post.toString(), user);
+    }
   }
-  await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
-  await user.delete();
+  await FirebaseFirestore.instance.collection('users').doc(user).delete();
 }
