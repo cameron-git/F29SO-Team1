@@ -1,3 +1,7 @@
+// Adapted from https://github.com/wownsdl13/flutter_webrtc_example
+// added support for seperate rooms
+// P2P only, couldnt fix bugs with Mesh topology multi user p2p
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';

@@ -1,3 +1,6 @@
+// Adapted from https://github.com/wownsdl13/flutter_webrtc_example
+// added support for seperate rooms
+// P2P only, couldnt fix bugs with Mesh topology multi user p2p
 const app = require('express')();
 const {Server} = require('socket.io');
 

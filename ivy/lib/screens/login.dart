@@ -5,6 +5,8 @@ import 'package:ivy/auth.dart';
 import 'package:ivy/main.dart';
 import 'package:provider/provider.dart';
 
+// The login page, all the fields are validated with regex.
+// Layout is responsive to different screen shapes and sizes
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 

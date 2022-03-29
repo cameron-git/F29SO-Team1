@@ -3,15 +3,21 @@ Ivy Collaberative Social Media App
 
 App structure:
   /screens: Widgets for each screen is stored here
-    feed: The feed page
-    home: Home page
-    new_post:
-    profile:
-    search:
+
+    home: Home page, includes search and feed
+    post: The post page, also includes the widget for creating a new post and a function for deleting posts
+    profile: The profile page, allows changing user info, settings and signing out
+    login: The sign in page
+  /theme:
+    theme_service.dart: Handles saving users theme choices to device storage and provides functions for changing theme.
   /widgets:
+    video_player: A wrapper stateful widget to manage the state of the VideoPlayer widget
+    voice_call: Contains a widget for a voice call button. Also contains the state relating to joining and leaving the voice call. Requries the signalling server url to be set. Only works up to 2 peers
+  auth: Contains a class that is provided to the rest of the app that manages user authentication state and provides functions to interface with the firebase authentication service.
+  constants: Some constants used in the app
   firebase_options: firebase generated configs
   generated_plugin_registrant: generated file, do not edit
-  main: main and app
+  main: main function and main "Ivy" widget that is first opened. The Ivy widget acts as a wrapper and with the help of other wrappers decides the users credentials and what page they should be sent to
 
 */
 
@@ -90,9 +96,11 @@ class _IvyAppState extends State<IvyApp> {
         )
       ],
       child: MaterialApp(
+        // Sets theme
         themeMode: themeService.themeMode,
         debugShowCheckedModeBanner: false, // Remove later
         title: 'Ivy',
+        // The light theme
         theme: ThemeData(
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
               foregroundColor: Colors.white),
@@ -118,6 +126,7 @@ class _IvyAppState extends State<IvyApp> {
             onBackground: Colors.black54,
           ),
         ),
+        // The dark theme
         darkTheme: ThemeData(
           snackBarTheme: const SnackBarThemeData(
               contentTextStyle: TextStyle(color: Colors.white)),
@@ -157,14 +166,14 @@ class _IvyAppState extends State<IvyApp> {
             onBackground: Colors.white54,
           ),
         ),
-        // Creates NamesRoutes for the pages of the app
-        // Makes switching pages easier
+        // The wrapper that first gets shown when opening the app
         home: const AuthWrapper(),
       ),
     );
   }
 }
 
+// Checks if the user is signed in and sends them to login page if not
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({Key? key}) : super(key: key);
 
@@ -180,6 +189,7 @@ class AuthWrapper extends StatelessWidget {
   }
 }
 
+// Checks if the user is an admin and sends them to the correct UI
 class HopePageWrapper extends StatelessWidget {
   const HopePageWrapper({Key? key}) : super(key: key);
 

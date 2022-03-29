@@ -8,6 +8,7 @@ import 'package:ivy/auth.dart';
 import 'post.dart';
 import 'package:flutter/services.dart';
 
+// The home page with search
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -39,6 +40,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
+// The feed of posts with newest at the top
 class Feed extends StatelessWidget {
   const Feed({Key? key}) : super(key: key);
 
@@ -62,6 +64,8 @@ class Feed extends StatelessWidget {
   }
 }
 
+// The search bar and feed.
+// Feed changes to seach when you type a search
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
 
@@ -165,6 +169,7 @@ class _SearchState extends State<Search> {
   }
 }
 
+// Popup to report users
 class ReportUserDialog extends StatefulWidget {
   const ReportUserDialog(this.userId, {Key? key}) : super(key: key);
   final String userId;
@@ -297,6 +302,7 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
   }
 }
 
+// A scrolling list of posts, newest at the top
 class PostList extends StatelessWidget {
   const PostList(this.snapshot, {Key? key}) : super(key: key);
   final AsyncSnapshot<QuerySnapshot> snapshot;
@@ -388,6 +394,7 @@ class PostList extends StatelessWidget {
   }
 }
 
+// Scrolling list of posts that have the name(capticalisation agnostic) of the search field
 class PostNameList extends StatelessWidget {
   const PostNameList(this.searchText, {Key? key}) : super(key: key);
   final String searchText;
@@ -409,6 +416,7 @@ class PostNameList extends StatelessWidget {
   }
 }
 
+// List of post that have the searched for tag
 class PostTagList extends StatelessWidget {
   const PostTagList(this.searchText, {Key? key}) : super(key: key);
   final String searchText;
@@ -433,6 +441,7 @@ class PostTagList extends StatelessWidget {
   }
 }
 
+// The post that has the searched postId
 class PostIDList extends StatelessWidget {
   const PostIDList(this.searchText, {Key? key}) : super(key: key);
   final String searchText;
@@ -511,6 +520,7 @@ class PostIDList extends StatelessWidget {
   }
 }
 
+// List of users with searched username
 class UserNameList extends StatelessWidget {
   const UserNameList(this.searchText, {Key? key}) : super(key: key);
   final String searchText;
@@ -653,6 +663,7 @@ class UserNameList extends StatelessWidget {
   }
 }
 
+// User with searched userId
 class UserIDList extends StatelessWidget {
   const UserIDList(this.searchText, {Key? key}) : super(key: key);
   final String searchText;

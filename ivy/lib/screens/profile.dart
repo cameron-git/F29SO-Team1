@@ -251,11 +251,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
+// Deletes user based on the given user object
 Future<void> deleteUser(User user) async {
   deleteUserID(user.uid);
   await user.delete();
 }
 
+// Deletes the user based on their UID
 Future<void> deleteUserID(String user) async {
   debugPrint(user);
   List<dynamic> posts = [];

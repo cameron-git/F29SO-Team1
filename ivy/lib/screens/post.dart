@@ -19,6 +19,7 @@ import 'package:ivy/main.dart';
 
 final GlobalKey _canvasKey = GlobalKey();
 
+// Widget for the post page
 class Post extends StatefulWidget {
   const Post(this.postId, {Key? key}) : super(key: key);
   final String postId;
@@ -600,6 +601,7 @@ class _PostState extends State<Post> {
     );
   }
 
+// Displays media on the media list
   displayMediaType(QueryDocumentSnapshot media) {
     var mediaType = media['type'];
     if (mediaType == 'jpg' || mediaType == 'png' || mediaType == 'gif') {
@@ -1017,8 +1019,7 @@ class _PostState extends State<Post> {
                   SizedBox(
                     height: (aspectRatio > 1.2)
                         ? MediaQuery.of(context).size.height - 68
-                        : MediaQuery.of(context).size.height -
-                            167, // TODO: these two cannot be hard-coded
+                        : MediaQuery.of(context).size.height - 167,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1094,6 +1095,7 @@ class _PostState extends State<Post> {
   }
 }
 
+// Creates a new post
 class NewPost extends StatefulWidget {
   const NewPost({Key? key}) : super(key: key);
 
@@ -1127,10 +1129,10 @@ class _NewPostState extends State<NewPost> {
             children: [
               TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: InputDecoration(
+                    labelText: 'Title',
+                    border: const OutlineInputBorder(),
+                    errorText: _titleError),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1195,6 +1197,7 @@ class _NewPostState extends State<NewPost> {
   }
 }
 
+// Popup that allows fine tuned editing of media objects
 class EditDialog extends StatefulWidget {
   const EditDialog(this.e, this.postId, {Key? key}) : super(key: key);
   final QueryDocumentSnapshot<Object?> e;
@@ -1585,6 +1588,7 @@ class _EditDialogState extends State<EditDialog> {
   }
 }
 
+// Popup that allows users to report this post
 class ReportDialog extends StatefulWidget {
   const ReportDialog(this.postId, {Key? key}) : super(key: key);
   final String postId;
@@ -1720,6 +1724,7 @@ class _ReportDialogState extends State<ReportDialog> {
   }
 }
 
+// Popup that allows the addition and removal of post permissions to other users
 class ManageUserDialog extends StatefulWidget {
   const ManageUserDialog(this.postId, {Key? key}) : super(key: key);
   final String postId;
@@ -1883,6 +1888,7 @@ class _ManageUserDialogState extends State<ManageUserDialog> {
   }
 }
 
+// Popup that allows user to upload text as media object
 class AddTextDialog extends StatefulWidget {
   const AddTextDialog(this.postId, {Key? key}) : super(key: key);
   final String postId;
@@ -1940,6 +1946,7 @@ class _AddTextDialogState extends State<AddTextDialog> {
   }
 }
 
+// Popup that allows users to upload media from a url
 class AddURLDialog extends StatefulWidget {
   const AddURLDialog(this.postId, {Key? key}) : super(key: key);
   final String postId;
@@ -2026,6 +2033,7 @@ class _AddURLDialogState extends State<AddURLDialog> {
   }
 }
 
+//Deletes post, currentUserId is the post Owner
 Future<void> deletePost(String postId, String currentUserId) async {
   await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
   await FirebaseFirestore.instance.collection('users').doc(currentUserId).set(

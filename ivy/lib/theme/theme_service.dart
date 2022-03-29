@@ -1,3 +1,5 @@
+// Provides theme changing and saves theme preferences to device
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
