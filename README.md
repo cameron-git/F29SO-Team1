@@ -30,3 +30,10 @@
 1. Install VS Code - https://code.visualstudio.com/
 2. Install Flutter extension.
 3. Run `flutter doctor` to make sure 'VS Code' is ticked.
+
+## Firebase
+
+https://firebase.flutter.dev/docs/cli
+Use the instructions in the link to install the firebase cli tools and setup a firebase project in the /ivy/ directory
+Enable hosting, storage, firestore, analytics 
+Build the app with flutter and then "firebase deploy" will deploy webapp and set database rules
