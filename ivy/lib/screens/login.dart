@@ -364,9 +364,22 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(
                   height: 16,
                 ),
-                const Text(
-                  'Terms and Conditions Apply',
-                  style: TextStyle(fontWeight: FontWeight.w300, fontSize: 12),
+                TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return const AlertDialog(
+                          content: Text(
+                              'By using Ivy you agree to the Terms and Conditions and that your data will be processed in accordance with GDPR Legislation\n\nUsers are not permitted to post any sexually explicit, abusive, or harmful content. Users are also not permitted to use any communication features such as the in-post text chat or the voice channel to spread sexually explicit, abusive or harmful content. Failure to comply with these guidelines will result in the user account being terminated and the removal of any offensive posts. Ivys user guidelines are in place to ensure Ivy remains a safe and welcoming space for users to learn, create and collaborate.'),
+                        );
+                      },
+                    );
+                  },
+                  child: const Text(
+                    'Terms and Conditions Apply',
+                    style: TextStyle(fontWeight: FontWeight.w300, fontSize: 12),
+                  ),
                 ),
               ],
             ),
